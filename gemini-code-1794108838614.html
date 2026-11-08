@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MyVocab - Học & Luyện Tập Từ Vựng</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body { font-size: 16px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    .dark ::-webkit-scrollbar-thumb { background: #334155; }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- 1. ÂM THANH PHẢN HỒI ---
+    const SoundFx = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      },
+      play(freq, type, duration, delay = 0) {
+        try {
+          this.init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + delay);
+          osc.stop(this.ctx.currentTime + delay + duration);
+        } catch (e) {}
+      },
+      correct() {
+        this.play(523.25, 'sine', 0.1, 0);
+        this.play(659.25, 'sine', 0.2, 0.08);
+      },
+      wrong() {
+        this.play(220, 'sawtooth', 0.15, 0);
+        this.play(180, 'sawtooth', 0.2, 0.1);
+      }
+    };
+
+    // --- 2. PHÁT ÂM UK / US (TỪ VỰNG & CÂU VÍ DỤ) ---
+    function speak(text, lang = "en-US", rate = 1) {
+      if (!('speechSynthesis' in window) || !text) return;
+      window.speechSynthesis.cancel();
+      const cleanText = String(text).replace(/[\[\]]/g, '').trim();
+      const u = new SpeechSynthesisUtterance(cleanText);
+      u.rate = rate;
+      u.lang = lang;
+      window.speechSynthesis.speak(u);
+    }
+
+    // --- 3. ICON SVG NỘI BỘ ---
+    const Icon = ({ name, className = "w-5 h-5" }) => {
+      const paths = {
+        cards: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
+        practice: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />,
+        upload: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />,
+        pencilCircle: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />,
+        cardCircle: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2zM9 7h6M9 11h6M9 15h4" />,
+        volume: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />,
+        check: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />,
+        x: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />,
+        arrowLeft: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />,
+        arrowRight: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />,
+        sun: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />,
+        moon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />,
+        warning: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />,
+        rotate: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />,
+        shuffle: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+      };
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {paths[name] || paths.cards}
+        </svg>
+      );
+    };
+
+    // --- 4. CẤU TRÚC 23 LIST TỪ VỰNG ---
+    const LISTS_INFO = [
+      { id: 1, name: "List 1", range: "#1 - #55", firstWord: "accountant", lastWord: "workshop" },
+      { id: 2, name: "List 2", range: "#56 - #110", firstWord: "admission", lastWord: "valid" },
+      { id: 3, name: "List 3", range: "#111 - #165", firstWord: "aisle", lastWord: "workplace" },
+      { id: 4, name: "List 4", range: "#166 - #220", firstWord: "accommodate", lastWord: "weekday" },
+      { id: 5, name: "List 5", range: "#221 - #275", firstWord: "affordable", lastWord: "worldwide" },
+      { id: 6, name: "List 6", range: "#276 - #330", firstWord: "accurately", lastWord: "voucher" },
+      { id: 7, name: "List 7", range: "#331 - #385", firstWord: "administrator", lastWord: "wallet" },
+      { id: 8, name: "List 8", range: "#386 - #440", firstWord: "accessible", lastWord: "yearly" },
+      { id: 9, name: "List 9", range: "#441 - #495", firstWord: "actress", lastWord: "withdrawal" },
+      { id: 10, name: "List 10", range: "#496 - #550", firstWord: "accessory", lastWord: "zoo" },
+      { id: 11, name: "List 11", range: "#551 - #605", firstWord: "absent", lastWord: "workforce" },
+      { id: 12, name: "List 12", range: "#606 - #660", firstWord: "accordingly", lastWord: "vase" },
+      { id: 13, name: "List 13", range: "#661 - #715", firstWord: "aboard", lastWord: "webpage" },
+      { id: 14, name: "List 14", range: "#716 - #770", firstWord: "accent", lastWord: "yoga" },
+      { id: 15, name: "List 15", range: "#771 - #825", firstWord: "absorb", lastWord: "walkway" },
+      { id: 16, name: "List 16", range: "#826 - #880", firstWord: "amenity", lastWord: "uncomfortable" },
+      { id: 17, name: "List 17", range: "#881 - #935", firstWord: "amateur", lastWord: "wisely" },
+      { id: 18, name: "List 18", range: "#936 - #990", firstWord: "activate", lastWord: "yen" },
+      { id: 19, name: "List 19", range: "#991 - #1045", firstWord: "adapter", lastWord: "worthwhile" },
+      { id: 20, name: "List 20", range: "#1046 - #1100", firstWord: "compliance", lastWord: "unpaid" },
+      { id: 21, name: "List 21", range: "#1101 - #1155", firstWord: "accuracy", lastWord: "wrinkle" },
+      { id: 22, name: "List 22", range: "#1156 - #1210", firstWord: "abide", lastWord: "wristwatch" },
+      { id: 23, name: "List 23", range: "#1211 - #1257", firstWord: "acclaim", lastWord: "workbook" }
+    ];
+
+    const PRELOADED_LIST_1 = [
+      { n: 1, l: 1, w: "accountant", p: "n", i: "/əˈkaʊn.tənt/", s: "kế toán", v: "một người chịu trách nhiệm về tiền trong một doanh nghiệp, kế toán", e: "a person responsible for the money in a business", x: ["My [accountant] takes care of my taxes. (=Dịch: Kế toán của tôi lo liệu thuế của tôi.)", "Trainee [accountants] average £12,000 per year. (=Dịch: Các thực tập sinh kế toán trung bình kiếm được 12.000 bảng Anh mỗi năm.)", "The senior [accountant] carefully reviewed the quarterly financial statements before submitting them. (=Dịch: Kế toán viên cấp cao đã cẩn thận xem xét các báo cáo tài chính hàng quý trước khi nộp.)"] },
+      { n: 2, l: 1, w: "airport", p: "n", i: "/ˈeə.pɔːt/", s: "sân bay", v: "sân bay", e: "the place where you go to get on a plane", x: ["Security checks have become really strict at the [airport]. (=Dịch: Kiểm tra an ninh ở sân bay đã trở nên rất nghiêm ngặt.)", "I checked online and saw that the plane had already touched down at the [airport]. (=Dịch: Tôi đã kiểm tra trực tuyến và thấy rằng máy bay đã hạ cánh xuống sân bay.)", "One of our representatives will meet you at the [airport] and take you to your hotel. (=Dịch: Một trong những đại diện của chúng tôi sẽ gặp bạn tại sân bay và đưa bạn đến khách sạn của bạn.)"] },
+      { n: 3, l: 1, w: "applicant", p: "n", i: "/ˈæp.lɪ.kənt/", s: "ứng viên", v: "ứng viên", e: "a person who submits papers in order to do something, e.g. job applicant", x: ["Many [applicants] simply don't meet hiring requirements. (=Dịch: Nhiều ứng viên đơn giản là không đáp ứng yêu cầu tuyển dụng.)", "Successful [applicants] will be notified in writing. (=Dịch: Các ứng viên thành công sẽ được thông báo bằng văn bản.)", "The course is popular - it has five [applicants] for every place. (=Dịch: Khóa học này rất phổ biến - có năm ứng viên cho mỗi chỗ.)"] }
+    ];
+
+    // --- 5. BỘ ĐỌC FILE EXCEL (.XLS XML) ---
+    const SPECIAL_FIXES = {
+      275: ["worldwide", "adv, adj", "/ˌwɜːldˈwaɪd/"],
+      405: ["hourly", "adv, adj", "/ˈaʊə.li/"],
+      422: ["quarterly", "adv, adj", "/ˈkwɔː.təl.i/"],
+      440: ["yearly", "adv, adj", "/ˈjɪə.li/"],
+      511: ["downstairs", "adv, adj", "/ˌdaʊnˈsteəz/"],
+      601: ["upstairs", "adv, adj", "/ˌʌpˈsteəz/"],
+      804: ["nationwide", "adv, adj", "/ˌneɪ.ʃənˈwaɪd/"],
+      1041: ["underway", "adv, adj", "/ˌʌn.dəˈweɪ/"],
+      1062: ["hurricane", "n", "/ˈhʌr.ɪ.kən/"],
+      1099: ["underground", "adv, adj", "/ˌʌn.dəˈɡraʊnd/"]
+    };
+
+    function parseExcelContent(rawText, existingCardsMap) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(rawText, "text/xml");
+      const rows = Array.from(xmlDoc.getElementsByTagName("Row"));
+      if (rows.length === 0) {
+        const ssRows = Array.from(xmlDoc.getElementsByTagName("ss:Row"));
+        rows.push(...ssRows);
+      }
+
+      let shortSeqCounter = 0;
+
+      rows.forEach(row => {
+        const cells = Array.from(row.children).filter(el => el.tagName.endsWith("Cell"));
+        const texts = cells.map(c => {
+          const d = Array.from(c.children).find(el => el.tagName.endsWith("Data"));
+          return d && d.textContent ? d.textContent.trim() : "";
+        });
+
+        texts.forEach(t => {
+          if (t && t.includes("[#")) {
+            const lines = t.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            const numMatch = lines[0].match(/\[#(\d+)\]/);
+            if (!numMatch) return;
+            const num = parseInt(numMatch[1], 10);
+            const listNum = Math.min(23, Math.floor((num - 1) / 55) + 1);
+
+            let word = "", pos = "", ipa = "";
+            if (SPECIAL_FIXES[num]) {
+              [word, pos, ipa] = SPECIAL_FIXES[num];
+            } else {
+              const ipaM = lines[0].match(/(\/[^\n/]+\/)/);
+              ipa = ipaM ? ipaM[1] : "";
+              let hdr = lines[0].replace(/\[#\d+\]\s*/, "").replace(/\(UK\s*\/\s*US\)/g, "").trim();
+              if (ipa) hdr = hdr.replace(ipa, "").trim();
+              const posM = hdr.match(/\(([^)]+)\)/);
+              if (posM) {
+                pos = posM[1].trim();
+                word = hdr.replace(`(${pos})`, "").trim();
+              } else {
+                word = hdr.trim();
+              }
+            }
+
+            let def_vn = "", def_en = "";
+            const examples = [];
+            let sec = null;
+            for (let i = 1; i < lines.length; i++) {
+              const l = lines[i];
+              if (l.startsWith("Định nghĩa:")) {
+                sec = "def";
+                const rest = l.replace("Định nghĩa:", "").trim();
+                if (rest) def_vn = rest;
+                continue;
+              }
+              if (l.startsWith("Ví dụ:")) {
+                sec = "ex";
+                continue;
+              }
+              if (sec === "def") {
+                if (l.startsWith("=")) def_en = l.replace(/^=\s*/, "").trim();
+                else def_vn = (def_vn + " " + l).trim();
+              } else if (sec === "ex") {
+                if (l.startsWith("•") || l.startsWith("-")) {
+                  examples.push(l.replace(/^[•\-\s]+/, "").trim());
+                } else if (examples.length > 0) {
+                  examples[examples.length - 1] += " " + l;
+                } else {
+                  examples.push(l);
+                }
+              }
+            }
+
+            const prev = existingCardsMap.get(num) || {};
+            existingCardsMap.set(num, {
+              n: num,
+              l: listNum,
+              w: word || prev.w || "",
+              p: pos || prev.p || "",
+              i: ipa || prev.i || "",
+              s: prev.s || def_vn,
+              v: def_vn || prev.v || "",
+              e: def_en || prev.e || "",
+              x: examples.length > 0 ? examples : (prev.x || [])
+            });
+          }
+        });
+
+        const nonEmpty = texts.filter(Boolean);
+        if (nonEmpty.length >= 2 && !texts.some(t => t.includes("[#")) && !nonEmpty[0].includes("PHẦN")) {
+          let num = null;
+          let w = "", s = "";
+          if (/^\d+$/.test(nonEmpty[0]) && nonEmpty.length >= 3) {
+            num = parseInt(nonEmpty[0], 10);
+            w = nonEmpty[1];
+            s = nonEmpty[2];
+          } else {
+            shortSeqCounter++;
+            num = shortSeqCounter;
+            w = nonEmpty[0];
+            s = nonEmpty[1];
+          }
+
+          if (num >= 1 && num <= 1257) {
+            const listNum = Math.min(23, Math.floor((num - 1) / 55) + 1);
+            let cleanW = w;
+            let cleanP = "";
+            let cleanI = "";
+            if (SPECIAL_FIXES[num]) {
+              [cleanW, cleanP, cleanI] = SPECIAL_FIXES[num];
+            }
+            const prev = existingCardsMap.get(num) || {};
+            existingCardsMap.set(num, {
+              n: num,
+              l: listNum,
+              w: prev.w || cleanW,
+              p: prev.p || cleanP,
+              i: prev.i || cleanI,
+              s: s,
+              v: prev.v || s,
+              e: prev.e || "",
+              x: prev.x || []
+            });
+          }
+        }
+      });
+    }
+
+    // ==========================================
+    // MAIN APP COMPONENT
+    // ==========================================
+    function App() {
+      const [cards, setCards] = useState(() => {
+        try {
+          const saved = localStorage.getItem('myvocab_v3_1257');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          }
+        } catch (e) {}
+        return PRELOADED_LIST_1;
+      });
+
+      const [wrongIds, setWrongIds] = useState(() => {
+        try {
+          const saved = localStorage.getItem('myvocab_v3_wrongs');
+          return saved ? JSON.parse(saved) : [];
+        } catch (e) { return []; }
+      });
+
+      const [navTab, setNavTab] = useState('study');
+      const [isAllLists, setIsAllLists] = useState(false);
+      const [selectedListId, setSelectedListId] = useState(1);
+      const [activePracticeMode, setActivePracticeMode] = useState(null);
+      const [onlyWrong, setOnlyWrong] = useState(false);
+
+      const [themeColor, setThemeColor] = useState('indigo');
+      const [darkMode, setDarkMode] = useState(false);
+      const [toast, setToast] = useState(null);
+      const fileInputRef = useRef(null);
+
+      useEffect(() => {
+        try { localStorage.setItem('myvocab_v3_1257', JSON.stringify(cards)); } catch (e) {}
+      }, [cards]);
+
+      useEffect(() => {
+        try { localStorage.setItem('myvocab_v3_wrongs', JSON.stringify(wrongIds)); } catch (e) {}
+      }, [wrongIds]);
+
+      useEffect(() => {
+        if (darkMode) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      }, [darkMode]);
+
+      const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 3500);
+      };
+
+      const handleMarkWrong = (num, isWrong) => {
+        setWrongIds(prev => {
+          if (isWrong) return prev.includes(num) ? prev : [...prev, num];
+          return prev.filter(id => id !== num);
+        });
+      };
+
+      const handleUploadExcelFiles = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        const map = new Map();
+        cards.forEach(c => map.set(c.n, c));
+
+        let done = 0;
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            parseExcelContent(evt.target.result, map);
+            done++;
+            if (done === files.length) {
+              const merged = Array.from(map.values()).sort((a, b) => a.n - b.n);
+              setCards(merged);
+              showToast("Đã nạp từ vựng thành công!");
+            }
+          };
+          reader.readAsText(file, "UTF-8");
+        });
+      };
+
+      const activePool = useMemo(() => {
+        let list = isAllLists
+          ? cards
+          : cards.filter(c => c.l === selectedListId);
+        if (onlyWrong) {
+          list = list.filter(c => wrongIds.includes(c.n));
+        }
+        return list.sort((a, b) => a.n - b.n);
+      }, [cards, isAllLists, selectedListId, onlyWrong, wrongIds]);
+
+      const themes = {
+        indigo: { bg: 'bg-indigo-600', text: 'text-indigo-600 dark:text-indigo-400', light: 'bg-indigo-50 dark:bg-indigo-950/60' },
+        emerald: { bg: 'bg-emerald-600', text: 'text-emerald-600 dark:text-emerald-400', light: 'bg-emerald-50 dark:bg-emerald-950/60' },
+        rose: { bg: 'bg-rose-600', text: 'text-rose-600 dark:text-rose-400', light: 'bg-rose-50 dark:bg-rose-950/60' },
+        slate: { bg: 'bg-slate-700', text: 'text-slate-700 dark:text-slate-300', light: 'bg-slate-100 dark:bg-slate-800' }
+      };
+      const tColor = themes[themeColor] || themes.indigo;
+
+      return (
+        <div className="flex h-screen overflow-hidden font-sans">
+          {toast && (
+            <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center space-x-2 text-sm font-bold animate-bounce">
+              <Icon name="check" className="w-5 h-5" />
+              <span>{toast}</span>
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".xls,.xlsx,.xml"
+            onChange={handleUploadExcelFiles}
+            className="hidden"
+          />
+
+          {/* SIDEBAR BÊN TRÁI */}
+          <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 justify-between select-none">
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 px-2">
+                <div className={`w-10 h-10 rounded-xl ${tColor.bg} flex items-center justify-center text-white shadow`}>
+                  <Icon name="cardCircle" className="w-5 h-5" />
+                </div>
+                <div>
+                  <h1 className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white leading-tight">MyVocab</h1>
+                </div>
+              </div>
+
+              <nav className="space-y-1.5">
+                <div className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Chế độ học tập</div>
+
+                <button
+                  onClick={() => { setNavTab('study'); setActivePracticeMode(null); }}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-bold transition ${
+                    navTab === 'study'
+                      ? `${tColor.light} ${tColor.text}`
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <Icon name="practice" className="w-4 h-4" />
+                    <span>Học & Luyện tập</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setNavTab('manage'); setActivePracticeMode(null); }}
+                  className={`w-full flex items-center space-x-2.5 px-3.5 py-3 rounded-xl text-sm font-bold transition ${
+                    navTab === 'manage'
+                      ? `${tColor.light} ${tColor.text}`
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <Icon name="cardCircle" className="w-4 h-4" />
+                  <span>Tra cứu kho 23 List</span>
+                </button>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`w-full py-3 px-3.5 rounded-xl ${tColor.bg} text-white text-sm font-bold shadow flex items-center justify-center space-x-2 hover:opacity-95 transition`}
+                  >
+                    <Icon name="upload" className="w-4 h-4" />
+                    <span>Nạp từ vựng</span>
+                  </button>
+                </div>
+              </nav>
+            </div>
+
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-3">
+              <div className="flex items-center justify-between px-2">
+                <span className="text-[11px] text-slate-400">Màu sắc</span>
+                <div className="flex space-x-1.5">
+                  {Object.keys(themes).map(k => (
+                    <button
+                      key={k}
+                      onClick={() => setThemeColor(k)}
+                      className={`w-4 h-4 rounded-full ${themes[k].bg} ${themeColor === k ? 'ring-2 ring-offset-1 ring-slate-400' : 'opacity-60'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="w-full py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold flex items-center justify-center space-x-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <Icon name={darkMode ? "sun" : "moon"} className="w-3.5 h-3.5" />
+                <span>{darkMode ? "Giao diện Sáng" : "Giao diện Tối"}</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* KHU VỰC NỘI DUNG CHÍNH */}
+          <main className="flex-1 flex flex-col overflow-y-auto pb-16 md:pb-6">
+            {navTab === 'study' && (
+              <StudyWorkspace
+                isAllLists={isAllLists}
+                setIsAllLists={(val) => { setIsAllLists(val); setActivePracticeMode(null); }}
+                cards={cards}
+                activePool={activePool}
+                selectedListId={selectedListId}
+                setSelectedListId={setSelectedListId}
+                activePracticeMode={activePracticeMode}
+                setActivePracticeMode={setActivePracticeMode}
+                onlyWrong={onlyWrong}
+                setOnlyWrong={setOnlyWrong}
+                wrongIds={wrongIds}
+                onMarkWrong={handleMarkWrong}
+                tColor={tColor}
+              />
+            )}
+
+            {navTab === 'manage' && (
+              <ManageSection cards={cards} />
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // KHÔNG GIAN HỌC & LUYỆN TẬP
+    // ==========================================
+    function StudyWorkspace({
+      isAllLists, setIsAllLists, cards, activePool, selectedListId, setSelectedListId,
+      activePracticeMode, setActivePracticeMode, onlyWrong, setOnlyWrong,
+      wrongIds, onMarkWrong, tColor
+    }) {
+      const currentListMeta = LISTS_INFO.find(l => l.id === selectedListId) || LISTS_INFO[0];
+
+      return (
+        <div className="p-4 md:p-6 max-w-5xl mx-auto w-full space-y-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div className="flex items-center space-x-2 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl">
+              <button
+                onClick={() => setIsAllLists(false)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                  !isAllLists ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'
+                }`}
+              >
+                1. Học theo từng List (23 List)
+              </button>
+              <button
+                onClick={() => setIsAllLists(true)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                  isAllLists ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'
+                }`}
+              >
+                2. Học Toàn bộ bài ({cards.length} từ)
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setOnlyWrong(!onlyWrong)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1.5 border transition ${
+                  onlyWrong
+                    ? 'bg-rose-500 text-white border-rose-500 shadow'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                <Icon name="warning" className="w-4 h-4 text-rose-500" />
+                <span>Ôn từ sai ({wrongIds.length})</span>
+              </button>
+            </div>
+          </div>
+
+          {!isAllLists && !activePracticeMode && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-slate-500">
+                Chọn 1 trong 23 List (Mỗi List 55 từ bắt đầu bằng chữ A):
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+                {LISTS_INFO.map(l => {
+                  const countInList = cards.filter(c => c.l === l.id).length;
+                  const isSelected = selectedListId === l.id;
+                  return (
+                    <button
+                      key={l.id}
+                      onClick={() => setSelectedListId(l.id)}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        isSelected
+                          ? `${tColor.bg} text-white border-transparent shadow-md`
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-400'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-xs">{l.name}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                          {countInList} từ
+                        </span>
+                      </div>
+                      <p className={`text-[10px] mt-1 truncate ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
+                        {l.firstWord} &rarr; {l.lastWord}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {!activePracticeMode ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm overflow-hidden">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
+                <div>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">
+                    {isAllLists
+                      ? `Toàn bộ 23 List (${activePool.length} từ)`
+                      : `${currentListMeta.name}: Từ ${currentListMeta.firstWord} đến ${currentListMeta.lastWord} (${activePool.length} từ)`}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Chọn phương thức học tập bên dưới
+                  </p>
+                </div>
+              </div>
+
+              <PracticeRow
+                icon="cardCircle"
+                prefix="Từ vựng:"
+                title="Flashcards"
+                sub="Đầy đủ phiên âm UK/US, định nghĩa và phát âm từng câu ví dụ"
+                onClick={() => setActivePracticeMode('flashcard')}
+                disabled={activePool.length === 0}
+              />
+
+              <PracticeRow
+                icon="pencilCircle"
+                prefix="Luyện tập:"
+                title="Trắc nghiệm từ vựng"
+                sub="Có nút chuyển đổi giữa Đơn từ (Từng câu) và Toàn bộ các từ"
+                onClick={() => setActivePracticeMode('quiz')}
+                disabled={activePool.length === 0}
+              />
+
+              <PracticeRow
+                icon="pencilCircle"
+                prefix="Luyện tập:"
+                title="Tìm cặp"
+                sub="Ghép 6/6 cặp từ kèm chức năng đảo từ trong toàn bộ List / Toàn bộ từ"
+                onClick={() => setActivePracticeMode('match')}
+                disabled={activePool.length === 0}
+              />
+
+              <PracticeRow
+                icon="pencilCircle"
+                prefix="Luyện tập:"
+                title="Nghe từ vựng"
+                sub="Nghe phát âm và chọn từ vựng chính xác"
+                onClick={() => setActivePracticeMode('listen_word')}
+                disabled={activePool.length === 0}
+              />
+
+              <PracticeRow
+                icon="pencilCircle"
+                prefix="Luyện tập:"
+                title="Dịch nghĩa / Điền từ"
+                sub="Có nút chuyển đổi giữa Đơn từ và Nhiều từ cùng lúc dạng bảng Excel"
+                onClick={() => setActivePracticeMode('fill')}
+                disabled={activePool.length === 0}
+              />
+
+              <PracticeRow
+                icon="pencilCircle"
+                prefix="Luyện tập:"
+                title="Nghe chính tả"
+                sub="Nghe phát âm và gõ lại chính xác từng ký tự"
+                onClick={() => setActivePracticeMode('dictation')}
+                disabled={activePool.length === 0}
+              />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setActivePracticeMode(null)}
+                  className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center space-x-1.5 hover:bg-slate-50 shadow-sm"
+                >
+                  <Icon name="arrowLeft" className="w-4 h-4" />
+                  <span>Quay lại menu {isAllLists ? 'Toàn bộ các List' : currentListMeta.name}</span>
+                </button>
+                <span className="text-xs font-bold text-slate-400">
+                  Phạm vi: {isAllLists ? 'Toàn bộ 23 List' : currentListMeta.name} ({activePool.length} từ)
+                </span>
+              </div>
+
+              {activePracticeMode === 'flashcard' && (
+                <FlashcardMode pool={activePool} onMarkWrong={onMarkWrong} />
+              )}
+              {activePracticeMode === 'quiz' && (
+                <QuizUnifiedMode pool={activePool} allCards={cards} onMarkWrong={onMarkWrong} />
+              )}
+              {activePracticeMode === 'match' && (
+                <MatchMode pool={activePool} />
+              )}
+              {activePracticeMode === 'listen_word' && (
+                <ListenWordMode pool={activePool} allCards={cards} onMarkWrong={onMarkWrong} />
+              )}
+              {activePracticeMode === 'fill' && (
+                <FillMode pool={activePool} onMarkWrong={onMarkWrong} />
+              )}
+              {activePracticeMode === 'dictation' && (
+                <DictationMode pool={activePool} onMarkWrong={onMarkWrong} />
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function PracticeRow({ icon, prefix, title, sub, onClick, disabled }) {
+      return (
+        <button
+          onClick={onClick}
+          disabled={disabled}
+          className="w-full p-4 flex items-center justify-between hover:bg-indigo-50/40 dark:hover:bg-slate-800/60 transition text-left group disabled:opacity-40"
+        >
+          <div className="flex items-center space-x-3.5">
+            <div className="w-9 h-9 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:border-indigo-500 group-hover:text-indigo-600 transition shrink-0">
+              <Icon name={icon} className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-base">
+                <span className="font-bold text-slate-900 dark:text-white mr-1.5">{prefix}</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{title}</span>
+              </div>
+              {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+            </div>
+          </div>
+          <Icon name="arrowRight" className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition shrink-0" />
+        </button>
+      );
+    }
+
+    // ==========================================
+    // 1. FLASHCARD MODE (GỌN GÀNG VỪA KHÍT MÀN HÌNH + CÓ NÚT NGHE TỪNG CÂU VÍ DỤ)
+    // ==========================================
+    function FlashcardMode({ pool, onMarkWrong }) {
+      const [idx, setIdx] = useState(0);
+      const [flipped, setFlipped] = useState(false);
+      const card = pool[idx];
+
+      if (!card) return <div className="p-8 text-center text-slate-400">Không có từ vựng nào.</div>;
+
+      const renderHighlightedExample = (str) => {
+        const parts = str.split(/(\[[^\]]+\])/g);
+        return parts.map((part, index) => {
+          if (part.startsWith('[') && part.endsWith(']')) {
+            return <strong key={index} className="text-indigo-600 dark:text-indigo-400 underline font-extrabold">{part.slice(1, -1)}</strong>;
+          }
+          return part;
+        });
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-3">
+          <div className="flex justify-between items-center text-xs font-bold text-slate-400 px-1">
+            <span>Thẻ {idx + 1} / {pool.length} (Từ #{card.n} - List {card.l})</span>
+            <span>Nhấn vào khung thẻ để lật mặt trước / sau</span>
+          </div>
+
+          <div
+            onClick={() => setFlipped(!flipped)}
+            className="w-full rounded-2xl p-5 md:p-6 border-2 border-slate-200 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900 cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-800 flex flex-col justify-between"
+          >
+            {!flipped ? (
+              <div className="flex flex-col justify-between min-h-[250px]">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    [#{card.n}] {card.p ? `(${card.p})` : ''}
+                  </span>
+                  <div className="flex space-x-2" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => speak(card.w, "en-GB")}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center space-x-1 hover:bg-indigo-100"
+                    >
+                      <Icon name="volume" className="w-3.5 h-3.5" />
+                      <span>UK</span>
+                    </button>
+                    <button
+                      onClick={() => speak(card.w, "en-US")}
+                      className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center space-x-1 hover:bg-rose-100"
+                    >
+                      <Icon name="volume" className="w-3.5 h-3.5" />
+                      <span>US</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-center my-auto py-6">
+                  <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {card.w} {card.p && <span className="text-xl font-normal text-slate-400">({card.p})</span>}
+                  </h2>
+                  {card.i && <p className="text-lg font-mono text-indigo-500 font-bold mt-2">{card.i}</p>}
+                </div>
+
+                <div className="text-center text-xs font-semibold text-slate-400 flex items-center justify-center space-x-1">
+                  <Icon name="rotate" className="w-3.5 h-3.5" />
+                  <span>Nhấn vào thẻ để xem Định nghĩa & Ví dụ</span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 text-left">
+                <div className="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                  <div className="flex items-baseline space-x-2">
+                    <span className="text-xs font-mono font-bold text-slate-400">[#{card.n}]</span>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">{card.w}</h3>
+                    {card.p && <span className="text-sm font-mono text-slate-500">({card.p})</span>}
+                    {card.i && <span className="text-sm font-mono text-indigo-500 font-bold">{card.i}</span>}
+                  </div>
+                  <div className="flex space-x-1.5" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => speak(card.w, "en-GB")} className="px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 text-xs font-bold hover:bg-indigo-100">🔊 UK</button>
+                    <button onClick={() => speak(card.w, "en-US")} className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 text-xs font-bold hover:bg-rose-100">🔊 US</button>
+                  </div>
+                </div>
+
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Định nghĩa:</span>
+                  <p className="text-lg md:text-xl font-black text-indigo-600 dark:text-indigo-400 leading-snug">{card.v || card.s}</p>
+                  {card.e && <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 italic">={card.e}</p>}
+                </div>
+
+                {card.x && card.x.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Ví dụ (Bấm 🔊 để nghe câu):</span>
+                    {card.x.map((ex, i) => {
+                      const [enPart, viPart] = ex.split(/\(\=?\s*Dịch:/i);
+                      return (
+                        <div key={i} className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 text-xs md:text-sm leading-snug flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="text-slate-900 dark:text-slate-100 font-medium">
+                              • {renderHighlightedExample(enPart)}
+                            </p>
+                            {viPart && (
+                              <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-xs">
+                                (=Dịch: {viPart}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-1 shrink-0" onClick={e => e.stopPropagation()}>
+                            <button
+                              onClick={() => speak(enPart, "en-US")}
+                              title="Nghe câu ví dụ này"
+                              className="px-2 py-1 rounded-lg bg-indigo-100/80 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 text-[11px] font-bold flex items-center space-x-1 transition"
+                            >
+                              <Icon name="volume" className="w-3.5 h-3.5" />
+                              <span>Nghe</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 gap-2.5">
+            <button
+              disabled={idx === 0}
+              onClick={() => { setFlipped(false); setIdx(idx - 1); }}
+              className="py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold text-xs flex items-center justify-center space-x-1 disabled:opacity-30 shadow-sm"
+            >
+              <Icon name="arrowLeft" className="w-4 h-4" />
+              <span>Trước</span>
+            </button>
+
+            <button
+              onClick={() => {
+                onMarkWrong(card.n, true);
+                setFlipped(false);
+                if (idx < pool.length - 1) setIdx(idx + 1);
+              }}
+              className="py-2.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 font-bold text-xs hover:bg-rose-100"
+            >
+              Chưa thuộc (Lưu sai)
+            </button>
+
+            <button
+              onClick={() => {
+                onMarkWrong(card.n, false);
+                setFlipped(false);
+                if (idx < pool.length - 1) setIdx(idx + 1);
+              }}
+              className="py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow hover:bg-emerald-700"
+            >
+              Đã thuộc ✓
+            </button>
+
+            <button
+              disabled={idx >= pool.length - 1}
+              onClick={() => { setFlipped(false); setIdx(idx + 1); }}
+              className="py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-bold text-xs flex items-center justify-center space-x-1 disabled:opacity-30 shadow-sm"
+            >
+              <span>Sau</span>
+              <Icon name="arrowRight" className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 2. TRẮC NGHIỆM TỪ VỰNG
+    // ==========================================
+    function QuizUnifiedMode({ pool, allCards, onMarkWrong }) {
+      const [isAllMode, setIsAllMode] = useState(false);
+
+      const [idx, setIdx] = useState(0);
+      const [picked, setPicked] = useState(null);
+      const card = pool[idx];
+
+      const [answers, setAnswers] = useState({});
+      const [submitted, setSubmitted] = useState(false);
+
+      const singleOptions = useMemo(() => {
+        if (!card) return [];
+        const rightMeaning = card.s || card.v;
+        const distractors = allCards
+          .filter(c => c.n !== card.n && (c.s || c.v) !== rightMeaning)
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3);
+        return [
+          { isRight: true, text: rightMeaning },
+          ...distractors.map(d => ({ isRight: false, text: d.s || d.v }))
+        ].sort(() => 0.5 - Math.random());
+      }, [card, allCards]);
+
+      const allQuestions = useMemo(() => {
+        return pool.map(c => {
+          const rightMeaning = c.s || c.v;
+          const distractors = allCards
+            .filter(other => other.n !== c.n && (other.s || other.v) !== rightMeaning)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3);
+          const opts = [
+            { isRight: true, text: rightMeaning },
+            ...distractors.map(d => ({ isRight: false, text: d.s || d.v }))
+          ].sort(() => 0.5 - Math.random());
+          return { card: c, opts };
+        });
+      }, [pool, allCards]);
+
+      const handlePickAll = (cardNum, optIdx, isRight) => {
+        if (submitted) return;
+        setAnswers(prev => ({ ...prev, [cardNum]: optIdx }));
+        if (isRight) {
+          SoundFx.correct();
+          onMarkWrong(cardNum, false);
+        } else {
+          SoundFx.wrong();
+          onMarkWrong(cardNum, true);
+        }
+      };
+
+      const totalDone = Object.keys(answers).length;
+      const totalRight = allQuestions.filter(q => {
+        const oIdx = answers[q.card.n];
+        return oIdx !== undefined && q.opts[oIdx]?.isRight;
+      }).length;
+
+      if (!card) return <div className="p-8 text-center text-slate-400">Không có câu hỏi.</div>;
+
+      return (
+        <div className="max-w-4xl mx-auto space-y-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">
+              Chế độ làm bài trắc nghiệm:
+            </span>
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+              <button
+                onClick={() => setIsAllMode(false)}
+                className={`px-4 py-2 rounded-lg transition ${
+                  !isAllMode ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'
+                }`}
+              >
+                Đơn từ (Từng câu)
+              </button>
+              <button
+                onClick={() => setIsAllMode(true)}
+                className={`px-4 py-2 rounded-lg transition ${
+                  isAllMode ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'
+                }`}
+              >
+                Toàn bộ các từ ({pool.length} câu)
+              </button>
+            </div>
+          </div>
+
+          {!isAllMode ? (
+            <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 space-y-6 shadow-md">
+              <div className="flex justify-between items-center text-sm font-bold text-slate-400">
+                <span>CÂU {idx + 1} / {pool.length} (Từ #{card.n} - List {card.l})</span>
+                <div className="flex space-x-3">
+                  <button onClick={() => speak(card.w, "en-GB")} className="px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-bold">🔊 UK</button>
+                  <button onClick={() => speak(card.w, "en-US")} className="px-3.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 font-bold">🔊 US</button>
+                </div>
+              </div>
+
+              <div className="text-center py-2">
+                <h3 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight">
+                  {card.w}
+                </h3>
+                {card.i && <p className="text-xl font-mono text-indigo-500 font-bold mt-2">{card.i}</p>}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {singleOptions.map((opt, i) => {
+                  let cls = "border-slate-200 dark:border-slate-800 hover:border-indigo-400 bg-slate-50/50 dark:bg-slate-800/40";
+                  if (picked !== null) {
+                    if (opt.isRight) cls = "bg-emerald-500 text-white border-emerald-500 font-bold shadow-md";
+                    else if (picked === i) cls = "bg-rose-500 text-white border-rose-500 font-bold shadow-md";
+                  }
+                  return (
+                    <button
+                      key={i}
+                      disabled={picked !== null}
+                      onClick={() => {
+                        setPicked(i);
+                        if (opt.isRight) {
+                          SoundFx.correct();
+                          onMarkWrong(card.n, false);
+                        } else {
+                          SoundFx.wrong();
+                          onMarkWrong(card.n, true);
+                        }
+                      }}
+                      className={`p-5 md:p-6 rounded-2xl border-2 text-left text-lg md:text-xl font-bold transition leading-snug flex items-start ${cls}`}
+                    >
+                      <span className="font-mono text-base opacity-75 mr-3 mt-0.5">{String.fromCharCode(65 + i)}.</span>
+                      <span className="flex-1">{opt.text}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  disabled={idx === 0}
+                  onClick={() => { setPicked(null); setIdx(idx - 1); }}
+                  className="px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold flex items-center space-x-1.5 disabled:opacity-30 hover:bg-slate-50"
+                >
+                  <Icon name="arrowLeft" className="w-4 h-4" />
+                  <span>Câu trước</span>
+                </button>
+
+                <button
+                  disabled={idx >= pool.length - 1}
+                  onClick={() => { setPicked(null); setIdx(idx + 1); }}
+                  className="px-7 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold flex items-center space-x-1.5 disabled:opacity-30 shadow hover:bg-indigo-700"
+                >
+                  <span>Câu tiếp theo</span>
+                  <Icon name="arrowRight" className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="sticky top-2 z-20 p-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-800 shadow-md flex flex-wrap justify-between items-center gap-3">
+                <div>
+                  <span className="text-xs font-bold text-slate-400">TIẾN ĐỘ LÀM BÀI ({pool.length} CÂU)</span>
+                  <p className="text-base font-black text-slate-900 dark:text-white">
+                    Đã làm: {totalDone}/{pool.length} | Đúng: <span className="text-emerald-600">{totalRight}</span> | Sai: <span className="text-rose-600">{totalDone - totalRight}</span>
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => { setAnswers({}); setSubmitted(false); }}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold"
+                  >
+                    Làm lại từ đầu
+                  </button>
+                  <button
+                    onClick={() => setSubmitted(true)}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow"
+                  >
+                    Hiện toàn bộ đáp án
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {allQuestions.map((q, qIdx) => {
+                  const pickedIdx = answers[q.card.n];
+                  return (
+                    <div key={q.card.n} className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                      <div className="flex justify-between items-center text-xs text-slate-400 font-bold">
+                        <span>CÂU {qIdx + 1} [#{q.card.n} - List {q.card.l}]</span>
+                        <div className="flex space-x-2">
+                          <button onClick={() => speak(q.card.w, "en-GB")} className="text-indigo-600 hover:underline">🔊 UK</button>
+                          <button onClick={() => speak(q.card.w, "en-US")} className="text-rose-600 hover:underline">🔊 US</button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-baseline space-x-3">
+                        <h4 className="text-3xl font-black text-slate-900 dark:text-white">{q.card.w}</h4>
+                        {q.card.i && <span className="text-base font-mono text-indigo-500 font-bold">{q.card.i}</span>}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {q.opts.map((opt, oIdx) => {
+                          const isPicked = pickedIdx === oIdx;
+                          let cls = "border-slate-200 dark:border-slate-800 hover:border-indigo-400 bg-slate-50/50 dark:bg-slate-800/40";
+                          if (pickedIdx !== undefined || submitted) {
+                            if (opt.isRight) cls = "bg-emerald-500 text-white border-emerald-500 font-bold";
+                            else if (isPicked) cls = "bg-rose-500 text-white border-rose-500 font-bold";
+                          }
+                          return (
+                            <button
+                              key={oIdx}
+                              onClick={() => handlePickAll(q.card.n, oIdx, opt.isRight)}
+                              className={`p-5 rounded-2xl border-2 text-left text-lg font-bold transition flex items-start ${cls}`}
+                            >
+                              <span className="font-mono text-sm mr-2.5 mt-1 opacity-75">{String.fromCharCode(65 + oIdx)}.</span>
+                              <span className="flex-1">{opt.text}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 3. TÌM CẶP (6/6 KÈM CHỨC NĂNG ĐẢO TỪ TRONG TOÀN BỘ LIST & TOÀN BỘ TỪ)
+    // ==========================================
+    function MatchMode({ pool }) {
+      const [shuffledDeck, setShuffledDeck] = useState(() => [...pool]);
+      const [batchIdx, setBatchIdx] = useState(0);
+      const [leftId, setLeftId] = useState(null);
+      const [matched, setMatched] = useState([]);
+
+      useEffect(() => {
+        setShuffledDeck([...pool].sort(() => 0.5 - Math.random()));
+        setBatchIdx(0);
+        setMatched([]);
+        setLeftId(null);
+      }, [pool]);
+
+      const totalBatches = Math.max(1, Math.ceil(shuffledDeck.length / 6));
+      const currentBatch = useMemo(() => {
+        const start = batchIdx * 6;
+        return shuffledDeck.slice(start, start + 6);
+      }, [shuffledDeck, batchIdx]);
+
+      const rightItems = useMemo(() => {
+        return [...currentBatch].sort(() => 0.5 - Math.random());
+      }, [currentBatch]);
+
+      const handleShuffleAll = () => {
+        const newlyShuffled = [...pool].sort(() => 0.5 - Math.random());
+        setShuffledDeck(newlyShuffled);
+        setBatchIdx(0);
+        setMatched([]);
+        setLeftId(null);
+      };
+
+      const handleNextBatch = () => {
+        const next = (batchIdx + 1) % totalBatches;
+        setBatchIdx(next);
+        setMatched([]);
+        setLeftId(null);
+      };
+
+      const handlePrevBatch = () => {
+        const prev = (batchIdx - 1 + totalBatches) % totalBatches;
+        setBatchIdx(prev);
+        setMatched([]);
+        setLeftId(null);
+      };
+
+      const isBatchComplete = currentBatch.length > 0 && matched.length === currentBatch.length;
+
+      return (
+        <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-3xl mx-auto space-y-5 shadow-sm">
+          <div className="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <span className="text-xs font-bold text-slate-400 block">
+                ĐỢT {batchIdx + 1} / {totalBatches} (Tổng {pool.length} từ trong phạm vi)
+              </span>
+              <h4 className="text-base font-black text-slate-900 dark:text-white mt-0.5">
+                Ghép cặp từ và nghĩa ({matched.length}/{currentBatch.length})
+              </h4>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleShuffleAll}
+                className="px-4 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-xs font-bold flex items-center space-x-1.5 transition shadow-sm"
+              >
+                <Icon name="shuffle" className="w-4 h-4" />
+                <span>Đảo từ ngẫu nhiên</span>
+              </button>
+
+              <button
+                onClick={handlePrevBatch}
+                disabled={totalBatches <= 1}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold disabled:opacity-30 hover:bg-slate-50"
+                title="6 cặp trước"
+              >
+                ←
+              </button>
+              <button
+                onClick={handleNextBatch}
+                disabled={totalBatches <= 1}
+                className="px-3.5 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-xs font-bold disabled:opacity-30 hover:opacity-90"
+              >
+                6 cặp tiếp →
+              </button>
+            </div>
+          </div>
+
+          {isBatchComplete && (
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center space-x-2 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
+                <Icon name="check" className="w-5 h-5" />
+                <span>Tuyệt vời! Bạn đã hoàn thành {currentBatch.length}/{currentBatch.length} cặp từ ở đợt này!</span>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleShuffleAll}
+                  className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border border-emerald-300 text-xs font-bold"
+                >
+                  🔀 Đảo 6 cặp ngẫu nhiên
+                </button>
+                <button
+                  onClick={handleNextBatch}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow"
+                >
+                  Qua 6 cặp tiếp theo →
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3">
+              {currentBatch.map(c => (
+                <button
+                  key={c.n}
+                  disabled={matched.includes(c.n)}
+                  onClick={() => {
+                    setLeftId(c.n);
+                    speak(c.w, "en-US");
+                  }}
+                  className={`w-full p-4 rounded-2xl border-2 text-base md:text-lg font-bold transition ${
+                    matched.includes(c.n)
+                      ? 'opacity-25 line-through border-slate-200'
+                      : leftId === c.n
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400'
+                  }`}
+                >
+                  {c.w}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-3">
+              {rightItems.map(c => (
+                <button
+                  key={c.n}
+                  disabled={matched.includes(c.n)}
+                  onClick={() => {
+                    if (!leftId) return;
+                    if (leftId === c.n) {
+                      SoundFx.correct();
+                      setMatched(prev => [...prev, c.n]);
+                    } else {
+                      SoundFx.wrong();
+                    }
+                    setLeftId(null);
+                  }}
+                  className={`w-full p-4 rounded-2xl border-2 text-base md:text-lg font-bold transition ${
+                    matched.includes(c.n)
+                      ? 'opacity-25 line-through border-slate-200'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400'
+                  }`}
+                >
+                  {c.s || c.v}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 4. DỊCH NGHĨA / ĐIỀN TỪ
+    // ==========================================
+    function FillMode({ pool, onMarkWrong }) {
+      const [isMulti, setIsMulti] = useState(true);
+      const [rows, setRows] = useState({});
+      const [sIdx, setSIdx] = useState(0);
+      const [sVal, setSVal] = useState('');
+      const [sRes, setSRes] = useState(null);
+
+      const curCard = pool[sIdx];
+
+      const checkRow = (c, val) => {
+        if (!val || !val.trim()) return;
+        const ok = val.trim().toLowerCase() === c.w.trim().toLowerCase();
+        if (ok) SoundFx.correct();
+        else SoundFx.wrong();
+        onMarkWrong(c.n, !ok);
+        setRows(prev => ({ ...prev, [c.n]: { val, ok, checked: true } }));
+      };
+
+      const checkSingle = () => {
+        if (!curCard || !sVal.trim()) return;
+        const ok = sVal.trim().toLowerCase() === curCard.w.trim().toLowerCase();
+        if (ok) SoundFx.correct();
+        else SoundFx.wrong();
+        onMarkWrong(curCard.n, !ok);
+        setSRes({ ok, word: curCard.w });
+      };
+
+      return (
+        <div className="space-y-4 max-w-4xl mx-auto">
+          <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">Chế độ điền từ:</span>
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+              <button
+                onClick={() => setIsMulti(false)}
+                className={`px-4 py-2 rounded-lg transition ${!isMulti ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`}
+              >
+                Đơn từ (Từng câu)
+              </button>
+              <button
+                onClick={() => setIsMulti(true)}
+                className={`px-4 py-2 rounded-lg transition ${isMulti ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`}
+              >
+                Nhiều từ cùng lúc (Bảng Excel)
+              </button>
+            </div>
+          </div>
+
+          {isMulti ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-base">
+                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="p-4 w-14 text-center">#</th>
+                      <th className="p-4 w-2/5">Nghĩa tiếng Việt</th>
+                      <th className="p-4 w-2/5">Điền từ tiếng Anh (Nhấn Enter)</th>
+                      <th className="p-4">Kết quả</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {pool.map((c, i) => {
+                      const r = rows[c.n] || { val: '', checked: false, ok: false };
+                      return (
+                        <tr key={c.n} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                          <td className="p-4 text-center text-xs font-mono text-slate-400">#{c.n}</td>
+                          <td className="p-4 font-semibold text-base text-slate-800 dark:text-slate-200">{c.s || c.v}</td>
+                          <td className="p-4">
+                            <input
+                              id={`row-in-${i}`}
+                              type="text"
+                              disabled={r.checked}
+                              placeholder="Gõ từ..."
+                              value={r.val}
+                              onChange={e => setRows(prev => ({ ...prev, [c.n]: { ...r, val: e.target.value } }))}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                  checkRow(c, r.val);
+                                  const nextEl = document.getElementById(`row-in-${i + 1}`);
+                                  if (nextEl) nextEl.focus();
+                                }
+                              }}
+                              className={`w-full px-4 py-2.5 rounded-xl border text-base font-bold outline-none ${
+                                r.checked
+                                  ? r.ok ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-rose-500 bg-rose-50 text-rose-700'
+                                  : 'border-slate-200 dark:border-slate-700 bg-transparent focus:border-indigo-500'
+                              }`}
+                            />
+                          </td>
+                          <td className="p-4">
+                            {r.checked ? (
+                              r.ok ? <span className="text-emerald-600 text-base font-bold">✓ Đúng</span> : <span className="text-rose-600 text-base font-bold">✗ Sai ({c.w})</span>
+                            ) : (
+                              <button onClick={() => checkRow(c, r.val)} className="px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">Check</button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 md:p-12 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-6 max-w-2xl mx-auto shadow-md">
+              <span className="text-xs text-slate-400 font-bold">CÂU {sIdx + 1} / {pool.length}</span>
+              <h3 className="text-3xl md:text-4xl font-black text-indigo-600 dark:text-indigo-400">{curCard?.s || curCard?.v}</h3>
+              <div className="max-w-md mx-auto space-y-3">
+                <input
+                  type="text"
+                  placeholder="Gõ từ tiếng Anh..."
+                  value={sVal}
+                  onChange={e => setSVal(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && checkSingle()}
+                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-transparent text-center font-bold text-xl outline-none focus:border-indigo-500"
+                />
+                <button onClick={checkSingle} className="w-full py-3.5 rounded-2xl bg-indigo-600 text-white font-bold text-base shadow">Kiểm tra</button>
+              </div>
+              {sRes && (
+                <div className={`p-4 rounded-2xl max-w-md mx-auto text-base font-bold ${sRes.ok ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                  {sRes.ok ? "Chính xác! 🎉" : `Sai! Đáp án đúng: ${sRes.word}`}
+                </div>
+              )}
+              <div className="flex justify-between max-w-md mx-auto pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button disabled={sIdx === 0} onClick={() => { setSIdx(sIdx - 1); setSVal(''); setSRes(null); }} className="px-5 py-2.5 rounded-xl border text-xs font-bold disabled:opacity-30">← Câu trước</button>
+                <button disabled={sIdx >= pool.length - 1} onClick={() => { setSIdx(sIdx + 1); setSVal(''); setSRes(null); }} className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold disabled:opacity-30">Câu sau →</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // 5. NGHE TỪ VỰNG & NGHE CHÍNH TẢ
+    // ==========================================
+    function ListenWordMode({ pool, allCards, onMarkWrong }) {
+      const [idx, setIdx] = useState(0);
+      const [picked, setPicked] = useState(null);
+      const card = pool[idx];
+
+      const opts = useMemo(() => {
+        if (!card) return [];
+        const wrongs = allCards.filter(c => c.n !== card.n).sort(() => 0.5 - Math.random()).slice(0, 3);
+        return [card, ...wrongs].sort(() => 0.5 - Math.random());
+      }, [card, allCards]);
+
+      if (!card) return null;
+
+      return (
+        <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-3xl mx-auto text-center space-y-6 shadow-md">
+          <button onClick={() => speak(card.w, "en-US")} className="w-20 h-20 rounded-full bg-indigo-600 text-white mx-auto flex items-center justify-center shadow-lg hover:scale-105 transition">
+            <Icon name="volume" className="w-10 h-10" />
+          </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {opts.map((o, i) => {
+              let cls = "border-slate-200 dark:border-slate-800";
+              if (picked !== null) {
+                if (o.n === card.n) cls = "bg-emerald-500 text-white border-emerald-500";
+                else if (picked === i) cls = "bg-rose-500 text-white border-rose-500";
+              }
+              return (
+                <button
+                  key={i}
+                  disabled={picked !== null}
+                  onClick={() => {
+                    setPicked(i);
+                    const ok = o.n === card.n;
+                    if (ok) SoundFx.correct(); else SoundFx.wrong();
+                    onMarkWrong(card.n, !ok);
+                  }}
+                  className={`p-5 rounded-2xl border-2 text-lg font-bold ${cls}`}
+                >
+                  {o.w} — {o.s || o.v}
+                </button>
+              );
+            })}
+          </div>
+          {picked !== null && (
+            <button onClick={() => { setPicked(null); setIdx((idx + 1) % pool.length); }} className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">Câu tiếp theo →</button>
+          )}
+        </div>
+      );
+    }
+
+    function DictationMode({ pool, onMarkWrong }) {
+      const [idx, setIdx] = useState(0);
+      const [val, setVal] = useState('');
+      const card = pool[idx];
+      if (!card) return null;
+
+      return (
+        <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-xl mx-auto text-center space-y-6 shadow-md">
+          <button onClick={() => speak(card.w, "en-US")} className="w-20 h-20 rounded-full bg-indigo-600 text-white mx-auto flex items-center justify-center shadow-lg">
+            <Icon name="volume" className="w-10 h-10" />
+          </button>
+          <p className="text-sm text-slate-400 font-semibold">Nghe phát âm và gõ lại từ vựng:</p>
+          <input
+            type="text"
+            placeholder="Nhập từ nghe được..."
+            value={val}
+            onChange={e => setVal(e.target.value)}
+            className="w-full px-5 py-4 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-transparent text-center font-bold text-xl outline-none focus:border-indigo-500"
+          />
+          <button
+            onClick={() => {
+              const ok = val.trim().toLowerCase() === card.w.trim().toLowerCase();
+              if (ok) { SoundFx.correct(); alert("Chính xác!"); setVal(''); setIdx((idx + 1) % pool.length); }
+              else { SoundFx.wrong(); alert(`Sai! Đáp án: ${card.w} (${card.s})`); }
+              onMarkWrong(card.n, !ok);
+            }}
+            className="w-full py-3.5 rounded-2xl bg-indigo-600 text-white font-bold text-base shadow"
+          >
+            Kiểm tra
+          </button>
+        </div>
+      );
+    }
+
+    // ==========================================
+    // TRA CỨU KHO 23 LIST
+    // ==========================================
+    function ManageSection({ cards }) {
+      const [listFilter, setListFilter] = useState('all');
+      const [q, setQ] = useState('');
+
+      const filtered = cards.filter(c => {
+        const mL = listFilter === 'all' || c.l === Number(listFilter);
+        const mQ = c.w.toLowerCase().includes(q.toLowerCase()) || (c.s && c.s.toLowerCase().includes(q.toLowerCase()));
+        return mL && mQ;
+      });
+
+      return (
+        <div className="p-6 md:p-8 max-w-5xl mx-auto w-full space-y-5">
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <h2 className="text-xl font-black">Kho từ vựng 23 List ({cards.length} từ)</h2>
+            <select
+              value={listFilter}
+              onChange={e => setListFilter(e.target.value)}
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold"
+            >
+              <option value="all">Tất cả 23 List ({cards.length} từ)</option>
+              {LISTS_INFO.map(l => (
+                <option key={l.id} value={l.id}>{l.name} ({l.range}: {l.firstWord})</option>
+              ))}
+            </select>
+          </div>
+
+          <input
+            type="text"
+            placeholder="Tìm từ hoặc nghĩa..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm outline-none"
+          />
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-xs">
+                <tr>
+                  <th className="p-3.5">#</th>
+                  <th className="p-3.5">Từ vựng</th>
+                  <th className="p-3.5">Nghĩa ngắn (Trắc nghiệm)</th>
+                  <th className="p-3.5">List</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map(c => (
+                  <tr key={c.n}>
+                    <td className="p-3.5 font-mono text-slate-400">#{c.n}</td>
+                    <td className="p-3.5 font-bold">
+                      {c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span>
+                    </td>
+                    <td className="p-3.5 text-slate-600 dark:text-slate-300">{c.s || c.v}</td>
+                    <td className="p-3.5 font-bold text-slate-400">List {c.l}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
