@@ -60,18 +60,19 @@
     .char-theme .bg-indigo-600:not(:disabled):hover{box-shadow:0 10px 22px -4px var(--sk-glow)}
     .char-theme ::-webkit-scrollbar-thumb{background:var(--sk-sb)}
     .sk-night ::placeholder{color:#8b85c9}
+    .water-wash{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(var(--sk-wash),.3),rgba(var(--sk-wash),.5))}
 
     /* --- Bảng màu từng giao diện --- */
     .sk-char{--sk-wash:255,243,228;--sk-t0:#2d1a0e;--sk-t1:#4a2c17;--sk-t2:#8a4a28;--sk-t3:#a0623a;--sk-ac1:#fb923c;--sk-ac2:#f43f5e;--sk-acx:#ea580c;--sk-acb:#f97316;--sk-bd:rgba(251,146,60,.3);--sk-card:rgba(255,255,255,.74);--sk-soft:rgba(255,247,237,.6);--sk-chip:rgba(255,232,205,.8);--sk-chip2:rgba(255,222,190,.85);--sk-aside:rgba(255,250,243,.78);--sk-nav:rgba(255,250,243,.9);--sk-sb:#fdba74;--sk-glow:rgba(244,63,94,.4);
       --sk-avatar:var(--char-face);
-      --sk-bg:linear-gradient(90deg,rgba(255,243,228,.98) 0%,rgba(255,243,228,.9) 42%,rgba(255,243,228,.15) 100%),var(--char-img) right center/auto 100% no-repeat,#fff1e0;
-      --sk-bg-m:linear-gradient(180deg,rgba(255,243,228,.6),rgba(255,243,228,.85)),var(--char-img) center top/cover no-repeat}
+      --sk-bg:linear-gradient(180deg,rgba(255,243,228,.3),rgba(255,243,228,.5)),var(--char-img) center 22%/cover no-repeat,#fff1e0;
+      --sk-bg-m:linear-gradient(180deg,rgba(255,243,228,.3),rgba(255,243,228,.5)),var(--char-img) center 22%/cover no-repeat,#fff1e0}
     .sk-sakura,.sk-custom{--sk-wash:255,238,244;--sk-t0:#3b1425;--sk-t1:#5b2a3c;--sk-t2:#8c4560;--sk-t3:#b05f7d;--sk-ac1:#f472b6;--sk-ac2:#c084fc;--sk-acx:#db2777;--sk-acb:#ec4899;--sk-bd:rgba(244,114,182,.32);--sk-card:rgba(255,255,255,.72);--sk-soft:rgba(255,240,247,.6);--sk-chip:rgba(252,220,236,.85);--sk-chip2:rgba(251,207,232,.85);--sk-aside:rgba(255,246,250,.78);--sk-nav:rgba(255,246,250,.92);--sk-sb:#f9a8d4;--sk-glow:rgba(236,72,153,.4);
       --sk-avatar:linear-gradient(135deg,#fbcfe8,#f472b6);
       --sk-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cg fill='%23f9a8d4' fill-opacity='.55'%3E%3Cellipse cx='40' cy='50' rx='9' ry='5' transform='rotate(30 40 50)'/%3E%3Cellipse cx='150' cy='30' rx='8' ry='4.5' transform='rotate(-40 150 30)'/%3E%3Cellipse cx='110' cy='120' rx='10' ry='5.5' transform='rotate(70 110 120)'/%3E%3Cellipse cx='190' cy='170' rx='8' ry='4.5' transform='rotate(10 190 170)'/%3E%3Cellipse cx='50' cy='180' rx='9' ry='5' transform='rotate(-20 50 180)'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(160deg,#fff1f6,#ffe0ee 55%,#f3e1ff)}
     .sk-custom{--sk-avatar:var(--sk-cimg);
-      --sk-bg:linear-gradient(90deg,rgba(255,238,244,.98) 0%,rgba(255,238,244,.9) 42%,rgba(255,238,244,.12) 100%),var(--sk-cimg) right center/auto 100% no-repeat,#ffeef4;
-      --sk-bg-m:linear-gradient(180deg,rgba(255,238,244,.6),rgba(255,238,244,.85)),var(--sk-cimg) center top/cover no-repeat}
+      --sk-bg:linear-gradient(180deg,rgba(255,238,244,.3),rgba(255,238,244,.5)),var(--sk-cimg) center 22%/cover no-repeat,#ffeef4;
+      --sk-bg-m:linear-gradient(180deg,rgba(255,238,244,.3),rgba(255,238,244,.5)),var(--sk-cimg) center 22%/cover no-repeat,#ffeef4}
     .sk-night{--sk-wash:22,20,54;--sk-t0:#fff;--sk-t1:#e9e5ff;--sk-t2:#b9b2e8;--sk-t3:#9a93d1;--sk-ac1:#818cf8;--sk-ac2:#c084fc;--sk-acx:#a5b4fc;--sk-acb:#818cf8;--sk-bd:rgba(129,140,248,.35);--sk-card:rgba(30,27,75,.62);--sk-soft:rgba(40,36,100,.5);--sk-chip:rgba(67,56,202,.35);--sk-chip2:rgba(79,70,229,.4);--sk-aside:rgba(24,21,60,.8);--sk-nav:rgba(24,21,60,.93);--sk-sb:#6366f1;--sk-glow:rgba(129,140,248,.5);
       --sk-avatar:linear-gradient(135deg,#4338ca,#a78bfa);
       --sk-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg fill='%23fff'%3E%3Ccircle cx='20' cy='30' r='1.4' fill-opacity='.9'/%3E%3Ccircle cx='120' cy='70' r='1' fill-opacity='.7'/%3E%3Ccircle cx='200' cy='20' r='1.6' fill-opacity='.9'/%3E%3Ccircle cx='80' cy='150' r='1.2' fill-opacity='.8'/%3E%3Ccircle cx='180' cy='190' r='1' fill-opacity='.7'/%3E%3Ccircle cx='30' cy='210' r='1.5' fill-opacity='.85'/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(circle at 85% 12%,rgba(196,181,253,.55) 0,rgba(196,181,253,0) 18%),linear-gradient(180deg,#0f0c29,#1e1b4b 55%,#312e81)}
@@ -90,8 +91,74 @@
   <div id="root"></div>
 
   <script src="vocab-data.js"></script>
+  <script src="vocab.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- LƯU TRỮ THEO TÀI KHOẢN ---
+    // Mỗi tài khoản có vùng dữ liệu riêng trong localStorage (tiền tố u_<tên>__). Khách dùng khoá gốc.
+    const Store = {
+      p: '',
+      setUser(u) { this.p = u ? 'u_' + u + '__' : ''; },
+      get(k) { return localStorage.getItem(this.p + k); },
+      set(k, v) { localStorage.setItem(this.p + k, v); }
+    };
+
+    // --- TÀI KHOẢN (lưu cục bộ trên trình duyệt, mật khẩu được băm PBKDF2) ---
+    const Auth = {
+      users() { try { return JSON.parse(localStorage.getItem('myvocab_auth_users')) || {}; } catch (e) { return {}; } },
+      saveUsers(u) { localStorage.setItem('myvocab_auth_users', JSON.stringify(u)); },
+      current() { try { const u = localStorage.getItem('myvocab_auth_session'); return u && this.users()[u] ? u : null; } catch (e) { return null; } },
+      setCurrent(u) { try { if (u) localStorage.setItem('myvocab_auth_session', u); else localStorage.removeItem('myvocab_auth_session'); } catch (e) {} },
+      isGuest() { try { return localStorage.getItem('myvocab_auth_guest') === '1'; } catch (e) { return false; } },
+      setGuest(v) { try { if (v) localStorage.setItem('myvocab_auth_guest', '1'); else localStorage.removeItem('myvocab_auth_guest'); } catch (e) {} },
+      hasGuestData() { try { return !!(localStorage.getItem('myvocab_v4_cards') || localStorage.getItem('myvocab_v3_1257')); } catch (e) { return false; } },
+      randomSalt() {
+        const a = new Uint8Array(16);
+        if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for (let i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
+        return Array.from(a).map(b => b.toString(16).padStart(2, '0')).join('');
+      },
+      async hash(pw, salt, algo) {
+        if ((!algo || algo === 'p1') && window.crypto && crypto.subtle) {
+          const enc = new TextEncoder();
+          const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+          const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: 120000, hash: 'SHA-256' }, key, 256);
+          return 'p1:' + Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        if (algo === 'p1') throw new Error('Trình duyệt này không hỗ trợ xác thực mật khẩu (cần HTTPS).');
+        let h1 = 5381, h2 = 52711; const str = salt + pw;
+        for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 = ((h1 * 33) ^ c) >>> 0; h2 = ((h2 * 31) + c * 7) >>> 0; }
+        return 'f1:' + h1.toString(16) + h2.toString(16);
+      },
+      async register(username, pw, claimLocal) {
+        const key = username.toLowerCase();
+        const users = this.users();
+        if (users[key]) throw new Error('Tên đăng nhập này đã tồn tại.');
+        const salt = this.randomSalt();
+        users[key] = { name: username, salt, hash: await this.hash(pw, salt), created: Date.now() };
+        this.saveUsers(users);
+        if (claimLocal) {
+          try {
+            const pre = 'u_' + key + '__';
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && k.startsWith('myvocab_') && !k.startsWith('myvocab_auth_')) localStorage.setItem(pre + k, localStorage.getItem(k));
+            }
+          } catch (e) {}
+        }
+        return key;
+      },
+      async login(username, pw) {
+        const key = username.toLowerCase();
+        const u = this.users()[key];
+        if (!u) throw new Error('Sai tên đăng nhập hoặc mật khẩu.');
+        const algo = String(u.hash).split(':')[0];
+        const h = await this.hash(pw, u.salt, algo);
+        if (h !== u.hash) throw new Error('Sai tên đăng nhập hoặc mật khẩu.');
+        return key;
+      }
+    };
+
 
     // --- 1. ÂM THANH PHẢN HỒI ---
     const SoundFx = {
@@ -436,8 +503,8 @@
       { id: 'ocean', name: 'Biển xanh', emoji: '🐬', prev: 'linear-gradient(135deg,#bae6fd,#6366f1)' },
       { id: 'sunset', name: 'Hoàng hôn', emoji: '🌇', prev: 'linear-gradient(135deg,#fdba74,#c084fc)' }
     ];
-    const loadCustomSkins = () => { try { const a = JSON.parse(localStorage.getItem('myvocab_v4_skins')); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
-    function compressImage(file, maxSide = 1400) {
+    const loadCustomSkins = () => { try { const a = JSON.parse(Store.get('myvocab_v4_skins')); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+    function compressImage(file, maxSide = 1600) {
       return new Promise((resolve, reject) => {
         const fr = new FileReader();
         fr.onerror = reject;
@@ -460,42 +527,385 @@
     // Từ vựng dựng sẵn: đọc từ file vocab-data.js (window.VOCAB_SEED) nếu có
     function loadData() {
       const seed = window.VOCAB_SEED;
-      const hasSeed = !!(seed && Array.isArray(seed.cards) && seed.cards.length && Array.isArray(seed.decks) && seed.decks.length);
+      const hasSeed = !!(seed && Array.isArray(seed.cards) && seed.cards.length);
       let stored = null;
       try {
-        const d = JSON.parse(localStorage.getItem('myvocab_v4_decks'));
-        const c = JSON.parse(localStorage.getItem('myvocab_v4_cards'));
+        const d = JSON.parse(Store.get('myvocab_v4_decks'));
+        const c = JSON.parse(Store.get('myvocab_v4_cards'));
         if (Array.isArray(d) && Array.isArray(c) && d.length) stored = { decks: d, cards: c };
       } catch (e) {}
       if (hasSeed) {
-        const ver = String(seed.version || '1');
+        const sCards = seed.cards.map(c => ({ ...c, d: c.d || 'd1', num: c.num !== undefined ? c.num : c.n }));
+        const sDecks = (Array.isArray(seed.decks) && seed.decks.length) ? seed.decks
+          : Array.from(new Set(sCards.map(c => c.d))).map(id => ({ id, name: id === 'd1' ? 'Deck 1 - Bộ từ vựng 23 List' : id }));
+        const ver = String(seed.version || sCards.length);
         let seen = null;
-        try { seen = localStorage.getItem('myvocab_v4_seedver'); } catch (e) {}
+        try { seen = Store.get('myvocab_v4_seedver'); } catch (e) {}
         if (!stored) {
-          try { localStorage.setItem('myvocab_v4_seedver', ver); } catch (e) {}
-          return { decks: seed.decks, cards: seed.cards };
+          try { Store.set('myvocab_v4_seedver', ver); } catch (e) {}
+          return { decks: sDecks, cards: sCards };
         }
         if (seen !== ver) {
           const dIds = new Set(stored.decks.map(d => d.id));
           const nSet = new Set(stored.cards.map(c => c.n));
           const merged = {
-            decks: [...stored.decks, ...seed.decks.filter(d => !dIds.has(d.id))],
-            cards: [...stored.cards, ...seed.cards.filter(c => !nSet.has(c.n))]
+            decks: [...stored.decks, ...sDecks.filter(d => !dIds.has(d.id))],
+            cards: [...stored.cards, ...sCards.filter(c => !nSet.has(c.n))]
           };
-          try { localStorage.setItem('myvocab_v4_seedver', ver); } catch (e) {}
+          try { Store.set('myvocab_v4_seedver', ver); } catch (e) {}
           return merged;
         }
       }
       if (stored) return stored;
       let old = PRELOADED_LIST_1;
       try {
-        const s = JSON.parse(localStorage.getItem('myvocab_v3_1257'));
+        const s = JSON.parse(Store.get('myvocab_v3_1257'));
         if (Array.isArray(s) && s.length) old = s;
       } catch (e) {}
       return { decks: [{ id: 'd1', name: 'Deck 1 - Bộ từ vựng 23 List' }], cards: old.map(c => ({ ...c, d: 'd1', num: c.n })) };
     }
 
-    function SkinPicker({ skin, setSkin, customSkins, setCustomSkins, onClose, showToast }) {
+    // --- NỀN ĐỘNG 3D + SÓNG NƯỚC (WebGL) ---
+    const WaterBg = (() => {
+      const MAXD = 24;
+      let st = null;
+      const VS = 'attribute vec2 a;varying vec2 vUv;void main(){vUv=a*0.5+0.5;gl_Position=vec4(a,0.0,1.0);}';
+      const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform sampler2D uTex;
+uniform vec2 uRes; uniform vec2 uImg; uniform vec2 uPar; uniform vec2 uFocus;
+uniform float uTime; uniform float uAmp;
+uniform vec4 uD[${MAXD}];
+varying vec2 vUv;
+vec2 cover(vec2 p){
+  float sa = uRes.x / uRes.y;
+  float ia = uImg.x / uImg.y;
+  vec2 sc = sa > ia ? vec2(1.0, ia / sa) : vec2(sa / ia, 1.0);
+  return (1.0 - sc) * uFocus + p * sc;
+}
+void main(){
+  float sa = uRes.x / uRes.y;
+  vec2 q = vec2(vUv.x * sa, vUv.y);
+  vec2 disp = vec2(0.0);
+  float shade = 0.0;
+  for (int i = 0; i < ${MAXD}; i++) {
+    vec4 d = uD[i];
+    if (d.w > 0.0) {
+      vec2 v = q - vec2(d.x * sa, d.y);
+      float r = length(v);
+      float front = d.z * 0.42;
+      float w = 0.07 + d.z * 0.05;
+      float x = (r - front) / w;
+      float env = exp(-x * x) * exp(-d.z * 1.1) * d.w;
+      float ph = (r - front) * 42.0;
+      disp += (v / (r + 0.0001)) * sin(ph) * env;
+      shade += cos(ph) * env;
+    }
+  }
+  vec2 amb = vec2(sin(vUv.y * 16.0 + uTime * 1.1 + sin(vUv.x * 5.0 + uTime * 0.4)), cos(vUv.x * 13.0 - uTime * 0.9)) * 0.0016;
+  vec2 off = disp * 0.024 * uAmp + amb * uAmp * 0.8;
+  off.x /= sa;
+  vec2 p = (vUv - 0.5) / 1.08 + 0.5 + uPar + off;
+  vec3 col = texture2D(uTex, cover(p)).rgb;
+  col += vec3(shade * 0.07 * uAmp);
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+      // ----- Vẽ nền cho các giao diện không có ảnh -----
+      const rng = (seed) => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+      const grad = (c, w, h, x0, y0, x1, y1, stops) => { const g = c.createLinearGradient(x0, y0, x1, y1); stops.forEach(s => g.addColorStop(s[0], s[1])); c.fillStyle = g; c.fillRect(0, 0, w, h); };
+      const blob = (c, x, y, r, rgb, a) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${rgb},${a})`); g.addColorStop(1, `rgba(${rgb},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2); };
+      const painters = {
+        sakura(c, w, h) {
+          grad(c, w, h, 0, 0, w * 0.35, h, [[0, '#fff1f6'], [0.55, '#ffe0ee'], [1, '#f3e1ff']]);
+          const r = rng(7); c.fillStyle = 'rgba(249,168,212,.55)';
+          for (let i = 0; i < 70; i++) { c.save(); c.translate(r() * w, r() * h); c.rotate(r() * 6.28); c.beginPath(); c.ellipse(0, 0, 10 + r() * 12, 5 + r() * 6, 0, 0, 6.28); c.fill(); c.restore(); }
+        },
+        night(c, w, h) {
+          grad(c, w, h, 0, 0, 0, h, [[0, '#0f0c29'], [0.55, '#1e1b4b'], [1, '#312e81']]);
+          blob(c, w * 0.85, h * 0.12, Math.max(w, h) * 0.2, '196,181,253', 0.55);
+          const r = rng(11);
+          for (let i = 0; i < 160; i++) { c.fillStyle = `rgba(255,255,255,${0.4 + r() * 0.6})`; c.beginPath(); c.arc(r() * w, r() * h, 0.6 + r() * 1.4, 0, 6.28); c.fill(); }
+        },
+        mint(c, w, h) {
+          grad(c, w, h, 0, 0, w * 0.4, h, [[0, '#f0fdf8'], [1, '#d9f7e8']]);
+          blob(c, w * 0.12, h * 0.18, Math.max(w, h) * 0.28, '110,231,183', 0.5);
+          blob(c, w * 0.88, h * 0.3, Math.max(w, h) * 0.3, '103,232,249', 0.45);
+          blob(c, w * 0.3, h * 0.85, Math.max(w, h) * 0.3, '167,243,208', 0.55);
+        },
+        ocean(c, w, h) {
+          grad(c, w, h, 0, 0, 0, h, [[0, '#eaf6ff'], [0.7, '#cfe9ff'], [1, '#b9defc']]);
+          [[0.72, 'rgba(56,189,248,.25)'], [0.82, 'rgba(99,102,241,.18)'], [0.9, 'rgba(56,189,248,.3)']].forEach((l, k) => {
+            c.fillStyle = l[1]; c.beginPath(); c.moveTo(0, h);
+            for (let x = 0; x <= w; x += 8) c.lineTo(x, h * l[0] + Math.sin(x / w * 12 + k * 1.7) * h * 0.02);
+            c.lineTo(w, h); c.closePath(); c.fill();
+          });
+        },
+        sunset(c, w, h) {
+          grad(c, w, h, 0, 0, 0, h, [[0, '#ffd9b0'], [0.5, '#fdaab8'], [1, '#c9a8ff']]);
+          blob(c, w * 0.5, h * 0.72, Math.max(w, h) * 0.3, '255,236,190', 0.85);
+        }
+      };
+      const paintSize = () => ({ w: 1024, h: Math.max(512, Math.min(2048, Math.round(1024 * innerHeight / innerWidth))) });
+      const paintCanvas = (id) => { const { w, h } = paintSize(); const c = document.createElement('canvas'); c.width = w; c.height = h; painters[id](c.getContext('2d'), w, h); return c; };
+
+      const makeTex = (gl, source) => {
+        const t = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        return t;
+      };
+
+      const addDrop = (s, x, y, strength) => {
+        s.drops[s.di] = { x, y, s: strength, t: performance.now() };
+        s.di = (s.di + 1) % MAXD;
+      };
+
+      function frame(now) {
+        const s = st; if (!s) return;
+        s.raf = requestAnimationFrame(frame);
+        const gl = s.gl;
+        const t = (now - s.t0) / 1000;
+        s.px += (s.mx - s.px) * 0.05; s.py += (s.my - s.py) * 0.05;
+        for (let i = 0; i < MAXD; i++) {
+          const d = s.drops[i];
+          const age = d ? (now - d.t) / 1000 : 99;
+          if (d && age >= 0 && age < 4) { s.arr[i * 4] = d.x; s.arr[i * 4 + 1] = d.y; s.arr[i * 4 + 2] = age; s.arr[i * 4 + 3] = d.s; }
+          else s.arr[i * 4 + 3] = 0;
+        }
+        const U = s.U;
+        gl.uniform2f(U.uRes, s.cv.width, s.cv.height);
+        gl.uniform2f(U.uImg, s.iw, s.ih);
+        gl.uniform2f(U.uFocus, 0.5, 0.78);
+        gl.uniform2f(U.uPar, s.px * 0.03 + Math.sin(t * 0.17) * 0.006, s.py * 0.03 + Math.cos(t * 0.13) * 0.006);
+        gl.uniform1f(U.uTime, t);
+        gl.uniform1f(U.uAmp, s.amp);
+        gl.uniform4fv(U.uD, s.arr);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+
+      function init(s, source, iw, ih, isPaint) {
+        const cv = document.createElement('canvas');
+        cv.id = 'water-canvas';
+        cv.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block';
+        const gl = cv.getContext('webgl', { antialias: false, alpha: false }) || cv.getContext('experimental-webgl');
+        if (!gl) throw new Error('no webgl');
+        const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+        const prog = gl.createProgram();
+        gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+        gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error('link');
+        gl.useProgram(prog);
+        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+        const loc = gl.getAttribLocation(prog, 'a');
+        gl.enableVertexAttribArray(loc);
+        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+        const U = {};
+        ['uTex', 'uRes', 'uImg', 'uPar', 'uFocus', 'uTime', 'uAmp', 'uD'].forEach(n => { U[n] = gl.getUniformLocation(prog, n); });
+        gl.uniform1i(U.uTex, 0);
+        const tex = makeTex(gl, source);
+
+        const wash = document.createElement('div');
+        wash.className = 'water-wash';
+        Object.assign(s, { cv, gl, U, tex, iw, ih, isPaint, wash, arr: new Float32Array(MAXD * 4), t0: performance.now() });
+
+        let lastW = 0;
+        s.onResize = () => {
+          const dpr = Math.min(window.devicePixelRatio || 1, innerWidth < 768 ? 1.25 : 1.5);
+          let k = dpr; if (innerWidth * k > 1920) k = 1920 / innerWidth;
+          cv.width = Math.max(2, Math.round(innerWidth * k));
+          cv.height = Math.max(2, Math.round(innerHeight * k));
+          gl.viewport(0, 0, cv.width, cv.height);
+          if (s.isPaint) {
+            const asp = innerWidth / innerHeight;
+            if (Math.abs(asp - lastW) > 0.02) {
+              lastW = asp;
+              const pc = paintCanvas(s.paintId);
+              gl.deleteTexture(s.tex); s.tex = makeTex(gl, pc); s.iw = pc.width; s.ih = pc.height;
+            }
+          }
+        };
+        s.onMove = (e) => {
+          const x = e.clientX, y = e.clientY, now = performance.now();
+          s.mx = x / innerWidth - 0.5; s.my = 0.5 - y / innerHeight;
+          if (s.lx < 0) { s.lx = x; s.ly = y; s.lt = now; return; }
+          const dist = Math.hypot(x - s.lx, y - s.ly);
+          if (dist > 26 && now - s.lt > 40) {
+            addDrop(s, x / innerWidth, 1 - y / innerHeight, 0.35 + 0.35 * Math.min(1, dist / 90));
+            s.lx = x; s.ly = y; s.lt = now;
+          }
+        };
+        s.onDown = (e) => { addDrop(s, e.clientX / innerWidth, 1 - e.clientY / innerHeight, 1.0); s.lx = e.clientX; s.ly = e.clientY; s.lt = performance.now(); };
+        s.onResize();
+        window.addEventListener('resize', s.onResize);
+        window.addEventListener('pointermove', s.onMove, { passive: true });
+        window.addEventListener('pointerdown', s.onDown, { passive: true });
+        document.body.appendChild(cv);
+        document.body.appendChild(wash);
+        s.raf = requestAnimationFrame(frame);
+      }
+
+      function stop() {
+        if (!st) return;
+        const s = st; st = null;
+        if (s.raf) cancelAnimationFrame(s.raf);
+        if (s.onResize) window.removeEventListener('resize', s.onResize);
+        if (s.onMove) window.removeEventListener('pointermove', s.onMove);
+        if (s.onDown) window.removeEventListener('pointerdown', s.onDown);
+        if (s.cv) s.cv.remove();
+        if (s.wash) s.wash.remove();
+        try { const ext = s.gl && s.gl.getExtension('WEBGL_lose_context'); if (ext) ext.loseContext(); } catch (e) {}
+      }
+
+      function start(opts) {
+        stop();
+        const s = { amp: opts.amp, drops: [], di: 0, mx: 0, my: 0, px: 0, py: 0, lx: -1, ly: -1, lt: 0, paintId: opts.paint };
+        st = s;
+        const fail = () => { if (st !== s) return; stop(); if (opts.onFail) opts.onFail(); };
+        const go = (source, iw, ih, isPaint) => { if (st !== s) return; try { init(s, source, iw, ih, isPaint); } catch (e) { fail(); } };
+        if (opts.paint) {
+          if (!painters[opts.paint]) return fail();
+          const pc = paintCanvas(opts.paint);
+          go(pc, pc.width, pc.height, true);
+        } else if (opts.src) {
+          const im = new Image();
+          if (!/^data:/i.test(opts.src)) im.crossOrigin = 'anonymous';
+          im.onload = () => go(im, im.naturalWidth, im.naturalHeight, false);
+          im.onerror = fail;
+          im.src = opts.src;
+        } else fail();
+      }
+      return { start, stop, setAmp: (v) => { if (st) st.amp = v; } };
+    })();
+
+    function WaterControls({ enabled, waterOn, setWaterOn, waterAmp, setWaterAmp }) {
+      return (
+        <div className={`space-y-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 ${enabled ? '' : 'opacity-50'}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-black">💧 Sóng nước &amp; nền động</p>
+              <p className="text-[11px] text-slate-400 leading-snug">Rê chuột (hoặc chạm) để tạo gợn sóng, bấm để “ném đá” xuống nước.</p>
+            </div>
+            <button onClick={() => setWaterOn(!waterOn)} disabled={!enabled} title="Bật / tắt sóng nước" className={`relative shrink-0 w-12 h-7 rounded-full transition ${waterOn && enabled ? 'bg-indigo-600' : 'bg-slate-300'}`}>
+              <span className="absolute top-0.5 w-6 h-6 rounded-full shadow transition-all" style={{ background: '#fff', left: waterOn ? 22 : 2 }} />
+            </button>
+          </div>
+          <div className={waterOn && enabled ? '' : 'opacity-40'}>
+            <div className="flex justify-between text-xs font-bold mb-1"><span>Độ mạnh của sóng</span><span>{waterAmp}%</span></div>
+            <input type="range" min="10" max="100" step="5" value={waterAmp} disabled={!waterOn || !enabled} onChange={e => setWaterAmp(Number(e.target.value))} className="w-full accent-indigo-600" />
+          </div>
+          {!enabled && <p className="text-[11px] text-slate-400">Hãy chọn một giao diện nền để dùng hiệu ứng này.</p>}
+        </div>
+      );
+    }
+
+    // Nút nổi luôn hiện khi đang dùng giao diện nền
+    function WaterFab({ waterOn, setWaterOn, waterAmp, setWaterAmp }) {
+      const [open, setOpen] = useState(false);
+      return (
+        <div className="fixed right-3 bottom-20 md:bottom-5 md:right-5 z-40 flex flex-col items-end gap-2">
+          {open && (
+            <div className="sk-modal w-72 max-w-[85vw] rounded-2xl bg-white border border-slate-200 shadow-2xl p-3">
+              <WaterControls enabled={true} waterOn={waterOn} setWaterOn={setWaterOn} waterAmp={waterAmp} setWaterAmp={setWaterAmp} />
+            </div>
+          )}
+          <button onClick={() => setOpen(!open)} title="Sóng nước: bật/tắt & độ mạnh" className={`w-12 h-12 rounded-full shadow-lg text-xl flex items-center justify-center border ${waterOn ? 'bg-indigo-600 text-white border-transparent' : 'bg-white border-slate-200'}`}>💧</button>
+        </div>
+      );
+    }
+
+    function AuthScreen({ onAuth, onGuest }) {
+      const [mode, setMode] = useState('login');
+      const [username, setUsername] = useState('');
+      const [pw, setPw] = useState('');
+      const [pw2, setPw2] = useState('');
+      const [show, setShow] = useState(false);
+      const [claim, setClaim] = useState(true);
+      const [err, setErr] = useState('');
+      const [busy, setBusy] = useState(false);
+      const hasLocal = useMemo(() => Auth.hasGuestData(), []);
+      const reg = mode === 'register';
+      const inp = 'w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-base outline-none focus:border-indigo-500';
+
+      const submit = async () => {
+        setErr('');
+        const u = username.trim();
+        if (!/^[A-Za-z0-9._-]{3,24}$/.test(u)) return setErr('Tên đăng nhập gồm 3–24 ký tự: chữ, số, dấu . _ -');
+        if (pw.length < 6) return setErr('Mật khẩu cần ít nhất 6 ký tự.');
+        if (reg && pw !== pw2) return setErr('Hai mật khẩu chưa khớp.');
+        setBusy(true);
+        try {
+          const key = reg ? await Auth.register(u, pw, claim && hasLocal) : await Auth.login(u, pw);
+          onAuth(key);
+        } catch (e) { setErr(e.message || 'Có lỗi xảy ra, thử lại nhé.'); setBusy(false); }
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-white to-rose-50 text-slate-800">
+          <form onSubmit={e => { e.preventDefault(); submit(); }} className="w-full max-w-sm bg-white rounded-3xl shadow-xl border border-slate-100 p-6 space-y-4">
+            <div className="text-center space-y-1">
+              <div className="text-4xl">📚</div>
+              <h1 className="text-2xl font-black">MyVocab</h1>
+              <p className="text-sm text-slate-500">{reg ? 'Tạo tài khoản mới để lưu tiến độ học riêng' : 'Đăng nhập để vào kho từ vựng của bạn'}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-100">
+              {[['login', 'Đăng nhập'], ['register', 'Tạo tài khoản']].map(([k, l]) => (
+                <button type="button" key={k} onClick={() => { setMode(k); setErr(''); }} className={`py-2 rounded-lg text-sm font-bold ${mode === k ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}>{l}</button>
+              ))}
+            </div>
+            <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Tên đăng nhập" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} className={inp} />
+            <div className="relative">
+              <input type={show ? 'text' : 'password'} value={pw} onChange={e => setPw(e.target.value)} placeholder="Mật khẩu (từ 6 ký tự)" autoComplete={reg ? 'new-password' : 'current-password'} className={inp + ' pr-16'} />
+              <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">{show ? 'Ẩn' : 'Hiện'}</button>
+            </div>
+            {reg && <input type={show ? 'text' : 'password'} value={pw2} onChange={e => setPw2(e.target.value)} placeholder="Nhập lại mật khẩu" autoComplete="new-password" className={inp} />}
+            {reg && hasLocal && (
+              <label className="flex items-start gap-2 text-sm text-slate-600 leading-snug cursor-pointer">
+                <input type="checkbox" checked={claim} onChange={e => setClaim(e.target.checked)} className="mt-1 accent-indigo-600" />
+                <span>Chuyển toàn bộ từ vựng &amp; tiến độ hiện có trên máy này vào tài khoản mới</span>
+              </label>
+            )}
+            {err && <p className="text-sm font-semibold text-rose-600 bg-rose-50 rounded-lg px-3 py-2">{err}</p>}
+            <button type="submit" disabled={busy} className="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold disabled:opacity-50">{busy ? 'Đang xử lý...' : (reg ? 'Tạo tài khoản' : 'Đăng nhập')}</button>
+            <button type="button" onClick={onGuest} className="w-full py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-500">Tiếp tục không cần tài khoản</button>
+            <p className="text-[11px] text-slate-400 leading-relaxed text-center">Tài khoản được lưu ngay trong trình duyệt này, không đồng bộ giữa các thiết bị. Mật khẩu được băm, không lưu dạng chữ thường.</p>
+          </form>
+        </div>
+      );
+    }
+
+    function AccountPanel({ user, userName, onClose, onLogout, onLogin }) {
+      return (
+        <div className="fixed inset-0 z-50 bg-black/25 flex items-end md:items-center justify-center p-3" onClick={onClose}>
+          <div className="sk-modal w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-black">{user ? (userName || user).charAt(0).toUpperCase() : '👤'}</div>
+              <div className="min-w-0">
+                <p className="font-black truncate">{user ? userName || user : 'Chế độ khách'}</p>
+                <p className="text-xs text-slate-400 leading-snug">{user ? 'Dữ liệu học của tài khoản này được lưu riêng trên trình duyệt này.' : 'Dữ liệu đang dùng chung trên máy này, chưa gắn với tài khoản.'}</p>
+              </div>
+            </div>
+            {user
+              ? <button onClick={onLogout} className="w-full py-2.5 rounded-xl bg-rose-500 text-white font-bold text-sm">Đăng xuất</button>
+              : <button onClick={onLogin} className="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-sm">Đăng nhập / Tạo tài khoản</button>}
+            <button onClick={onClose} className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm font-bold">Đóng</button>
+          </div>
+        </div>
+      );
+    }
+
+    function SkinPicker({ skin, setSkin, customSkins, setCustomSkins, onClose, showToast, waterOn, setWaterOn, waterAmp, setWaterAmp }) {
       const [url, setUrl] = useState('');
       const [busy, setBusy] = useState(false);
       const full = customSkins.length >= 4;
@@ -529,12 +939,13 @@
         </div>
       );
       return (
-        <div className="fixed inset-0 z-50 bg-black/45 flex items-end md:items-center justify-center p-3" onClick={onClose}>
+        <div className="fixed inset-0 z-50 bg-black/25 flex items-end md:items-center justify-center p-3" onClick={onClose}>
           <div className="sk-modal w-full max-w-lg max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="font-black text-lg">🎨 Giao diện hình nền</h3>
               <button onClick={onClose} className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">Đóng</button>
             </div>
+            <WaterControls enabled={!!skin} waterOn={waterOn} setWaterOn={setWaterOn} waterAmp={waterAmp} setWaterAmp={setWaterAmp} />
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {tile('none', !skin, () => setSkin(''), 'linear-gradient(135deg,#f8fafc,#cbd5e1)', 'Mặc định', '🚫')}
               {SKINS.map(k => tile(k.id, skin === k.id, () => setSkin(k.id), k.prev, k.name, k.photo ? '' : k.emoji))}
@@ -557,50 +968,37 @@
       );
     }
 
-    function App() {
+    function App({ user, userName, onLogout, onLogin }) {
       const [init] = useState(loadData);
       const [decks, setDecks] = useState(init.decks);
-      const [cards, setCards] = useState(() => {
-  // 1. Kiểm tra localStorage của người dùng
-  const saved = localStorage.getItem('vocab_data') || localStorage.getItem('cards');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed && parsed.length > 0) return parsed;
-    } catch (e) {}
-  }
-
-  // 2. Nếu máy người khác chưa có localStorage -> Lấy từ file vocab.js
-  if (window.VOCAB_SEED && window.VOCAB_SEED.cards) {
-    return window.VOCAB_SEED.cards;
-  }
-
-  return [];
-});
+      const [cards, setCards] = useState(init.cards);
       const [wrongIds, setWrongIds] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
+        try { return JSON.parse(Store.get('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
       const [tab, setTab] = useState('study');
       const [libDeck, setLibDeck] = useState(init.decks[0].id);
       const [draft, setDraft] = useState([]);
-      const loadUI = () => { try { return JSON.parse(localStorage.getItem('myvocab_v4_ui')) || {}; } catch (e) { return {}; } };
+      const loadUI = () => { try { return JSON.parse(Store.get('myvocab_v4_ui')) || {}; } catch (e) { return {}; } };
       const [themeColor, setThemeColor] = useState(() => loadUI().themeColor || 'indigo');
       const [darkMode, setDarkMode] = useState(() => !!loadUI().darkMode);
       const [skin, setSkin] = useState(() => { const u = loadUI(); return u.skin !== undefined ? u.skin : (u.charMode ? 'char' : ''); });
       const [customSkins, setCustomSkins] = useState(loadCustomSkins);
       const [showSkins, setShowSkins] = useState(false);
+      const [showAccount, setShowAccount] = useState(false);
+      const [waterOn, setWaterOn] = useState(() => loadUI().waterOn !== false);
+      const [waterAmp, setWaterAmp] = useState(() => { const v = Number(loadUI().waterAmp); return v >= 10 && v <= 100 ? v : 50; });
       const [toast, setToast] = useState(null);
 
       const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
 
       useEffect(() => {
         try {
-          localStorage.setItem('myvocab_v4_decks', JSON.stringify(decks));
-          localStorage.setItem('myvocab_v4_cards', JSON.stringify(cards));
+          Store.set('myvocab_v4_decks', JSON.stringify(decks));
+          Store.set('myvocab_v4_cards', JSON.stringify(cards));
         } catch (e) { showToast('Bộ nhớ trình duyệt đã đầy, hãy xoá bớt thư mục.'); }
       }, [decks, cards]);
-      useEffect(() => { try { localStorage.setItem('myvocab_v3_wrongs', JSON.stringify(wrongIds)); } catch (e) {} }, [wrongIds]);
-      useEffect(() => { try { localStorage.setItem('myvocab_v4_skins', JSON.stringify(customSkins)); } catch (e) { showToast('Không đủ bộ nhớ để lưu ảnh nền, hãy xoá bớt ảnh.'); } }, [customSkins]);
+      useEffect(() => { try { Store.set('myvocab_v3_wrongs', JSON.stringify(wrongIds)); } catch (e) {} }, [wrongIds]);
+      useEffect(() => { try { Store.set('myvocab_v4_skins', JSON.stringify(customSkins)); } catch (e) { showToast('Không đủ bộ nhớ để lưu ảnh nền, hãy xoá bớt ảnh.'); } }, [customSkins]);
       useEffect(() => {
         const root = document.documentElement;
         Array.from(root.classList).filter(c => c.startsWith('sk-')).forEach(c => root.classList.remove(c));
@@ -611,8 +1009,20 @@
         document.body.classList.toggle('char-theme', on);
         if (on) root.classList.add(cs ? 'sk-custom' : 'sk-' + skin);
         if (cs) root.style.setProperty('--sk-cimg', 'url("' + cs.img + '")'); else root.style.removeProperty('--sk-cimg');
-        try { localStorage.setItem('myvocab_v4_ui', JSON.stringify({ themeColor, darkMode, skin })); } catch (e) {}
-      }, [darkMode, skin, themeColor, customSkins]);
+        try { Store.set('myvocab_v4_ui', JSON.stringify({ themeColor, darkMode, skin, waterOn, waterAmp })); } catch (e) {}
+      }, [darkMode, skin, themeColor, customSkins, waterOn, waterAmp]);
+      useEffect(() => {
+        const cs = customSkins.find(x => x.id === skin);
+        const builtin = SKINS.find(x => x.id === skin);
+        if (!waterOn || !(cs || builtin)) { WaterBg.stop(); return; }
+        let src = null, paint = null;
+        if (cs) src = cs.img;
+        else if (builtin.photo) src = getComputedStyle(document.documentElement).getPropertyValue('--char-img').trim().replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+        else paint = builtin.id;
+        WaterBg.start({ src, paint, amp: waterAmp / 50, onFail: () => showToast('Không bật được sóng nước cho nền này (ảnh link ngoài có thể bị chặn). Hãy tải ảnh lên từ máy.') });
+        return () => WaterBg.stop();
+      }, [skin, waterOn, customSkins]);
+      useEffect(() => { WaterBg.setAmp(waterAmp / 50); }, [waterAmp]);
 
       const handleMarkWrong = (n, isWrong) => {
         setWrongIds(prev => isWrong ? (prev.includes(n) ? prev : [...prev, n]) : prev.filter(id => id !== n));
@@ -639,7 +1049,9 @@
       return (
         <div className="flex h-screen overflow-hidden font-sans">
           <div className="char-bg" />
-          {showSkins && <SkinPicker skin={skin} setSkin={setSkin} customSkins={customSkins} setCustomSkins={setCustomSkins} onClose={() => setShowSkins(false)} showToast={showToast} />}
+          {showSkins && <SkinPicker skin={skin} setSkin={setSkin} customSkins={customSkins} setCustomSkins={setCustomSkins} onClose={() => setShowSkins(false)} showToast={showToast} waterOn={waterOn} setWaterOn={setWaterOn} waterAmp={waterAmp} setWaterAmp={setWaterAmp} />}
+          {skinOn && <WaterFab waterOn={waterOn} setWaterOn={setWaterOn} waterAmp={waterAmp} setWaterAmp={setWaterAmp} />}
+          {showAccount && <AccountPanel user={user} userName={userName} onClose={() => setShowAccount(false)} onLogout={() => { setShowAccount(false); onLogout(); }} onLogin={() => { setShowAccount(false); onLogin(); }} />}
           {toast && (
             <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center space-x-2 text-sm font-bold">
               <Icon name="check" className="w-5 h-5" /><span>{toast}</span>
@@ -652,7 +1064,7 @@
                 {skinOn ? <div className="char-avatar w-10 h-10 rounded-full flex items-center justify-center text-xl">{activeBuiltin && !activeBuiltin.photo ? activeBuiltin.emoji : null}</div> : <div className={`w-10 h-10 rounded-xl ${tColor.bg} flex items-center justify-center text-white shadow`}><Icon name="cardCircle" className="w-5 h-5" /></div>}
                 <div>
                   <h1 className="font-extrabold text-lg tracking-tight leading-tight">MyVocab</h1>
-                  <p className="text-[11px] text-slate-400">{decks.length} thư mục · {cards.length} từ</p>
+                  <p className="text-[11px] text-slate-400">{userName ? userName + ' · ' : ''}{decks.length} thư mục · {cards.length} từ</p>
                 </div>
               </div>
               <nav className="space-y-1.5">
@@ -679,6 +1091,9 @@
               <button onClick={() => setDarkMode(!darkMode)} className="w-full py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold flex items-center justify-center space-x-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
                 <Icon name={darkMode ? 'sun' : 'moon'} className="w-3.5 h-3.5" /><span>{darkMode ? 'Giao diện Sáng' : 'Giao diện Tối'}</span>
               </button>
+              <button onClick={() => setShowAccount(true)} className="w-full py-2 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold flex items-center justify-center space-x-1.5">
+                <span>👤</span><span className="truncate">{user ? (userName || user) + ' · Tài khoản' : 'Đăng nhập / Tạo tài khoản'}</span>
+              </button>
             </div>
           </aside>
 
@@ -698,7 +1113,7 @@
             </div>
           </main>
 
-          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-1.5">
+          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-7 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-1.5">
             {NAV.map(n => (
               <button key={n.id} onClick={() => setTab(n.id)} className={`flex flex-col items-center gap-0.5 py-1 text-[10px] font-bold ${tab === n.id ? tColor.text : 'text-slate-400'}`}>
                 <Icon name={n.icon} className="w-5 h-5" /><span>{n.short || n.label.split(' ')[0]}</span>
@@ -709,6 +1124,9 @@
             </button>
             <button onClick={() => setDarkMode(!darkMode)} className="flex flex-col items-center gap-0.5 py-1 text-[10px] font-bold text-slate-400">
               <Icon name={darkMode ? 'sun' : 'moon'} className="w-5 h-5" /><span>Giao diện</span>
+            </button>
+            <button onClick={() => setShowAccount(true)} className={`flex flex-col items-center gap-0.5 py-1 text-[10px] font-bold ${user ? tColor.text : 'text-slate-400'}`}>
+              <span className="text-lg leading-5">👤</span><span>{user ? 'Tài khoản' : 'Đăng nhập'}</span>
             </button>
           </nav>
         </div>
@@ -2413,10 +2831,10 @@
     }
 
     function GrammarSection({ tColor }) {
-      const [st, setSt] = useState(() => { try { return JSON.parse(localStorage.getItem('myvocab_v4_grammar')) || {}; } catch (e) { return {}; } });
+      const [st, setSt] = useState(() => { try { return JSON.parse(Store.get('myvocab_v4_grammar')) || {}; } catch (e) { return {}; } });
       const [tid, setTid] = useState(null);
       const [view, setView] = useState('summary');
-      useEffect(() => { try { localStorage.setItem('myvocab_v4_grammar', JSON.stringify(st)); } catch (e) {} }, [st]);
+      useEffect(() => { try { Store.set('myvocab_v4_grammar', JSON.stringify(st)); } catch (e) {} }, [st]);
 
       const done = st.done || {};
       const notes = st.notes || {};
@@ -2562,12 +2980,28 @@
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-   root.render(<App />);
-  </script>
+    function Root() {
+      const [auth, setAuth] = useState(() => { const u = Auth.current(); Store.setUser(u); return { user: u, guest: !u && Auth.isGuest() }; });
+      useEffect(() => {
+        if (!auth.user && !auth.guest) {
+          const r = document.documentElement;
+          Array.from(r.classList).filter(c => c.startsWith('sk-') || c === 'char-theme' || c === 'dark').forEach(c => r.classList.remove(c));
+          document.body.classList.remove('char-theme');
+        }
+      }, [auth]);
+      const enter = (user) => { Store.setUser(user); Auth.setCurrent(user); setAuth({ user, guest: !user }); };
+      if (!auth.user && !auth.guest) {
+        return <AuthScreen onAuth={enter} onGuest={() => { Auth.setGuest(true); enter(null); }} />;
+      }
+      const userName = auth.user ? ((Auth.users()[auth.user] || {}).name || auth.user) : null;
+      return <App key={auth.user || '__guest'} user={auth.user} userName={userName}
+        onLogout={() => { Auth.setCurrent(null); Auth.setGuest(false); Store.setUser(null); setAuth({ user: null, guest: false }); }}
+        onLogin={() => { Auth.setGuest(false); Store.setUser(null); setAuth({ user: null, guest: false }); }} />;
+    }
 
-  <!-- CHÈN THÊM DÒNG NÀY VÀO ĐÂY (dưới thẻ </script> của React và trên </body>): -->
-  <script src="./vocab.js"></script>
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+   root.render(<Root />);
+  </script>
 
 </body>
 </html>
