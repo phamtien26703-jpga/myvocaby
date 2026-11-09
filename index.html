@@ -560,7 +560,23 @@
     function App() {
       const [init] = useState(loadData);
       const [decks, setDecks] = useState(init.decks);
-      const [cards, setCards] = useState(init.cards);
+      const [cards, setCards] = useState(() => {
+  // 1. Kiểm tra localStorage của người dùng
+  const saved = localStorage.getItem('vocab_data') || localStorage.getItem('cards');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.length > 0) return parsed;
+    } catch (e) {}
+  }
+
+  // 2. Nếu máy người khác chưa có localStorage -> Lấy từ file vocab.js
+  if (window.VOCAB_SEED && window.VOCAB_SEED.cards) {
+    return window.VOCAB_SEED.cards;
+  }
+
+  return [];
+});
       const [wrongIds, setWrongIds] = useState(() => {
         try { return JSON.parse(localStorage.getItem('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
@@ -2547,7 +2563,11 @@
     }
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+   root.render(<App />);
   </script>
+
+  <!-- CHÈN THÊM DÒNG NÀY VÀO ĐÂY (dưới thẻ </script> của React và trên </body>): -->
+  <script src="./vocab.js"></script>
+
 </body>
 </html>
