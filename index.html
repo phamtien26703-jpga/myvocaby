@@ -91,6 +91,7 @@
   <div id="root"></div>
 
   <script src="vocab-data.js"></script>
+<script src="listening-data.js"></script>
   <script src="vocab.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
@@ -3359,7 +3360,7 @@ void main(){
       const prog = st.prog || {};
       const daily = st.daily || {};
       const topics = [...DICT_TOPICS, ...(st.topics || [])];
-      const all = [...DICT_SAMPLES.map(l => ({ ...l, builtin: true })), ...custom];
+      const all = [...(window.LISTENING_DATA || DICT_SAMPLES).map(l => ({ ...l, builtin: true })), ...custom];
       const lesson = all.find(l => l.id === openId);
       const sentsOf = (l) => splitSentences(l.text);
       const topicOf = (l) => topics.find(t => t.id === (l.topic || 'other')) || topics[topics.length - 1];
