@@ -3049,16 +3049,39 @@ void main(){
     // - Chấm theo từng từ, chuỗi ngày luyện, thống kê, lưu từ mới vào Deck
     // ==========================================
     const DICT_TOPICS = [
-      ['conv', 'Conversations', '💬'], ['toeic', 'TOEIC Listening', '🎧'], ['ielts', 'IELTS Listening', '🎓'],
-      ['news', 'News & Stories', '📰'], ['num', 'Numbers', '🔢'], ['vocab', 'Câu ví dụ từ vựng', '📚'], ['other', 'Khác', '📁']
-    ].map(a => ({ id: a[0], name: a[1], icon: a[2] }));
+      { id: 'short-stories', name: 'Short Stories', icon: '📖', levels: 'A1-C1', ddLessons: 289, video: false, img: 'https://dailydictation.com/images/dd-stories.jpg', url: 'https://dailydictation.com/exercises/short-stories', desc: 'A collection of audio articles introducing culture, people, places, historical events and daily life in English-speaking countries, especially Canada and America.' },
+      { id: 'conv', name: 'Conversations', icon: '💬', levels: 'A1-B1', ddLessons: 100, video: false, img: 'https://dailydictation.com/images/dd-con.jpg', url: 'https://dailydictation.com/exercises/english-conversations', desc: 'Short and fun English conversations in common situations you may experience in daily life. You will learn casual phrases & expressions that native speakers use.' },
+      { id: 'stories-for-kids', name: 'Stories for Kids', icon: '🧚', levels: 'A2-B2', ddLessons: 13, video: true, img: 'https://dailydictation.com/images/dd-fairy-tales.jpeg', url: 'https://dailydictation.com/exercises/stories-for-kids', desc: 'Learn English through famous fairy tales and stories for children.' },
+      { id: 'toeic', name: 'TOEIC Listening', icon: '🎧', levels: 'A2-C1', ddLessons: 600, video: false, img: 'https://dailydictation.com/images/dd-toeic.jpg', url: 'https://dailydictation.com/exercises/toeic', desc: "In this section, there are a lot of conversations and short talks in everyday life and at work. Let's practice and improve your English communication skills!" },
+      { id: 'ielts', name: 'IELTS Listening', icon: '🎓', levels: 'B1-C1', ddLessons: 360, video: false, img: 'https://dailydictation.com/images/dd-ielts.jpg', url: 'https://dailydictation.com/exercises/ielts-listening', desc: 'Listening to IELTS recordings will help you learn a lot of vocabulary and expressions about everyday conversations & academic talks. These recordings are mainly in British and Australian accents.' },
+      { id: 'youtube', name: 'Random Videos', icon: '▶️', levels: 'B1-C2', ddLessons: 181, video: true, img: 'https://dailydictation.com/images/dd-youtube.jpg', url: 'https://dailydictation.com/exercises/youtube', desc: "Are you bored with English lessons for students? Let's learn real English from YouTube videos that native speakers watch and enjoy!" },
+      { id: 'news', name: 'News', icon: '📰', levels: 'B1-C1', ddLessons: 219, video: true, img: 'https://dailydictation.com/images/dd-news2.jpeg', url: 'https://dailydictation.com/exercises/news', desc: 'Learn English through real-world news! Discover fascinating events and stories from around the globe while improving your language skills.' },
+      { id: 'ted-ed', name: 'TED', icon: '💡', levels: 'C1-C2', ddLessons: 95, video: true, img: 'https://dailydictation.com/images/dd-ted.jpeg', url: 'https://dailydictation.com/exercises/ted-ed', desc: 'Dive into fascinating topics from science, history, philosophy, and more while improving your English skills. Perfect for English learners who love exploring new ideas!' },
+      { id: 'toefl', name: 'TOEFL Listening', icon: '🏛️', levels: 'B1-C2', ddLessons: 54, video: false, img: 'https://dailydictation.com/images/dd-toefl.jpg', url: 'https://dailydictation.com/exercises/toefl-listening', desc: 'TOEFL listening recordings are academic conversations & lectures. These recordings will help you to get better preparation if you are planning to study in a English-speaking country.' },
+      { id: 'oet', name: 'Medical English (OET)', icon: '🩺', levels: 'B1-C2', ddLessons: 80, video: false, img: 'https://dailydictation.com/images/oet100.jpeg', url: 'https://dailydictation.com/exercises/medical-english-oet', desc: 'OET stands for Occupational English Test. It’s an English language exam designed for healthcare professionals (like doctors, nurses, dentists, pharmacists, etc.) who want to work or study in an English-speaking country.' },
+      { id: 'ipa', name: 'IPA', icon: '🔤', levels: 'A1', ddLessons: 42, video: false, img: 'https://dailydictation.com/images/dd-ipa.jpeg', url: 'https://dailydictation.com/exercises/english-pronunciation', desc: 'These exercises will also help you to have a great foundation to improve your Listening & Speaking skills!' },
+      { id: 'num', name: 'Numbers', icon: '🔢', levels: 'A1', ddLessons: 9, video: false, img: 'https://dailydictation.com/images/dd-numbers.jpg', url: 'https://dailydictation.com/exercises/numbers', desc: "Let's improve your ability to understand English numbers when they are spoken quickly by an American." },
+      { id: 'spelling-names', name: 'Spelling Names', icon: '🅰️', levels: 'A1', ddLessons: 6, video: false, img: 'https://dailydictation.com/images/dd-names.jpg', url: 'https://dailydictation.com/exercises/spelling-names', desc: "Let's learn and practice the English alphabet by spelling some common English names." },
+      { id: 'vocab', name: 'Câu ví dụ từ vựng', icon: '📚', levels: 'A1-C1', ddLessons: 0, video: false, img: '', url: '', desc: 'Bài nghe được tạo trực tiếp từ câu ví dụ trong các bộ từ vựng (Deck) của bạn.' },
+      { id: 'other', name: 'Khác', icon: '📁', levels: 'All', ddLessons: 0, video: false, img: '', url: '', desc: 'Các bài nghe tự chọn do bạn thêm vào.' }
+    ];
 
     const DICT_SAMPLES = [
+      { id: 's0', topic: 'short-stories', title: 'A rainy morning in Vancouver', level: 'A2', text: 'Every autumn, rain falls gently over the streets of Vancouver. People carry colorful umbrellas on their way to work. Small coffee shops on the corner are warm and busy. Neighbors greet each other with a smile before starting their day.' },
       { id: 's1', topic: 'conv', title: 'Booking a meeting room', level: 'A2', text: 'Good morning. I would like to book a meeting room for Thursday afternoon. How many people will attend the meeting? There will be eight of us. We also need a projector and a whiteboard. Room two is available from two to four. Great, please reserve it under my name.' },
       { id: 's2', topic: 'conv', title: 'Airport check-in', level: 'A2', text: 'May I see your passport and boarding pass, please? Here you are. Do you have any luggage to check in? Just one suitcase. Please place it on the scale. Your flight leaves from gate twelve at six thirty. Boarding begins forty minutes before departure.' },
+      { id: 's6', topic: 'stories-for-kids', title: 'The boy and the little bird', level: 'A2', text: 'Once upon a time, a little bird fell from a tall tree in the garden. A kind boy found the bird and gave it some warm water and seeds. After a few days, the bird was strong enough to fly again. Every morning, it returned to sing by the boy window.' },
       { id: 's3', topic: 'toeic', title: 'Job interview', level: 'B1', text: 'Thank you for coming in today. Could you tell me about your previous experience? I worked as an accountant for five years at a small firm. What motivated you to apply for this position? I am looking for a company with more opportunities for professional growth. We will contact the successful applicants by the end of the week.' },
       { id: 's4', topic: 'toeic', title: 'Office announcement', level: 'B1', text: 'Attention all employees. The annual training workshop has been rescheduled to next Monday. Please register online before Friday. Lunch will be provided for all participants. If you cannot attend, notify your supervisor as soon as possible. Thank you for your cooperation.' },
-      { id: 's5', topic: 'num', title: 'Numbers in daily life', level: 'A2', text: 'The meeting starts at nine fifteen. Please go to room three hundred and twelve. The ticket costs forty five dollars and fifty cents. My phone number is five five five, zero one two three. There are two thousand and twenty six students in this school.' }
+      { id: 's7', topic: 'ielts', title: 'University library tour', level: 'B1', text: 'Welcome to the university library orientation. On the ground floor, you will find the main reception desk and the return machines. Quiet study zones are located on the second and third floors. Students may borrow up to ten books at a time for two weeks.' },
+      { id: 's8', topic: 'youtube', title: 'How to build a daily reading habit', level: 'B2', text: 'Many people want to read more books, but they struggle to find the time. The secret is to start with just ten pages every morning. Keep a book on your desk instead of your phone. Over a year, those ten pages a day turn into fifteen or twenty books.' },
+      { id: 's9', topic: 'news', title: 'Solar energy reaches record growth', level: 'B2', text: 'Global investment in solar power reached a new record this year. Many cities are installing solar panels on public buildings and schools. Experts say clean energy will continue to become more affordable over the next decade.' },
+      { id: 's10', topic: 'ted-ed', title: 'Why do we dream?', level: 'C1', text: 'Throughout history, humans have wondered why our minds create vivid stories while we sleep. Modern neuroscience suggests that dreaming helps our brain process emotions and consolidate memories. Even a short night of rest plays a vital role in creative problem solving.' },
+      { id: 's11', topic: 'toefl', title: 'Introduction to marine biology', level: 'B2', text: 'In today lecture, we will examine how coral reefs support marine biodiversity. Although coral reefs cover less than one percent of the ocean floor, they provide a home for nearly a quarter of all ocean species.' },
+      { id: 's12', topic: 'oet', title: 'Patient consultation at the clinic', level: 'B2', text: 'Good afternoon, Mrs. Carter. What brings you to the clinic today? I have had a mild headache and a sore throat for the past three days. Have you noticed any fever or difficulty swallowing? Let me check your temperature and blood pressure first.' },
+      { id: 's13', topic: 'ipa', title: 'Minimal pairs practice: sheep and ship', level: 'A1', text: 'Please sit on this seat. The sheep are on the big ship. Reach for the rich peach on the table. Feel the cool breeze by the deep green sea.' },
+      { id: 's5', topic: 'num', title: 'Numbers in daily life', level: 'A2', text: 'The meeting starts at nine fifteen. Please go to room three hundred and twelve. The ticket costs forty five dollars and fifty cents. My phone number is five five five, zero one two three. There are two thousand and twenty six students in this school.' },
+      { id: 's14', topic: 'spelling-names', title: 'Spelling common English names', level: 'A1', text: 'My first name is Michael, spelled M I C H A E L. Her last name is Johnson, spelled J O H N S O N. Please write the name Elizabeth on the registration form. Mr. Williams lives on Baker Street.' }
     ];
 
     const splitSentences = (t) => (String(t).replace(/\s+/g, ' ').trim().match(/[^.!?]+[.!?]+["')]*|[^.!?]+$/g) || []).map(s => s.trim()).filter(Boolean);
@@ -3297,10 +3320,29 @@ void main(){
       );
     }
 
+    function TopicThumb({ topic, tColor, size = 'w-20 h-20' }) {
+      const [err, setErr] = useState(false);
+      if (topic.img && !err) {
+        return (
+          <div className="p-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0 shadow-sm">
+            <img src={topic.img} alt={topic.name} onError={() => setErr(true)} className={`${size} rounded-lg object-cover block`} />
+          </div>
+        );
+      }
+      return (
+        <div className={`${size} shrink-0 rounded-xl ${tColor.light} flex items-center justify-center text-3xl border border-slate-200 dark:border-slate-700`}>
+          {topic.icon || '🎧'}
+        </div>
+      );
+    }
+
     function ListeningSection({ tColor, decks, cards, setDecks, setCards, showToast }) {
       const load = () => { try { return JSON.parse(Store.get('myvocab_v4_dict')) || {}; } catch (e) { return {}; } };
       const [st, setSt] = useState(load);
       const [openId, setOpenId] = useState(null);
+      const [activeTopicId, setActiveTopicId] = useState(null);
+      const [viewMode, setViewMode] = useState('topics'); // 'topics' (All topics DailyDictation) | 'lessons' (Tất cả bài nghe)
+      const [openDescs, setOpenDescs] = useState({});
       const [form, setForm] = useState(false);
       const [title, setTitle] = useState('');
       const [text, setText] = useState('');
@@ -3321,6 +3363,7 @@ void main(){
       const lesson = all.find(l => l.id === openId);
       const sentsOf = (l) => splitSentences(l.text);
       const topicOf = (l) => topics.find(t => t.id === (l.topic || 'other')) || topics[topics.length - 1];
+      const activeTopic = topics.find(t => t.id === activeTopicId);
 
       // ----- thống kê -----
       const dkey = (d) => d.toLocaleDateString('en-CA');
@@ -3401,18 +3444,52 @@ void main(){
           onDone={(i) => markDone(lesson.id, i)} onAttempt={onAttempt} onTimes={(i, seg) => setTimes(lesson.id, i, seg)} onSaveWord={saveWord}
           onBack={() => setOpenId(null)} tColor={tColor} />;
       }
+
       const inp = 'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-sm outline-none focus:border-indigo-500';
-      const shown = all.filter(l => filter === 'all' || (l.topic || 'other') === filter);
       const countOf = (id) => all.filter(l => (l.topic || 'other') === id).length;
+      const toggleDesc = (id, e) => { if (e) e.stopPropagation(); setOpenDescs(p => ({ ...p, [id]: !p[id] })); };
+
+      const renderLessonCards = (list) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {list.map(l => {
+            const n = sentsOf(l).length, d = Object.keys(prog[l.id] || {}).length, tp = topicOf(l);
+            return (
+              <div key={l.id} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:shadow-md transition space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className={`w-11 h-11 shrink-0 rounded-xl ${tColor.light} flex items-center justify-center text-xl`}>{tp.icon}</div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-black text-base leading-snug">{l.title}</h3>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5 text-[11px] font-bold">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{tp.name}</span>
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{n} câu</span>
+                      {l.level && <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{l.level}</span>}
+                      {l.hasAudio && <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-600">🎵 Audio</span>}
+                      {l.builtin && <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">Bài mẫu</span>}
+                    </div>
+                  </div>
+                  {!l.builtin && <button onClick={() => delLesson(l)} title="Xoá bài" className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500"><Icon name="trash" className="w-4 h-4" /></button>}
+                </div>
+                <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div className={`h-full ${tColor.bg}`} style={{ width: Math.round(d * 100 / Math.max(1, n)) + '%' }} /></div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setOpenId(l.id)} className={`flex-1 px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold shadow`}>{d > 0 ? `Tiếp tục (${d}/${n})` : 'Bắt đầu nghe'}</button>
+                  {d > 0 && <button onClick={() => resetProg(l.id)} title="Làm lại từ đầu" className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500"><Icon name="rotate" className="w-4 h-4" /></button>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
 
       return (
         <Shell>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black">Luyện nghe chép chính tả</h2>
-              <p className="text-sm text-slate-400 mt-1">Nghe từng câu, gõ lại những gì nghe được, trang chấm theo từng từ</p>
+              <h2 className="text-2xl font-black">Luyện nghe (English Listening Exercises)</h2>
+              <p className="text-sm text-slate-400 mt-1">Chủ đề theo DailyDictation · Nghe chép chính tả từng câu ngay trên web hoặc mở khóa học gốc</p>
             </div>
-            <button onClick={() => setForm(!form)} className={`px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold flex items-center gap-2 shadow`}><Icon name="plus" className="w-4 h-4" /><span>Thêm bài nghe</span></button>
+            <button onClick={() => { if (activeTopicId) setTopicSel(activeTopicId); setForm(!form); }} className={`px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold flex items-center gap-2 shadow`}>
+              <Icon name="plus" className="w-4 h-4" /><span>Thêm bài nghe</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -3464,41 +3541,129 @@ void main(){
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setFilter('all')} className={`px-3.5 py-2 rounded-xl border text-xs font-bold ${filter === 'all' ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'}`}>Tất cả ({all.length})</button>
-            {topics.filter(t => countOf(t.id) > 0).map(t => (
-              <button key={t.id} onClick={() => setFilter(t.id)} className={`px-3.5 py-2 rounded-xl border text-xs font-bold ${filter === t.id ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'}`}>{t.icon} {t.name} ({countOf(t.id)})</button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {shown.map(l => {
-              const n = sentsOf(l).length, d = Object.keys(prog[l.id] || {}).length, tp = topicOf(l);
-              return (
-                <div key={l.id} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:shadow-md transition space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-11 h-11 shrink-0 rounded-xl ${tColor.light} flex items-center justify-center text-xl`}>{tp.icon}</div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-black text-base leading-snug">{l.title}</h3>
-                      <div className="flex flex-wrap gap-1.5 mt-1.5 text-[11px] font-bold">
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{tp.name}</span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{n} câu</span>
-                        {l.level && <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{l.level}</span>}
-                        {l.hasAudio && <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-600">🎵 Audio</span>}
-                        {l.builtin && <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">Bài mẫu</span>}
-                      </div>
-                    </div>
-                    {!l.builtin && <button onClick={() => delLesson(l)} title="Xoá bài" className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500"><Icon name="trash" className="w-4 h-4" /></button>}
-                  </div>
-                  <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div className={`h-full ${tColor.bg}`} style={{ width: Math.round(d * 100 / Math.max(1, n)) + '%' }} /></div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setOpenId(l.id)} className={`flex-1 px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold shadow`}>{d > 0 ? `Tiếp tục (${d}/${n})` : 'Bắt đầu nghe'}</button>
-                    {d > 0 && <button onClick={() => resetProg(l.id)} title="Làm lại từ đầu" className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500"><Icon name="rotate" className="w-4 h-4" /></button>}
+          {/* CHI TIẾT 1 CHỦ ĐỀ KHI BẤM VÀO CARD */}
+          {activeTopic ? (
+            <div className="space-y-4">
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <button onClick={() => setActiveTopicId(null)} className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold flex items-center gap-1.5">
+                    <Icon name="arrowLeft" className="w-4 h-4" /><span>All topics (Tất cả chủ đề)</span>
+                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button onClick={() => { setTopicSel(activeTopic.id); setForm(true); }} className="px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1">
+                      <Icon name="plus" className="w-3.5 h-3.5" /><span>Thêm bài vào chủ đề này</span>
+                    </button>
+                    {activeTopic.url && (
+                      <a href={activeTopic.url} target="_blank" rel="noopener noreferrer" className={`px-3.5 py-1.5 rounded-xl ${tColor.light} ${tColor.text} text-xs font-bold hover:opacity-90`}>
+                        Mở trên DailyDictation ({activeTopic.ddLessons} bài) ↗
+                      </a>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+                <div className="flex items-start gap-4">
+                  <TopicThumb topic={activeTopic} tColor={tColor} size="w-20 h-20" />
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-xl font-black">{activeTopic.name}</h3>
+                      {activeTopic.video && <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-900 text-xs font-black">Video</span>}
+                      {activeTopic.levels && <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500">Levels: {activeTopic.levels}</span>}
+                    </div>
+                    {activeTopic.desc && <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{activeTopic.desc}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {countOf(activeTopic.id) > 0 ? (
+                renderLessonCards(all.filter(l => (l.topic || 'other') === activeTopic.id))
+              ) : (
+                <div className="p-8 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-center space-y-3">
+                  <p className="text-sm text-slate-400">Chưa có bài nghe nào trong chủ đề này trên máy của bạn.</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button onClick={() => { setTopicSel(activeTopic.id); setForm(true); }} className={`px-4 py-2 rounded-xl ${tColor.bg} text-white text-xs font-bold`}>+ Thêm bài nghe mới</button>
+                    {activeTopic.url && <a href={activeTopic.url} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold">Mở {activeTopic.ddLessons} bài trên DailyDictation ↗</a>}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                  <button onClick={() => setViewMode('topics')} className={`px-4 py-2 rounded-lg transition ${viewMode === 'topics' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>
+                    All topics ({topics.filter(t => t.ddLessons > 0 || countOf(t.id) > 0).length} chủ đề)
+                  </button>
+                  <button onClick={() => setViewMode('lessons')} className={`px-4 py-2 rounded-lg transition ${viewMode === 'lessons' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>
+                    Tất cả bài nghe trong web ({all.length})
+                  </button>
+                </div>
+                <a href="https://dailydictation.com/exercises" target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                  dailydictation.com/exercises ↗
+                </a>
+              </div>
+
+              {viewMode === 'topics' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {topics.filter(t => t.ddLessons > 0 || countOf(t.id) > 0).map(t => {
+                    const localCnt = countOf(t.id);
+                    const showDesc = !!openDescs[t.id];
+                    return (
+                      <div key={t.id} onClick={() => setActiveTopicId(t.id)} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && setActiveTopicId(t.id)}
+                        className="cursor-pointer p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between space-y-3">
+                        <div className="flex items-start gap-3.5">
+                          <TopicThumb topic={t} tColor={tColor} size="w-20 h-20" />
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <h3 className={`font-black text-lg leading-snug ${tColor.text} hover:underline`}>{t.name}</h3>
+                              {t.video && <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-black">Video</span>}
+                            </div>
+                            {t.levels && <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Levels: {t.levels}</p>}
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                              <span>{t.ddLessons ? `${t.ddLessons} lessons` : `${localCnt} bài`}</span>
+                              {t.ddLessons > 0 && localCnt > 0 && <span className="px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold">{localCnt} bài trong web</span>}
+                              {t.desc && (
+                                <button type="button" onClick={(e) => toggleDesc(t.id, e)} title="Xem mô tả chủ đề"
+                                  className="px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 font-black tracking-wider">
+                                  •••
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {showDesc && t.desc && (
+                          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pt-2 border-t border-slate-100 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+                            {t.desc}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+                          <button type="button" onClick={() => setActiveTopicId(t.id)} className={`flex-1 py-2 px-3 rounded-xl ${tColor.bg} text-white text-xs font-bold shadow-sm`}>
+                            Luyện nghe ({localCnt} bài)
+                          </button>
+                          {t.url && (
+                            <a href={t.url} target="_blank" rel="noopener noreferrer" title="Mở toàn bộ bài nghe trên DailyDictation.com"
+                              className="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-400">
+                              Web gốc ↗
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => setFilter('all')} className={`px-3.5 py-2 rounded-xl border text-xs font-bold ${filter === 'all' ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'}`}>Tất cả ({all.length})</button>
+                    {topics.filter(t => countOf(t.id) > 0).map(t => (
+                      <button key={t.id} onClick={() => setFilter(t.id)} className={`px-3.5 py-2 rounded-xl border text-xs font-bold ${filter === t.id ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'}`}>{t.icon} {t.name} ({countOf(t.id)})</button>
+                    ))}
+                  </div>
+                  {renderLessonCards(all.filter(l => filter === 'all' || (l.topic || 'other') === filter))}
+                </div>
+              )}
+            </div>
+          )}
         </Shell>
       );
     }
