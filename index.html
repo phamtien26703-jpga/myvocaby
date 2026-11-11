@@ -1994,18 +1994,15 @@ void main(){
         setSRes({ ok, word: answerOf(curCard) });
       };
 
+      const swapBtn = (extra) => (
+        <button type="button" onClick={() => changeDir(!rev)} title="Đảo chiều: từ ⇄ nghĩa"
+          className={`shrink-0 w-9 h-9 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-indigo-600 hover:border-indigo-400 shadow-sm flex items-center justify-center text-lg font-black leading-none ${extra || ''}`}>⇄</button>
+      );
       const segBtn = (active) => `px-4 py-2 rounded-lg transition ${active ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`;
 
       return (
         <div className="space-y-4 max-w-4xl mx-auto">
           <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-            <div className="flex flex-wrap justify-between items-center gap-2">
-              <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">Chiều luyện tập:</span>
-              <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-                <button onClick={() => changeDir(false)} className={segBtn(!rev)}>Nghĩa → Từ tiếng Anh</button>
-                <button onClick={() => changeDir(true)} className={segBtn(rev)}>🔄 Từ tiếng Anh → Nghĩa</button>
-              </div>
-            </div>
             <div className="flex flex-wrap justify-between items-center gap-2">
               <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">Chế độ điền từ:</span>
               <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
@@ -2018,12 +2015,17 @@ void main(){
 
           {isMulti ? (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+              <div className="md:hidden flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <span className="text-xs font-bold text-slate-500">{rev ? 'Từ tiếng Anh → Nghĩa' : 'Nghĩa → Từ tiếng Anh'}</span>
+                {swapBtn()}
+              </div>
               <div className="overflow-x-auto">
                 <table className="block md:table w-full text-left text-base">
                   <thead className="hidden md:table-header-group bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-4 w-14 text-center">#</th>
                       <th className="p-4 w-2/5">{rev ? 'Từ tiếng Anh' : 'Nghĩa tiếng Việt'}</th>
+                      <th className="p-0 w-12 text-center"><span className="inline-flex">{swapBtn()}</span></th>
                       <th className="p-4 w-2/5">{rev ? 'Nhập nghĩa tiếng Việt (Nhấn Enter)' : 'Điền từ tiếng Anh (Nhấn Enter)'}</th>
                       <th className="p-4">Kết quả</th>
                     </tr>
@@ -2037,12 +2039,13 @@ void main(){
                           <td className="md:p-4 font-semibold text-base text-slate-800 dark:text-slate-200">
                             {rev ? (
                               <span className="inline-flex flex-wrap items-baseline gap-x-2">
-                                <button type="button" onClick={() => speak(c.w, 'en-US')} title="Nghe phát âm" className="font-black text-indigo-600 dark:text-indigo-400 text-left hover:underline">{c.w}</button>
+                                <button type="button" onClick={() => speak(c.w, 'en-US')} title="Nghe phát âm" className="font-black text-slate-900 dark:text-white text-left hover:underline">{c.w}</button>
                                 {c.p && <span className="text-xs font-mono text-slate-400">({c.p})</span>}
-                                {c.i && <span className="text-xs font-mono text-indigo-500">{c.i}</span>}
+                                {c.i && <span className="text-xs font-mono text-slate-400">{c.i}</span>}
                               </span>
                             ) : meaningOf(c)}
                           </td>
+                          <td className="hidden md:table-cell md:p-0 text-center text-slate-300 dark:text-slate-600 select-none">⇄</td>
                           <td className="col-span-2 md:col-auto md:p-4">
                             <input
                               id={`row-in-${i}`}
@@ -2085,10 +2088,10 @@ void main(){
               <span className="text-xs text-slate-400 font-bold">CÂU {sIdx + 1} / {pool.length}</span>
               {rev ? (
                 <div className="space-y-2">
-                  <h3 className="text-4xl md:text-5xl font-black text-indigo-600 dark:text-indigo-400">
+                  <h3 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white">
                     {curCard?.w} {curCard?.p && <span className="text-lg font-normal text-slate-400">({curCard.p})</span>}
                   </h3>
-                  {curCard?.i && <p className="text-lg font-mono text-indigo-500 font-bold">{curCard.i}</p>}
+                  {curCard?.i && <p className="text-lg font-mono text-slate-400 font-bold">{curCard.i}</p>}
                   <div className="flex justify-center gap-2 pt-1">
                     <button onClick={() => speak(curCard.w, 'en-GB')} className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 text-xs font-bold">🔊 UK</button>
                     <button onClick={() => speak(curCard.w, 'en-US')} className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 text-xs font-bold">🔊 US</button>
@@ -2097,6 +2100,7 @@ void main(){
               ) : (
                 <h3 className="text-3xl md:text-4xl font-black text-indigo-600 dark:text-indigo-400">{curCard ? meaningOf(curCard) : ''}</h3>
               )}
+              <div className="flex justify-center">{swapBtn()}</div>
               <div className="max-w-md mx-auto space-y-3">
                 <input
                   type="text"
