@@ -1042,6 +1042,7 @@ void main(){
       const NAV = [
         { id: 'study', icon: 'practice', label: 'Học & Luyện tập' },
         { id: 'grammar', icon: 'book', label: 'Ngữ pháp TOEIC', short: 'Ngữ pháp' },
+        { id: 'listen', icon: 'volume', label: 'Luyện nghe', short: 'Nghe' },
         { id: 'library', icon: 'folder', label: 'Thư viện (Tra cứu)' },
         { id: 'import', icon: 'upload', label: 'Nạp từ vựng' }
       ];
@@ -1104,6 +1105,9 @@ void main(){
             <div className={tab === 'grammar' ? '' : 'hidden'}>
               <GrammarSection tColor={tColor} />
             </div>
+            <div className={tab === 'listen' ? '' : 'hidden'}>
+              <ListeningSection tColor={tColor} decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} showToast={showToast} />
+            </div>
             <div className={tab === 'library' ? '' : 'hidden'}>
               <LibrarySection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} deckId={libDeck} setDeckId={setLibDeck} goImport={() => setTab('import')} tColor={tColor} />
             </div>
@@ -1113,7 +1117,7 @@ void main(){
             </div>
           </main>
 
-          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-7 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-1.5">
+          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-8 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-1.5">
             {NAV.map(n => (
               <button key={n.id} onClick={() => setTab(n.id)} className={`flex flex-col items-center gap-0.5 py-1 text-[10px] font-bold ${tab === n.id ? tColor.text : 'text-slate-400'}`}>
                 <Icon name={n.icon} className="w-5 h-5" /><span>{n.short || n.label.split(' ')[0]}</span>
@@ -3035,6 +3039,466 @@ void main(){
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-sm outline-none focus:border-indigo-500" />
             </div>
           )}
+        </Shell>
+      );
+    }
+
+    // ==========================================
+    // LUYỆN NGHE CHÉP CHÍNH TẢ (bài nghe nằm hoàn toàn trong web này)
+    // - Chủ đề + bài nghe của bạn, tải audio riêng (lưu trong trình duyệt)
+    // - Chấm theo từng từ, chuỗi ngày luyện, thống kê, lưu từ mới vào Deck
+    // ==========================================
+    const DICT_TOPICS = [
+      ['conv', 'Conversations', '💬'], ['toeic', 'TOEIC Listening', '🎧'], ['ielts', 'IELTS Listening', '🎓'],
+      ['news', 'News & Stories', '📰'], ['num', 'Numbers', '🔢'], ['vocab', 'Câu ví dụ từ vựng', '📚'], ['other', 'Khác', '📁']
+    ].map(a => ({ id: a[0], name: a[1], icon: a[2] }));
+
+    const DICT_SAMPLES = [
+      { id: 's1', topic: 'conv', title: 'Booking a meeting room', level: 'A2', text: 'Good morning. I would like to book a meeting room for Thursday afternoon. How many people will attend the meeting? There will be eight of us. We also need a projector and a whiteboard. Room two is available from two to four. Great, please reserve it under my name.' },
+      { id: 's2', topic: 'conv', title: 'Airport check-in', level: 'A2', text: 'May I see your passport and boarding pass, please? Here you are. Do you have any luggage to check in? Just one suitcase. Please place it on the scale. Your flight leaves from gate twelve at six thirty. Boarding begins forty minutes before departure.' },
+      { id: 's3', topic: 'toeic', title: 'Job interview', level: 'B1', text: 'Thank you for coming in today. Could you tell me about your previous experience? I worked as an accountant for five years at a small firm. What motivated you to apply for this position? I am looking for a company with more opportunities for professional growth. We will contact the successful applicants by the end of the week.' },
+      { id: 's4', topic: 'toeic', title: 'Office announcement', level: 'B1', text: 'Attention all employees. The annual training workshop has been rescheduled to next Monday. Please register online before Friday. Lunch will be provided for all participants. If you cannot attend, notify your supervisor as soon as possible. Thank you for your cooperation.' },
+      { id: 's5', topic: 'num', title: 'Numbers in daily life', level: 'A2', text: 'The meeting starts at nine fifteen. Please go to room three hundred and twelve. The ticket costs forty five dollars and fifty cents. My phone number is five five five, zero one two three. There are two thousand and twenty six students in this school.' }
+    ];
+
+    const splitSentences = (t) => (String(t).replace(/\s+/g, ' ').trim().match(/[^.!?]+[.!?]+["')]*|[^.!?]+$/g) || []).map(s => s.trim()).filter(Boolean);
+    const wordsOf = (s) => String(s).toLowerCase().replace(/[’]/g, "'").replace(/[^a-z0-9'\s]/g, ' ').split(/\s+/).filter(Boolean);
+    function diffWords(target, user) {
+      const n = target.length, m = user.length;
+      const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+      for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+        dp[i][j] = target[i] === user[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      const tm = new Array(n).fill(false), um = new Array(m).fill(false);
+      let i = 0, j = 0;
+      while (i < n && j < m) {
+        if (target[i] === user[j]) { tm[i] = um[j] = true; i++; j++; }
+        else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+      }
+      return { tm, um, ok: n > 0 && dp[0][0] === n && m === n };
+    }
+
+    // --- Lưu file audio trong trình duyệt (IndexedDB), riêng từng tài khoản ---
+    const AudioDB = {
+      db: null,
+      open() {
+        return new Promise((res, rej) => {
+          if (this.db) return res(this.db);
+          const r = indexedDB.open('myvocab_audio', 1);
+          r.onupgradeneeded = () => r.result.createObjectStore('files');
+          r.onsuccess = () => { this.db = r.result; res(r.result); };
+          r.onerror = () => rej(r.error);
+        });
+      },
+      async put(k, blob) {
+        const db = await this.open();
+        return new Promise((res, rej) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').put(blob, Store.p + k); tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); });
+      },
+      async get(k) {
+        const db = await this.open();
+        return new Promise((res, rej) => { const r = db.transaction('files').objectStore('files').get(Store.p + k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+      },
+      async del(k) {
+        const db = await this.open();
+        return new Promise((res) => { const tx = db.transaction('files', 'readwrite'); tx.objectStore('files').delete(Store.p + k); tx.oncomplete = () => res(); tx.onerror = () => res(); });
+      }
+    };
+
+    // Chia audio thành từng câu: tìm các quãng lặng dài nhất; nếu không đủ thì chia theo độ dài câu
+    function proportionalTimes(sents, dur) {
+      const w = sents.map(s => Math.max(1, s.length)), tot = w.reduce((a, b) => a + b, 0);
+      let acc = 0;
+      return w.map(x => { const s = acc / tot * dur; acc += x; return [Number(s.toFixed(2)), Number((acc / tot * dur).toFixed(2))]; });
+    }
+    async function analyzeAudio(file, sents) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      let ab = null;
+      try { const ctx = new AC(); ab = await ctx.decodeAudioData(await file.arrayBuffer()); if (ctx.close) ctx.close(); } catch (e) { ab = null; }
+      if (!ab) {
+        const dur = await new Promise(res => { const a = new Audio(URL.createObjectURL(file)); a.onloadedmetadata = () => res(a.duration || 0); a.onerror = () => res(0); });
+        return { dur, times: proportionalTimes(sents, dur || sents.length * 4), auto: false };
+      }
+      const dur = ab.duration, n = sents.length;
+      const data = ab.getChannelData(0), frame = Math.max(1, Math.floor(ab.sampleRate * 0.02)), fs = frame / ab.sampleRate;
+      const rms = [];
+      for (let i = 0; i + frame <= data.length; i += frame) { let s = 0; for (let j = 0; j < frame; j++) { const v = data[i + j]; s += v * v; } rms.push(Math.sqrt(s / frame)); }
+      const sorted = [...rms].sort((a, b) => a - b);
+      const thr = (sorted[Math.floor(sorted.length * 0.9)] || 0) * 0.12;
+      const runs = []; let st = -1;
+      for (let i = 0; i <= rms.length; i++) {
+        const quiet = i < rms.length && rms[i] < thr;
+        if (quiet && st < 0) st = i;
+        if (!quiet && st >= 0) { const len = (i - st) * fs; if (len >= 0.15) runs.push({ st: st * fs, en: i * fs, len }); st = -1; }
+      }
+      const lead = runs.find(r => r.st < 0.05);
+      const startAt = lead ? Math.min(lead.en, 1.5) : 0;
+      const inner = runs.filter(r => r.st > 0.1 && r.en < dur - 0.1);
+      if (n <= 1) return { dur, times: [[Number(startAt.toFixed(2)), Number(dur.toFixed(2))]], auto: true };
+      if (inner.length < n - 1) return { dur, times: proportionalTimes(sents, dur), auto: false };
+      const pick = [...inner].sort((a, b) => b.len - a.len).slice(0, n - 1).sort((a, b) => a.st - b.st);
+      const times = [];
+      for (let i = 0; i < n; i++) {
+        const s = i === 0 ? startAt : Math.max(pick[i - 1].st, pick[i - 1].en - 0.12);
+        const e = i === n - 1 ? dur : Math.min(pick[i].en, pick[i].st + 0.2);
+        times.push([Number(s.toFixed(2)), Number(e.toFixed(2))]);
+      }
+      return { dur, times, auto: true };
+    }
+
+    function DictationPlayer({ lesson, sentences, done, onDone, onAttempt, onTimes, onSaveWord, onBack, tColor }) {
+      const [idx, setIdx] = useState(() => { const f = sentences.findIndex((_, i) => !done[i]); return f < 0 ? 0 : f; });
+      const [val, setVal] = useState('');
+      const [res, setRes] = useState(null);
+      const [hint, setHint] = useState(false);
+      const [rate, setRate] = useState(0.9);
+      const [acc, setAcc] = useState('en-US');
+      const [audioReady, setAudioReady] = useState(false);
+      const [edit, setEdit] = useState(false);
+      const [pw, setPw] = useState('');
+      const [pm, setPm] = useState('');
+      const inputRef = useRef(null);
+      const audioRef = useRef(null);
+      const stopRef = useRef(null);
+      const sent = sentences[idx] || '';
+      const target = useMemo(() => wordsOf(sent), [sent]);
+      const times = lesson.times || [];
+      const seg = times[idx];
+
+      useEffect(() => {
+        if (!lesson.hasAudio) return;
+        let url = null, dead = false;
+        AudioDB.get('a_' + lesson.id).then(b => {
+          if (dead || !b) return;
+          url = URL.createObjectURL(b);
+          const a = new Audio(url); a.preload = 'auto'; audioRef.current = a; setAudioReady(true);
+        }).catch(() => {});
+        return () => { dead = true; clearInterval(stopRef.current); if (audioRef.current) audioRef.current.pause(); audioRef.current = null; if (url) URL.revokeObjectURL(url); };
+      }, [lesson.id]);
+
+      const useAudio = audioReady && !!seg;
+      const play = (r) => {
+        const rt = r || rate;
+        if (useAudio && audioRef.current) {
+          const a = audioRef.current;
+          clearInterval(stopRef.current);
+          if (window.speechSynthesis) window.speechSynthesis.cancel();
+          a.pause(); a.playbackRate = rt; a.currentTime = seg[0];
+          a.play().catch(() => {});
+          stopRef.current = setInterval(() => { if (a.currentTime >= seg[1] || a.ended) { a.pause(); clearInterval(stopRef.current); } }, 40);
+        } else speak(sent, acc, rt);
+      };
+      useEffect(() => { setVal(''); setRes(null); setHint(false); setPw(''); setPm('');
+        const t = setTimeout(() => { play(); if (inputRef.current) inputRef.current.focus(); }, 250);
+        return () => clearTimeout(t); }, [idx, lesson.id, audioReady]);
+
+      const check = () => {
+        if (!val.trim()) return;
+        const d = diffWords(target, wordsOf(val));
+        const score = target.length ? Math.round(d.tm.filter(Boolean).length * 100 / target.length) : 0;
+        if (d.ok) { SoundFx.correct(); onDone(idx); } else SoundFx.wrong();
+        onAttempt(d.ok);
+        setRes({ ...d, score, userWords: wordsOf(val) });
+      };
+      const total = sentences.length, cnt = Object.keys(done).filter(k => done[k]).length;
+      const go = (d) => setIdx(i => Math.min(total - 1, Math.max(0, i + d)));
+      const hintText = target.map(w => w[0] + '·'.repeat(Math.max(0, w.length - 1))).join('  ');
+      const pill = 'px-3 py-1.5 rounded-xl text-xs font-bold';
+      const setSeg = (k, v) => { const s = seg ? [...seg] : [0, 0]; s[k] = Math.max(0, Number(v) || 0); onTimes(idx, s); };
+      const inp = 'px-2 py-1.5 w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-xs font-bold text-center outline-none focus:border-indigo-500';
+
+      return (
+        <Shell>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <button onClick={onBack} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0"><Icon name="arrowLeft" className="w-4 h-4" /><span>Các bài nghe</span></button>
+              <h2 className="text-lg font-black truncate">{lesson.title}</h2>
+            </div>
+            <span className="text-xs font-bold text-slate-400">Đúng {cnt} / {total} câu</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div className={`h-full ${tColor.bg} transition-all`} style={{ width: Math.round(cnt * 100 / Math.max(1, total)) + '%' }} /></div>
+
+          <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-400">
+              <span>CÂU {idx + 1} / {total} · {target.length} từ{useAudio ? ' · 🎵 audio của bạn' : ' · giọng đọc máy'}</span>
+              <div className="flex items-center gap-2">
+                {!useAudio && (
+                  <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg">
+                    {[['en-GB', 'UK'], ['en-US', 'US']].map(a => <button key={a[0]} onClick={() => setAcc(a[0])} className={`px-2.5 py-1 rounded-md ${acc === a[0] ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`}>{a[1]}</button>)}
+                  </div>
+                )}
+                <select value={rate} onChange={e => setRate(Number(e.target.value))} className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-xs font-bold">
+                  <option value={0.6}>Chậm 0.6x</option><option value={0.8}>0.8x</option><option value={0.9}>0.9x</option><option value={1}>Bình thường</option><option value={1.2}>Nhanh 1.2x</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-3">
+              <button onClick={() => play()} className={`w-20 h-20 rounded-full ${tColor.bg} text-white flex items-center justify-center shadow-lg hover:scale-105 transition`} title="Nghe câu này"><Icon name="volume" className="w-10 h-10" /></button>
+              <button onClick={() => play(0.55)} className="self-end px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500" title="Nghe thật chậm">🐢 Chậm</button>
+            </div>
+
+            {lesson.hasAudio && audioReady && (
+              <div className="space-y-2">
+                <button onClick={() => setEdit(e => !e)} className="text-xs font-bold text-slate-400 hover:text-indigo-500">{edit ? '▾' : '▸'} ⏱ Chỉnh thời gian cắt câu này (nếu audio bị cắt lệch)</button>
+                {edit && seg && (
+                  <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-xs font-bold text-slate-500">
+                    <span>Bắt đầu</span>
+                    <button onClick={() => setSeg(0, seg[0] - 0.1)} className="px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700">−0.1</button>
+                    <input type="number" step="0.05" className={inp} value={seg[0]} onChange={e => setSeg(0, e.target.value)} />
+                    <button onClick={() => setSeg(0, seg[0] + 0.1)} className="px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700">+0.1</button>
+                    <span className="ml-2">Kết thúc</span>
+                    <button onClick={() => setSeg(1, seg[1] - 0.1)} className="px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700">−0.1</button>
+                    <input type="number" step="0.05" className={inp} value={seg[1]} onChange={e => setSeg(1, e.target.value)} />
+                    <button onClick={() => setSeg(1, seg[1] + 0.1)} className="px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700">+0.1</button>
+                    <button onClick={() => play()} className={`${pill} ${tColor.bg} text-white`}>Nghe thử</button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <textarea ref={inputRef} rows={3} value={val} disabled={res && res.ok} onChange={e => setVal(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (res && res.ok) go(1); else check(); } }}
+              autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false}
+              placeholder="Nghe và gõ lại câu bạn nghe được... (Enter để kiểm tra)"
+              className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-transparent text-lg font-semibold outline-none focus:border-indigo-500" />
+
+            <div className="flex flex-wrap gap-2">
+              <button onClick={check} className={`${pill} ${tColor.bg} text-white shadow`}>Kiểm tra</button>
+              <button onClick={() => setHint(h => !h)} className={`${pill} border border-slate-200 dark:border-slate-700 text-slate-500`}>💡 Gợi ý</button>
+              <button onClick={() => setRes({ ...diffWords(target, []), score: 0, userWords: [], shown: true })} className={`${pill} border border-slate-200 dark:border-slate-700 text-slate-500`}>Hiện đáp án</button>
+            </div>
+            {hint && !res && <p className="font-mono text-sm text-slate-500 tracking-wider">{hintText}</p>}
+
+            {res && (
+              <div className={`p-4 rounded-2xl space-y-3 ${res.ok ? 'bg-emerald-50 dark:bg-emerald-950/50' : 'bg-slate-50 dark:bg-slate-800/60'}`}>
+                {!res.shown && <p className={`text-sm font-bold ${res.ok ? 'text-emerald-600' : 'text-rose-600'}`}>{res.ok ? '✓ Chính xác! 🎉' : `Chưa đúng hoàn toàn · ${res.score}% số từ`}</p>}
+                {!res.shown && !res.ok && (
+                  <p className="text-base font-semibold leading-relaxed"><span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-2">Bạn gõ</span>
+                    {res.userWords.map((w, i) => <span key={i} className={`mr-1.5 ${res.um[i] ? 'text-emerald-600' : 'text-rose-600 line-through'}`}>{w}</span>)}</p>
+                )}
+                <p className="text-base font-semibold leading-relaxed"><span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-2">Đáp án</span>
+                  {sent.split(/\s+/).map((w, i) => (
+                    <button key={i} type="button" onClick={() => setPw(w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, ''))} title="Bấm để chọn từ này lưu vào từ vựng" className="mr-1.5 text-slate-900 dark:text-white hover:text-indigo-600 hover:underline">{w}</button>
+                  ))}</p>
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/70 dark:border-slate-700">
+                  <span className="text-[11px] font-bold text-slate-400">📌 Lưu từ mới (bấm từ trong đáp án để chọn):</span>
+                  <input value={pw} onChange={e => setPw(e.target.value)} placeholder="Từ tiếng Anh" className="w-32 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-sm font-bold outline-none focus:border-indigo-500" />
+                  <input value={pm} onChange={e => setPm(e.target.value)} placeholder="Nghĩa tiếng Việt" className="flex-1 min-w-[120px] px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-sm outline-none focus:border-indigo-500" />
+                  <button onClick={() => { if (pw.trim()) { onSaveWord(pw, pm, sent); setPw(''); setPm(''); } }} disabled={!pw.trim()} className={`${pill} ${tColor.bg} text-white disabled:opacity-40`}>Lưu vào Deck</button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button disabled={idx === 0} onClick={() => go(-1)} className="px-5 py-2.5 rounded-xl border text-xs font-bold disabled:opacity-30">← Câu trước</button>
+              <button disabled={idx >= total - 1} onClick={() => go(1)} className={`px-5 py-2.5 rounded-xl ${tColor.bg} text-white text-xs font-bold disabled:opacity-30`}>Câu sau →</button>
+            </div>
+          </div>
+        </Shell>
+      );
+    }
+
+    function ListeningSection({ tColor, decks, cards, setDecks, setCards, showToast }) {
+      const load = () => { try { return JSON.parse(Store.get('myvocab_v4_dict')) || {}; } catch (e) { return {}; } };
+      const [st, setSt] = useState(load);
+      const [openId, setOpenId] = useState(null);
+      const [form, setForm] = useState(false);
+      const [title, setTitle] = useState('');
+      const [text, setText] = useState('');
+      const [file, setFile] = useState(null);
+      const [topicSel, setTopicSel] = useState('conv');
+      const [newTopic, setNewTopic] = useState('');
+      const [filter, setFilter] = useState('all');
+      const [busy, setBusy] = useState('');
+      const [dk, setDk] = useState('');
+      const [lk, setLk] = useState('');
+      useEffect(() => { try { Store.set('myvocab_v4_dict', JSON.stringify(st)); } catch (e) { showToast('Bộ nhớ trình duyệt đã đầy.'); } }, [st]);
+
+      const custom = st.lessons || [];
+      const prog = st.prog || {};
+      const daily = st.daily || {};
+      const topics = [...DICT_TOPICS, ...(st.topics || [])];
+      const all = [...DICT_SAMPLES.map(l => ({ ...l, builtin: true })), ...custom];
+      const lesson = all.find(l => l.id === openId);
+      const sentsOf = (l) => splitSentences(l.text);
+      const topicOf = (l) => topics.find(t => t.id === (l.topic || 'other')) || topics[topics.length - 1];
+
+      // ----- thống kê -----
+      const dkey = (d) => d.toLocaleDateString('en-CA');
+      const todayStat = daily[dkey(new Date())] || { t: 0, c: 0 };
+      let streak = 0;
+      { const d = new Date(); if (!(daily[dkey(d)] || {}).t) d.setDate(d.getDate() - 1); while ((daily[dkey(d)] || {}).t) { streak++; d.setDate(d.getDate() - 1); } }
+      const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return { l: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()], c: (daily[dkey(d)] || {}).c || 0 }; });
+      const wmax = Math.max(1, ...week.map(w => w.c));
+      const totalCorrect = Object.values(daily).reduce((a, x) => a + (x.c || 0), 0);
+
+      const onAttempt = (ok) => setSt(s => {
+        const k = dkey(new Date()); const d = (s.daily || {})[k] || { t: 0, c: 0 };
+        return { ...s, daily: { ...(s.daily || {}), [k]: { t: d.t + 1, c: d.c + (ok ? 1 : 0) } } };
+      });
+      const markDone = (id, i) => setSt(s => ({ ...s, prog: { ...(s.prog || {}), [id]: { ...((s.prog || {})[id] || {}), [i]: true } } }));
+      const resetProg = (id) => setSt(s => { const p = { ...(s.prog || {}) }; delete p[id]; return { ...s, prog: p }; });
+      const setTimes = (id, i, seg) => setSt(s => ({ ...s, lessons: (s.lessons || []).map(l => { if (l.id !== id) return l; const t = [...(l.times || [])]; t[i] = seg; return { ...l, times: t }; }) }));
+
+      const addLesson = async (t, body, topicId, f) => {
+        const sents = splitSentences(body);
+        if (!sents.length) return;
+        const id = uid();
+        let extra = {};
+        if (f) {
+          setBusy('Đang phân tích audio và chia câu...');
+          try {
+            const r = await analyzeAudio(f, sents);
+            await AudioDB.put('a_' + id, f);
+            extra = { hasAudio: true, times: r.times, dur: r.dur };
+            showToast(r.auto ? 'Đã chia audio thành ' + sents.length + ' câu theo quãng lặng. Nếu lệch, hãy chỉnh trong bài.' : 'Đã chia audio theo độ dài câu (ước lượng). Hãy chỉnh thời gian từng câu cho khớp.');
+          } catch (e) { showToast('Không lưu được audio, bài sẽ dùng giọng đọc máy.'); }
+          setBusy('');
+        }
+        setSt(s => {
+          let topic = topicId, topicsList = s.topics || [];
+          if (topicId === '__new') {
+            const nm = newTopic.trim() || 'Chủ đề mới'; topic = uid();
+            topicsList = [...topicsList, { id: topic, name: nm, icon: '📂' }];
+          }
+          const l = { id, topic, title: (t || '').trim() || 'Bài nghe ' + ((s.lessons || []).length + 1), level: '', text: body.trim(), ...extra };
+          return { ...s, topics: topicsList, lessons: [...(s.lessons || []), l] };
+        });
+        setTitle(''); setText(''); setFile(null); setNewTopic(''); setForm(false);
+      };
+      const delLesson = (l) => {
+        if (!confirm(`Xoá bài nghe "${l.title}"?`)) return;
+        if (l.hasAudio) AudioDB.del('a_' + l.id);
+        setSt(s => { const p = { ...(s.prog || {}) }; delete p[l.id]; return { ...s, lessons: (s.lessons || []).filter(x => x.id !== l.id), prog: p }; });
+      };
+
+      const saveWord = (w, s, sentence) => {
+        const word = w.trim(); if (!word) return;
+        const did = 'dlisten';
+        const exist = cards.filter(c => c.d === did);
+        if (exist.some(c => c.w.toLowerCase() === word.toLowerCase())) { showToast('Từ "' + word + '" đã có trong Deck "Từ mới khi nghe".'); return; }
+        if (!decks.find(d => d.id === did)) setDecks(ds => [...ds, { id: did, name: 'Từ mới khi nghe' }]);
+        const n = Math.max(0, ...cards.map(c => c.n)) + 1;
+        const num = exist.length ? Math.max(...exist.map(numOf)) + 1 : 1;
+        const re = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+        const ex = sentence.replace(re, m => '[' + m + ']');
+        const mean = s.trim();
+        setCards(cs => [...cs, { n, num, l: Math.floor((num - 1) / 55) + 1, d: did, w: word, p: '', i: '', s: mean, v: mean, e: '', x: [ex] }]);
+        showToast('Đã lưu "' + word + '" vào Deck "Từ mới khi nghe".');
+      };
+
+      const deckListInfo = listMeta(cards.filter(c => c.d === (dk || (decks[0] || {}).id)));
+      const fromDeck = () => {
+        const d = dk || (decks[0] || {}).id;
+        const lid = lk || (deckListInfo[0] || {}).id;
+        const ex = cards.filter(c => c.d === d && c.l === Number(lid)).sort((a, b) => numOf(a) - numOf(b))
+          .map(c => (c.x && c.x[0]) ? String(c.x[0]).split(/\(\s*=?\s*Dịch:/i)[0].replace(/[\[\]]/g, '').trim() : '').filter(Boolean).slice(0, 40);
+        if (!ex.length) { alert('List này chưa có câu ví dụ nào.'); return; }
+        addLesson(`Câu ví dụ - ${(decks.find(x => x.id === d) || {}).name || ''} · List ${lid}`, ex.join(' '), 'vocab', null);
+      };
+
+      if (lesson) {
+        return <DictationPlayer key={lesson.id} lesson={lesson} sentences={sentsOf(lesson)} done={prog[lesson.id] || {}}
+          onDone={(i) => markDone(lesson.id, i)} onAttempt={onAttempt} onTimes={(i, seg) => setTimes(lesson.id, i, seg)} onSaveWord={saveWord}
+          onBack={() => setOpenId(null)} tColor={tColor} />;
+      }
+      const inp = 'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-sm outline-none focus:border-indigo-500';
+      const shown = all.filter(l => filter === 'all' || (l.topic || 'other') === filter);
+      const countOf = (id) => all.filter(l => (l.topic || 'other') === id).length;
+
+      return (
+        <Shell>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-black">Luyện nghe chép chính tả</h2>
+              <p className="text-sm text-slate-400 mt-1">Nghe từng câu, gõ lại những gì nghe được, trang chấm theo từng từ</p>
+            </div>
+            <button onClick={() => setForm(!form)} className={`px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold flex items-center gap-2 shadow`}><Icon name="plus" className="w-4 h-4" /><span>Thêm bài nghe</span></button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[['🔥', streak, 'Ngày liên tiếp'], ['✅', todayStat.c + '/' + todayStat.t, 'Câu đúng hôm nay'], ['🏆', totalCorrect, 'Tổng câu đúng']].map(x => (
+              <div key={x[2]} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div className="text-2xl font-black">{x[0]} {x[1]}</div><div className="text-[11px] font-bold text-slate-400 mt-0.5">{x[2]}</div>
+              </div>
+            ))}
+            <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <div className="flex items-end gap-1.5 h-12">
+                {week.map((w, i) => <div key={i} title={w.c + ' câu đúng'} className={`flex-1 rounded-t ${tColor.bg}`} style={{ height: Math.max(4, Math.round(w.c * 100 / wmax)) + '%', opacity: w.c ? 1 : 0.25 }} />)}
+              </div>
+              <div className="flex gap-1.5 mt-1">{week.map((w, i) => <span key={i} className="flex-1 text-center text-[9px] font-bold text-slate-400">{w.l}</span>)}</div>
+            </div>
+          </div>
+
+          {form && (
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="space-y-2">
+                <p className="text-xs font-black uppercase tracking-wider text-slate-400">Cách 1 · Dán script (kèm file audio của bạn nếu có)</p>
+                <input className={inp} placeholder="Tên bài nghe" value={title} onChange={e => setTitle(e.target.value)} />
+                <div className="flex flex-wrap gap-2">
+                  <select className={inp + ' flex-1 min-w-[180px]'} value={topicSel} onChange={e => setTopicSel(e.target.value)}>
+                    {topics.map(t => <option key={t.id} value={t.id}>{t.icon} {t.name}</option>)}
+                    <option value="__new">➕ Tạo chủ đề mới...</option>
+                  </select>
+                  {topicSel === '__new' && <input className={inp + ' flex-1 min-w-[160px]'} placeholder="Tên chủ đề mới" value={newTopic} onChange={e => setNewTopic(e.target.value)} />}
+                </div>
+                <textarea className={inp} rows={5} placeholder="Dán đoạn văn tiếng Anh (đúng nội dung audio). Trang tự tách thành từng câu để bạn nghe và chép." value={text} onChange={e => setText(e.target.value)} />
+                <label className="block px-4 py-3 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 text-sm font-bold text-center cursor-pointer hover:border-indigo-400">
+                  {file ? '🎵 ' + file.name : '+ Chọn file audio (mp3, m4a, wav...) — không bắt buộc, không có thì dùng giọng đọc máy'}
+                  <input type="file" accept="audio/*" className="hidden" onChange={e => { setFile(e.target.files[0] || null); e.target.value = ''; }} />
+                </label>
+                <p className="text-[11px] text-slate-400 leading-relaxed">Audio được lưu ngay trong trình duyệt này (không tải lên mạng) và web tự chia theo từng câu dựa vào quãng lặng. Chỉ dùng audio bạn có quyền sử dụng.</p>
+                <button onClick={() => addLesson(title, text, topicSel, file)} disabled={!text.trim() || !!busy} className={`px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold disabled:opacity-40`}>{busy || 'Tạo bài nghe'}</button>
+              </div>
+              <div className="space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-xs font-black uppercase tracking-wider text-slate-400">Cách 2 · Dùng câu ví dụ của một List từ vựng</p>
+                <div className="flex flex-wrap gap-2">
+                  <select className={inp + ' flex-1 min-w-[160px]'} value={dk || (decks[0] || {}).id || ''} onChange={e => { setDk(e.target.value); setLk(''); }}>
+                    {decks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
+                  <select className={inp + ' w-40'} value={lk || (deckListInfo[0] || {}).id || ''} onChange={e => setLk(e.target.value)}>
+                    {deckListInfo.map(l => <option key={l.id} value={l.id}>List {l.id}</option>)}
+                  </select>
+                  <button onClick={fromDeck} disabled={!decks.length} className={`px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold disabled:opacity-40`}>Tạo bài nghe</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setFilter('all')} className={`px-3.5 py-2 rounded-xl border text-xs font-bold ${filter === 'all' ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'}`}>Tất cả ({all.length})</button>
+            {topics.filter(t => countOf(t.id) > 0).map(t => (
+              <button key={t.id} onClick={() => setFilter(t.id)} className={`px-3.5 py-2 rounded-xl border text-xs font-bold ${filter === t.id ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'}`}>{t.icon} {t.name} ({countOf(t.id)})</button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {shown.map(l => {
+              const n = sentsOf(l).length, d = Object.keys(prog[l.id] || {}).length, tp = topicOf(l);
+              return (
+                <div key={l.id} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:shadow-md transition space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-11 h-11 shrink-0 rounded-xl ${tColor.light} flex items-center justify-center text-xl`}>{tp.icon}</div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-black text-base leading-snug">{l.title}</h3>
+                      <div className="flex flex-wrap gap-1.5 mt-1.5 text-[11px] font-bold">
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{tp.name}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{n} câu</span>
+                        {l.level && <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">{l.level}</span>}
+                        {l.hasAudio && <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-600">🎵 Audio</span>}
+                        {l.builtin && <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">Bài mẫu</span>}
+                      </div>
+                    </div>
+                    {!l.builtin && <button onClick={() => delLesson(l)} title="Xoá bài" className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500"><Icon name="trash" className="w-4 h-4" /></button>}
+                  </div>
+                  <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div className={`h-full ${tColor.bg}`} style={{ width: Math.round(d * 100 / Math.max(1, n)) + '%' }} /></div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setOpenId(l.id)} className={`flex-1 px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold shadow`}>{d > 0 ? `Tiếp tục (${d}/${n})` : 'Bắt đầu nghe'}</button>
+                    {d > 0 && <button onClick={() => resetProg(l.id)} title="Làm lại từ đầu" className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500"><Icon name="rotate" className="w-4 h-4" /></button>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Shell>
       );
     }
