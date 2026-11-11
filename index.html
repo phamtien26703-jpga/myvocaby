@@ -1934,20 +1934,51 @@ void main(){
     }
 
     // ==========================================
-    // 4. DỊCH NGHĨA / ĐIỀN TỪ
+    // 4. DỊCH NGHĨA / ĐIỀN TỪ (2 chiều: Nghĩa → Từ  |  Từ → Nghĩa)
     // ==========================================
+    const normVi = (s) => String(s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')
+      .replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Chấp nhận khi gõ đúng toàn bộ nghĩa, hoặc đúng một trong các nghĩa phân tách bằng , ; / hay phần trong ngoặc
+    function meaningOk(card, val) {
+      const v = normVi(val);
+      if (!v) return false;
+      const cands = new Set();
+      [card.s, card.v].forEach(src => {
+        if (!src) return;
+        cands.add(normVi(src));
+        cands.add(normVi(String(src).replace(/\([^)]*\)/g, ' ')));
+        String(src).replace(/\([^)]*\)/g, ' ').split(/[,;\/]/).forEach(p => cands.add(normVi(p)));
+      });
+      cands.delete('');
+      return cands.has(v);
+    }
+
     function FillMode({ pool, onMarkWrong }) {
       const [isMulti, setIsMulti] = useState(true);
+      const [rev, setRev] = useState(false); // false: cho nghĩa → gõ từ Anh | true: cho từ Anh → gõ nghĩa
       const [rows, setRows] = useState({});
       const [sIdx, setSIdx] = useState(0);
       const [sVal, setSVal] = useState('');
       const [sRes, setSRes] = useState(null);
 
       const curCard = pool[sIdx];
+      const meaningOf = (c) => c.s || c.v || '';
+
+      const isRight = (c, val) => rev
+        ? meaningOk(c, val)
+        : val.trim().toLowerCase() === c.w.trim().toLowerCase();
+      const answerOf = (c) => rev ? meaningOf(c) : c.w;
+
+      const changeDir = (v) => {
+        if (v === rev) return;
+        setRev(v); setRows({}); setSVal(''); setSRes(null);
+      };
 
       const checkRow = (c, val) => {
         if (!val || !val.trim()) return;
-        const ok = val.trim().toLowerCase() === c.w.trim().toLowerCase();
+        const ok = isRight(c, val);
         if (ok) SoundFx.correct();
         else SoundFx.wrong();
         onMarkWrong(c.n, !ok);
@@ -1956,31 +1987,33 @@ void main(){
 
       const checkSingle = () => {
         if (!curCard || !sVal.trim()) return;
-        const ok = sVal.trim().toLowerCase() === curCard.w.trim().toLowerCase();
+        const ok = isRight(curCard, sVal);
         if (ok) SoundFx.correct();
         else SoundFx.wrong();
         onMarkWrong(curCard.n, !ok);
-        setSRes({ ok, word: curCard.w });
+        setSRes({ ok, word: answerOf(curCard) });
       };
+
+      const segBtn = (active) => `px-4 py-2 rounded-lg transition ${active ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`;
 
       return (
         <div className="space-y-4 max-w-4xl mx-auto">
-          <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">Chế độ điền từ:</span>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-              <button
-                onClick={() => setIsMulti(false)}
-                className={`px-4 py-2 rounded-lg transition ${!isMulti ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`}
-              >
-                Đơn từ (Từng câu)
-              </button>
-              <button
-                onClick={() => setIsMulti(true)}
-                className={`px-4 py-2 rounded-lg transition ${isMulti ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`}
-              >
-                Nhiều từ cùng lúc (Bảng Excel)
-              </button>
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">Chiều luyện tập:</span>
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                <button onClick={() => changeDir(false)} className={segBtn(!rev)}>Nghĩa → Từ tiếng Anh</button>
+                <button onClick={() => changeDir(true)} className={segBtn(rev)}>🔄 Từ tiếng Anh → Nghĩa</button>
+              </div>
             </div>
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <span className="text-sm font-bold text-slate-600 dark:text-slate-300 pl-2">Chế độ điền từ:</span>
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                <button onClick={() => setIsMulti(false)} className={segBtn(!isMulti)}>Đơn từ (Từng câu)</button>
+                <button onClick={() => setIsMulti(true)} className={segBtn(isMulti)}>Nhiều từ cùng lúc (Bảng Excel)</button>
+              </div>
+            </div>
+            {rev && <p className="text-[11px] text-slate-400 pl-2 leading-snug">Gõ nghĩa tiếng Việt của từ. Không phân biệt hoa/thường và có thể gõ không dấu; với từ nhiều nghĩa chỉ cần đúng một nghĩa.</p>}
           </div>
 
           {isMulti ? (
@@ -1990,8 +2023,8 @@ void main(){
                   <thead className="hidden md:table-header-group bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-4 w-14 text-center">#</th>
-                      <th className="p-4 w-2/5">Nghĩa tiếng Việt</th>
-                      <th className="p-4 w-2/5">Điền từ tiếng Anh (Nhấn Enter)</th>
+                      <th className="p-4 w-2/5">{rev ? 'Từ tiếng Anh' : 'Nghĩa tiếng Việt'}</th>
+                      <th className="p-4 w-2/5">{rev ? 'Nhập nghĩa tiếng Việt (Nhấn Enter)' : 'Điền từ tiếng Anh (Nhấn Enter)'}</th>
                       <th className="p-4">Kết quả</th>
                     </tr>
                   </thead>
@@ -1999,20 +2032,28 @@ void main(){
                     {pool.map((c, i) => {
                       const r = rows[c.n] || { val: '', checked: false, ok: false };
                       return (
-                        <tr key={c.n} className="grid grid-cols-[2.5rem_1fr] items-center gap-x-1 gap-y-2 px-3 py-3 md:table-row md:p-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <tr key={rev + '-' + c.n} className="grid grid-cols-[2.5rem_1fr] items-center gap-x-1 gap-y-2 px-3 py-3 md:table-row md:p-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                           <td className="md:p-4 text-center text-xs font-mono text-slate-400">#{c.n}</td>
-                          <td className="md:p-4 font-semibold text-base text-slate-800 dark:text-slate-200">{c.s || c.v}</td>
+                          <td className="md:p-4 font-semibold text-base text-slate-800 dark:text-slate-200">
+                            {rev ? (
+                              <span className="inline-flex flex-wrap items-baseline gap-x-2">
+                                <button type="button" onClick={() => speak(c.w, 'en-US')} title="Nghe phát âm" className="font-black text-indigo-600 dark:text-indigo-400 text-left hover:underline">{c.w}</button>
+                                {c.p && <span className="text-xs font-mono text-slate-400">({c.p})</span>}
+                                {c.i && <span className="text-xs font-mono text-indigo-500">{c.i}</span>}
+                              </span>
+                            ) : meaningOf(c)}
+                          </td>
                           <td className="col-span-2 md:col-auto md:p-4">
                             <input
                               id={`row-in-${i}`}
                               type="text"
                               autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} enterKeyHint="next"
                               disabled={r.checked}
-                              placeholder="Gõ từ..."
+                              placeholder={rev ? 'Gõ nghĩa...' : 'Gõ từ...'}
                               value={r.val}
                               onChange={e => setRows(prev => ({ ...prev, [c.n]: { ...r, val: e.target.value } }))}
                               onKeyDown={e => {
-                                if (e.key === 'Enter') {
+                                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                                   checkRow(c, r.val);
                                   const nextEl = document.getElementById(`row-in-${i + 1}`);
                                   if (nextEl) nextEl.focus();
@@ -2027,7 +2068,7 @@ void main(){
                           </td>
                           <td className="col-span-2 md:col-auto md:p-4 break-words">
                             {r.checked ? (
-                              r.ok ? <span className="text-emerald-600 text-base font-bold">✓ Đúng</span> : <span className="text-rose-600 text-base font-bold">✗ Sai ({c.w})</span>
+                              r.ok ? <span className="text-emerald-600 text-base font-bold">✓ Đúng</span> : <span className="text-rose-600 text-base font-bold">✗ Sai ({answerOf(c)})</span>
                             ) : (
                               <button onClick={() => checkRow(c, r.val)} className="px-3.5 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">Check</button>
                             )}
@@ -2042,14 +2083,28 @@ void main(){
           ) : (
             <div className="p-8 md:p-12 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-6 max-w-2xl mx-auto shadow-md">
               <span className="text-xs text-slate-400 font-bold">CÂU {sIdx + 1} / {pool.length}</span>
-              <h3 className="text-3xl md:text-4xl font-black text-indigo-600 dark:text-indigo-400">{curCard?.s || curCard?.v}</h3>
+              {rev ? (
+                <div className="space-y-2">
+                  <h3 className="text-4xl md:text-5xl font-black text-indigo-600 dark:text-indigo-400">
+                    {curCard?.w} {curCard?.p && <span className="text-lg font-normal text-slate-400">({curCard.p})</span>}
+                  </h3>
+                  {curCard?.i && <p className="text-lg font-mono text-indigo-500 font-bold">{curCard.i}</p>}
+                  <div className="flex justify-center gap-2 pt-1">
+                    <button onClick={() => speak(curCard.w, 'en-GB')} className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 text-xs font-bold">🔊 UK</button>
+                    <button onClick={() => speak(curCard.w, 'en-US')} className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 text-xs font-bold">🔊 US</button>
+                  </div>
+                </div>
+              ) : (
+                <h3 className="text-3xl md:text-4xl font-black text-indigo-600 dark:text-indigo-400">{curCard ? meaningOf(curCard) : ''}</h3>
+              )}
               <div className="max-w-md mx-auto space-y-3">
                 <input
                   type="text"
-                  placeholder="Gõ từ tiếng Anh..."
+                  autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false}
+                  placeholder={rev ? 'Gõ nghĩa tiếng Việt...' : 'Gõ từ tiếng Anh...'}
                   value={sVal}
                   onChange={e => setSVal(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && checkSingle()}
+                  onKeyDown={e => e.key === 'Enter' && !e.nativeEvent.isComposing && checkSingle()}
                   className="w-full px-5 py-4 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-transparent text-center font-bold text-xl outline-none focus:border-indigo-500"
                 />
                 <button onClick={checkSingle} className="w-full py-3.5 rounded-2xl bg-indigo-600 text-white font-bold text-base shadow">Kiểm tra</button>
