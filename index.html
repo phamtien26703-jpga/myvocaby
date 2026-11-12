@@ -4,6 +4,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>MyVocab - Học theo Deck & Luyện Tập</title>
+  <meta name="color-scheme" content="light dark" />
+  <!-- Áp giao diện (sáng/tối/hình nền) NGAY TRƯỚC khi vẽ trang để không bị nháy khi tải lại -->
+  <script>
+  (function () {
+    var d = document.documentElement;
+    try {
+      var ses = localStorage.getItem('myvocab_auth_session');
+      var users = JSON.parse(localStorage.getItem('myvocab_auth_users')) || {};
+      var user = ses && users[ses] ? ses : null;
+      var guest = !user && localStorage.getItem('myvocab_auth_guest') === '1';
+      if (!user && !guest) return;
+      var p = user ? 'u_' + user + '__' : '';
+      var ui = JSON.parse(localStorage.getItem(p + 'myvocab_v4_ui')) || {};
+      var skin = ui.skin !== undefined ? ui.skin : (ui.charMode ? 'char' : '');
+      var built = ['char', 'sakura', 'night', 'mint', 'ocean', 'sunset'];
+      var custom = null;
+      if (skin && built.indexOf(skin) < 0) {
+        var arr = JSON.parse(localStorage.getItem(p + 'myvocab_v4_skins')) || [];
+        for (var i = 0; i < arr.length; i++) if (arr[i].id === skin) custom = arr[i];
+      }
+      if (custom) {
+        d.classList.add('char-theme', 'sk-custom');
+        d.style.setProperty('--sk-cimg', 'url("' + custom.img + '")');
+      } else if (built.indexOf(skin) >= 0) {
+        d.classList.add('char-theme', 'sk-' + skin);
+      } else if (ui.darkMode) {
+        d.classList.add('dark');
+        d.style.backgroundColor = '#020617';
+      }
+      if (!d.classList.contains('char-theme') && !ui.darkMode) d.style.backgroundColor = '#f8fafc';
+    } catch (e) {}
+  })();
+  </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -25,6 +58,14 @@
 
   <style>
     body { font-size: 16px; }
+    /* Không chạy hiệu ứng chuyển màu cho tới khi trang dựng xong (tránh nháy sáng→tối) */
+    html:not(.app-ready) body, html:not(.app-ready) body * { transition: none !important; }
+    html { background-color: #f8fafc; }
+    html.dark { background-color: #020617; }
+    html.char-theme body { background: transparent !important; color: var(--sk-t1) !important; }
+    #boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+    #boot i { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(99,102,241,.25); border-top-color: #6366f1; animation: bootspin .8s linear infinite; }
+    @keyframes bootspin { to { transform: rotate(360deg); } }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
@@ -88,7 +129,7 @@
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200">
-  <div id="root"></div>
+  <div id="root"><div id="boot"><i></i></div></div>
 
   <script src="vocab-data.js"></script>
 <script src="listening-data.js"></script>
@@ -3728,6 +3769,8 @@ void main(){
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
    root.render(<Root />);
+    // Bật lại hiệu ứng chuyển màu sau khi khung hình đầu tiên đã vẽ xong
+    requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('app-ready')));
   </script>
 
 </body>
