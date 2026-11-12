@@ -160,6 +160,42 @@
       return [val, setVal];
     }
 
+    // ==========================================
+    // THỐNG KÊ HỌC TẬP (thời gian, từ đã học, đúng/sai) – lưu theo từng tài khoản
+    // ==========================================
+    const Stats = {
+      d: null, p: '', listeners: new Set(), resolve: null,
+      dateStr(dt) { const t = dt || new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); },
+      load() {
+        this.p = Store.p; // nhớ vùng lưu của tài khoản để không ghi nhầm khi đăng xuất
+        let o = null; try { o = JSON.parse(localStorage.getItem(this.p + 'myvocab_v4_stats')); } catch (e) {}
+        if (!o || typeof o !== 'object') o = {};
+        this.d = { since: o.since || Date.now(), days: o.days || {}, decks: o.decks || {}, other: o.other || 0 };
+      },
+      data() { if (!this.d) this.load(); return this.d; },
+      notify() { this.listeners.forEach(f => f()); },
+      save() { try { if (this.d) localStorage.setItem(this.p + 'myvocab_v4_stats', JSON.stringify(this.d)); } catch (e) {} this.notify(); },
+      deck(id) { const D = this.data(); return D.decks[id] || (D.decks[id] = { sec: 0, ok: 0, bad: 0, days: {}, seen: {}, known: {} }); },
+      addTime(deckId, sec) {
+        const D = this.data(), day = this.dateStr();
+        D.days[day] = (D.days[day] || 0) + sec;
+        if (deckId) { const k = this.deck(deckId); k.sec += sec; k.days[day] = (k.days[day] || 0) + sec; }
+        else D.other += sec;
+      },
+      answer(n, ok) {
+        const id = this.resolve && this.resolve(n); if (!id) return;
+        const k = this.deck(id);
+        if (ok) { k.ok++; k.known[n] = 1; } else { k.bad++; delete k.known[n]; }
+        k.seen[n] = 1; this.save();
+      },
+      seen(n) {
+        const id = this.resolve && this.resolve(n); if (!id) return;
+        const k = this.deck(id);
+        if (!k.seen[n]) { k.seen[n] = 1; this.save(); }
+      },
+      reset() { this.d = { since: Date.now(), days: {}, decks: {}, other: 0 }; this.save(); }
+    };
+
     // --- TÀI KHOẢN (lưu cục bộ trên trình duyệt, mật khẩu được băm PBKDF2) ---
     const Auth = {
       users() { try { return JSON.parse(localStorage.getItem('myvocab_auth_users')) || {}; } catch (e) { return {}; } },
@@ -366,6 +402,7 @@
         image: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />,
         keyboard: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18v10H3V7zm3 3h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M7 14h10" />,
         trash: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />,
+        chart: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />,
         shuffle: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />,
         book: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
       };
@@ -556,6 +593,14 @@
     // DECK (THƯ MỤC) + TIỆN ÍCH
     // ==========================================
     const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    // Xáo trộn theo seed: cùng seed → cùng thứ tự (giữ nguyên khi vẽ lại / tải lại trang)
+    const newSeed = () => Math.floor(Math.random() * 2147483646) + 1;
+    function seededShuffle(arr, seed) {
+      const a = [...arr]; let s = (seed >>> 0) || 1;
+      const rnd = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+      return a;
+    }
     const numOf = (c) => (c.num ?? c.n);
 
     function listMeta(cs) {
@@ -1219,9 +1264,13 @@ void main(){
       const [wrongIds, setWrongIds] = useState(() => {
         try { return JSON.parse(Store.get('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
-      const VALID_TABS = ['study', 'grammar', 'listen', 'library', 'import'];
+      const [studyDeckId, setStudyDeckId] = useNavState('study_deckId', null);
+      const VALID_TABS = ['study', 'grammar', 'listen', 'summary', 'library', 'import'];
       const [rawTab, setTab] = useNavState('tab', 'study');
       const tab = VALID_TABS.includes(rawTab) ? rawTab : 'study';
+      const tabRef = useRef(tab); tabRef.current = tab;
+      const cardsRef = useRef(null);
+      useState(() => { Stats.load(); return 0; });
       const [libDeck, setLibDeck] = useNavState('libDeck', init.decks[0] ? init.decks[0].id : null);
       const mainRef = useRef(null);
       useEffect(() => {
@@ -1279,7 +1328,38 @@ void main(){
       }, [skin, waterOn, customSkins]);
       useEffect(() => { WaterBg.setAmp(waterAmp / 50); }, [waterAmp]);
 
+      cardsRef.current = cards;
+      Stats.resolve = (n) => { const c = (cardsRef.current || []).find(x => x.n === n); return c ? c.d : null; };
+      // Đếm thời gian học: chỉ tính khi tab đang hiển thị và có thao tác trong 90 giây gần nhất
+      useEffect(() => {
+        let last = Date.now(), prev = Date.now(), acc = 0;
+        const touch = () => { last = Date.now(); };
+        const evs = ['pointerdown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+        evs.forEach(e => window.addEventListener(e, touch, { passive: true, capture: true }));
+        const flush = () => { acc = 0; Stats.save(); };
+        const id = setInterval(() => {
+          const now = Date.now(); const dt = Math.min(5, (now - prev) / 1000); prev = now;
+          if (document.hidden || now - last > 90000) return;
+          const t = tabRef.current;
+          if (t === 'study') { let did = null; try { did = JSON.parse(Store.get('myvocab_nav_study_deckId')); } catch (e) {} Stats.addTime(did || null, dt); }
+          else if (t === 'grammar' || t === 'listen') Stats.addTime(null, dt);
+          acc += dt;
+          if (acc >= 15) flush(); else if (t === 'summary') Stats.notify();
+        }, 1000);
+        const onHide = () => { if (document.hidden) flush(); };
+        document.addEventListener('visibilitychange', onHide);
+        window.addEventListener('pagehide', flush);
+        return () => {
+          clearInterval(id);
+          evs.forEach(e => window.removeEventListener(e, touch, { capture: true }));
+          document.removeEventListener('visibilitychange', onHide);
+          window.removeEventListener('pagehide', flush);
+          flush();
+        };
+      }, []);
+
       const handleMarkWrong = (n, isWrong) => {
+        Stats.answer(n, !isWrong);
         setWrongIds(prev => isWrong ? (prev.includes(n) ? prev : [...prev, n]) : prev.filter(id => id !== n));
       };
 
@@ -1298,6 +1378,7 @@ void main(){
         { id: 'study', icon: 'practice', label: 'Học & Luyện tập' },
         { id: 'grammar', icon: 'book', label: 'Ngữ pháp TOEIC', short: 'Ngữ pháp' },
         { id: 'listen', icon: 'volume', label: 'Luyện nghe', short: 'Nghe' },
+        { id: 'summary', icon: 'chart', label: 'Tổng kết', short: 'Tổng kết' },
         { id: 'library', icon: 'folder', label: 'Thư viện (Tra cứu)' },
         { id: 'import', icon: 'upload', label: 'Nạp từ vựng' }
       ];
@@ -1359,13 +1440,18 @@ void main(){
 
           <main ref={mainRef} onScroll={e => { try { Store.set('myvocab_nav_scroll', String(e.currentTarget.scrollTop)); } catch (err) {} }} className="flex-1 overflow-y-auto pb-20 md:pb-6">
             <div className={tab === 'study' ? '' : 'hidden'}>
-              <StudyWorkspace decks={decks} cards={cards} wrongIds={wrongIds} onMarkWrong={handleMarkWrong} tColor={tColor} goImport={() => setTab('import')} setDecks={setDecks} setCards={setCards} showToast={showToast} />
+              <StudyWorkspace decks={decks} cards={cards} wrongIds={wrongIds} onMarkWrong={handleMarkWrong} tColor={tColor} goImport={() => setTab('import')} setDecks={setDecks} setCards={setCards} showToast={showToast} studyDeckId={studyDeckId} setStudyDeckId={setStudyDeckId} />
             </div>
             <div className={tab === 'grammar' ? '' : 'hidden'}>
               <GrammarSection tColor={tColor} />
             </div>
             <div className={tab === 'listen' ? '' : 'hidden'}>
               <ListeningSection tColor={tColor} decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} showToast={showToast} />
+            </div>
+            <div className={tab === 'summary' ? '' : 'hidden'}>
+              <SummarySection active={tab === 'summary'} decks={decks} cards={cards} wrongIds={wrongIds} tColor={tColor} userName={userName}
+                onGoStudy={(did) => { setStudyDeckId(did); setTab('study'); }}
+                onMarkWrong={handleMarkWrong} />
             </div>
             <div className={tab === 'library' ? '' : 'hidden'}>
               <LibrarySection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} deckId={libDeck} setDeckId={setLibDeck} goImport={() => setTab('import')} tColor={tColor} />
@@ -1376,7 +1462,7 @@ void main(){
             </div>
           </main>
 
-          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-9 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-1.5">
+          <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-10 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-1.5">
             {NAV.map(n => (
               <button key={n.id} onClick={() => setTab(n.id)} className={`flex flex-col items-center gap-0.5 py-1 text-[10px] font-bold ${tab === n.id ? tColor.text : 'text-slate-400'}`}>
                 <Icon name={n.icon} className="w-5 h-5" /><span>{n.short || n.label.split(' ')[0]}</span>
@@ -1402,6 +1488,568 @@ void main(){
     // ==========================================
     // HỌC & LUYỆN TẬP: CHỌN DECK -> LIST -> CHẾ ĐỘ
     // ==========================================
+    // ==========================================
+    // ==========================================
+    // TỔNG KẾT & THỐNG KÊ HỌC TẬP CHUYÊN SÂU
+    // ==========================================
+    function fmtDur(sec) {
+      sec = Math.max(0, Math.floor(sec));
+      if (sec < 60) return sec + ' giây';
+      const m = Math.floor(sec / 60);
+      if (m < 60) {
+        const s = sec % 60;
+        return m + ' phút' + (s ? ' ' + s + 's' : '');
+      }
+      const h = Math.floor(m / 60), r = m % 60;
+      return h + ' giờ' + (r ? ' ' + r + ' phút' : '');
+    }
+
+    const WISHES_GENERAL = [
+      'Chúc bạn một buổi học thật hiệu quả và tràn đầy cảm hứng! 🌟',
+      'Mỗi ngày thêm vài từ vựng, một năm sau bạn sẽ bất ngờ về sự tiến bộ của chính mình! 💪',
+      'Chúc bạn học đâu nhớ đó, phản xạ nhanh và sớm chạm mốc điểm TOEIC mơ ước! 🎯',
+      'Sai sót là một phần tự nhiên của học tập – mỗi lần sai là một lần não bộ ghi nhớ sâu hơn! 🌱',
+      'Học ít mà đều đặn mỗi ngày tốt hơn rất nhiều so với học dồn một lần. Giữ vững nhịp nhé! 📅',
+      'Chúc bạn luôn giữ được ngọn lửa đam mê và sự tập trung cao độ! 🔥',
+      'Từ vựng hôm nay chính là nền móng vững chắc cho sự nghiệp và tương lai ngày mai! 🏗️',
+      'Tiếng Anh không khó, chìa khóa nằm ở sự kiên trì không bỏ cuộc. Cố lên nhé! 🚀',
+      'Chúc bạn một ngày học tập vui vẻ, tiếp thu nhanh và nhớ thật lâu! ☀️',
+      'Học 25 phút rồi nghỉ 5 phút thư giãn mắt và uống nước nhé! ☕',
+      'Kiên trì là bí quyết lớn nhất – cứ đi từng bước nhỏ, bạn chắc chắn sẽ tới đích! 🗝️',
+      '“A little progress each day adds up to big results.” (Tiến bộ nhỏ mỗi ngày tạo nên kết quả lớn!) ✨',
+      '“The secret of getting ahead is getting started.” (Bí quyết để dẫn đầu là hãy bắt đầu ngay!) 💡',
+      '“Mistakes are proof that you are trying.” (Những lỗi sai chính là minh chứng bạn đang nỗ lực hết mình!) 🌈',
+      '“Consistency is the key to mastery.” (Sự kiên trì đều đặn là chìa khóa của sự tinh thông!) 🏆'
+    ];
+
+    const WISHES_NEW = [
+      'Chào mừng bạn đến với buổi học đầu tiên! Chúc bạn có một khởi đầu thật thuận lợi và hứng khởi! 🌱',
+      'Hành trình vạn dặm bắt đầu từ một bước chân. Hãy chọn một Deck và học những từ đầu tiên nào! 🎉'
+    ];
+
+    const WISHES_IDLE = [
+      'Hôm nay bạn chưa học từ nào – chỉ cần dành ra 5–10 phút để giữ ngọn lửa thói quen thôi nhé! ⏰',
+      'Một buổi học ngắn hôm nay sẽ giúp trí nhớ của bạn luôn duy trì phong độ. Bắt đầu nào! 💡'
+    ];
+
+    const WISHES_LONG = [
+      'Hôm nay bạn đã học rất chăm chỉ (trên 30 phút)! Nhớ cho mắt nghỉ ngơi và uống một ngụm nước nhé! 💧',
+      'Tinh thần tự học của bạn thật đáng nể! Xứng đáng nhận điểm 10 cho sự kiên trì hôm nay! 🎁'
+    ];
+
+    const WISHES_HIGH = [
+      'Độ chính xác của bạn cực kỳ ấn tượng! Trí nhớ đang hoạt động hết công suất đấy, cứ phát huy nhé! 🏆',
+      'Tuyệt vời! Bạn đang nắm rất chắc các từ vựng này. Chúc bạn sớm chinh phục trọn vẹn toàn bộ Deck! 🧠✨'
+    ];
+
+    const WISHES_LOW = [
+      'Đừng nản lòng nhé! Hãy dùng chức năng “Ôn từ sai” để củng cố lại vài lượt là sẽ thuộc ngay thôi! 💪',
+      'Càng gặp nhiều từ khó nghĩa là vốn từ của bạn sắp có bước nhảy vọt mới. Chậm mà chắc nhé! 📝'
+    ];
+
+    function pickWish(seed, ctx) {
+      const sp = [];
+      if (ctx.totalSec === 0 && ctx.answers === 0) sp.push(...WISHES_NEW);
+      else {
+        if (ctx.todaySec === 0) sp.push(...WISHES_IDLE);
+        if (ctx.todaySec >= 1800) sp.push(...WISHES_LONG);
+        if (ctx.streak >= 3) sp.push('🔥 Bạn đã duy trì chuỗi học ' + ctx.streak + ' ngày liên tiếp – phong độ xuất sắc, hãy tiếp tục giữ vững nhé!');
+        if (ctx.answers >= 15) sp.push(...(ctx.acc >= 80 ? WISHES_HIGH : WISHES_LOW));
+      }
+      const list = sp.length && (seed % 3 !== 0) ? sp : WISHES_GENERAL;
+      return list[Math.floor(seed / 3) % list.length];
+    }
+
+    function deckNote(t) {
+      if (t.total === 0) return 'Deck này hiện chưa có từ vựng nào – bạn có thể nạp thêm từ ở mục Nạp từ vựng.';
+      if (t.learned === 0) return 'Bạn chưa bắt đầu Deck này – chọn một chế độ để khởi động bài học đầu tiên nhé! 🌱';
+      if (t.known === t.total) return 'Xuất sắc! Bạn đã thuộc toàn bộ từ vựng trong Deck này mà không còn từ nào bị sai! 🎉';
+      if (t.wrong > 0 && t.wrong >= t.known) return 'Deck này còn khá nhiều từ làm sai – hãy dùng chế độ “Ôn từ sai” để củng cố nhé! 💪';
+      if (t.learned / t.total < 0.5) return 'Đang tiến bộ đều đặn – cố gắng hoàn thành thêm các List tiếp theo nhé! 🚶';
+      return 'Sắp về đích rồi – chỉ còn một vài từ nữa là bạn sẽ chinh phục trọn vẹn Deck này! 🏁';
+    }
+
+    function SumTile({ label, value, sub, cls, icon }) {
+      return (
+        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">{label}</p>
+            {icon && <span className="text-base opacity-80">{icon}</span>}
+          </div>
+          <div className="my-1.5">
+            <p className={`text-2xl font-black leading-tight ${cls || 'text-slate-900 dark:text-white'}`}>{value}</p>
+          </div>
+          {sub && <p className="text-[11px] text-slate-400 leading-snug">{sub}</p>}
+        </div>
+      );
+    }
+
+    function SummarySection({ active, decks, cards, wrongIds, tColor, userName, onGoStudy, onMarkWrong }) {
+      const [, force] = useState(0);
+      const [wishSeed, setWishSeed] = useState(() => newSeed());
+      const [expandedDeck, setExpandedDeck] = useState(null);
+      const [filterWordType, setFilterWordType] = useState('all');
+
+      useEffect(() => {
+        const f = () => force(n => n + 1);
+        Stats.listeners.add(f);
+        return () => { Stats.listeners.delete(f); };
+      }, []);
+
+      useEffect(() => { if (active) setWishSeed(newSeed()); }, [active]);
+      if (!active) return null;
+
+      const D = Stats.data();
+      const todayKey = Stats.dateStr();
+      const wset = new Set(wrongIds);
+      const totalSec = Object.values(D.days || {}).reduce((a, b) => a + b, 0);
+      const todaySec = (D.days && D.days[todayKey]) || 0;
+
+      const week = [];
+      for (let i = 6; i >= 0; i--) {
+        const dt = new Date();
+        dt.setDate(dt.getDate() - i);
+        const key = Stats.dateStr(dt);
+        week.push({
+          key,
+          sec: (D.days && D.days[key]) || 0,
+          label: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][dt.getDay()],
+          isToday: i === 0
+        });
+      }
+      const weekSec = week.reduce((a, w) => a + w.sec, 0);
+      const maxSec = Math.max(60, ...week.map(w => w.sec));
+
+      let streak = 0;
+      {
+        const dt = new Date();
+        if (((D.days && D.days[Stats.dateStr(dt)]) || 0) < 60) dt.setDate(dt.getDate() - 1);
+        while (((D.days && D.days[Stats.dateStr(dt)]) || 0) >= 60) {
+          streak++;
+          dt.setDate(dt.getDate() - 1);
+        }
+      }
+
+      const rows = decks.map(deck => {
+        const k = (D.decks && D.decks[deck.id]) || { sec: 0, ok: 0, bad: 0, days: {}, seen: {}, known: {} };
+        const dc = cards.filter(c => c.d === deck.id);
+        let known = 0, wrong = 0, viewed = 0;
+        dc.forEach(c => {
+          if (wset.has(c.n)) wrong++;
+          else if (k.known && k.known[c.n]) known++;
+          else if (k.seen && k.seen[c.n]) viewed++;
+        });
+        const total = dc.length;
+        const learned = known + wrong + viewed;
+        return {
+          deck,
+          k,
+          cards: dc,
+          total,
+          known,
+          wrong,
+          viewed,
+          learned,
+          none: Math.max(0, total - learned)
+        };
+      });
+
+      const sum = (f) => rows.reduce((a, r) => a + f(r), 0);
+      const allTotal = sum(r => r.total);
+      const allLearned = sum(r => r.learned);
+      const allKnown = sum(r => r.known);
+      const allWrong = sum(r => r.wrong);
+      const allOk = sum(r => r.k.ok);
+      const allBad = sum(r => r.k.bad);
+      const answers = allOk + allBad;
+      const acc = answers ? Math.round((allOk * 100) / answers) : 0;
+      const wish = pickWish(wishSeed, { totalSec, todaySec, streak, answers, acc });
+
+      const hr = new Date().getHours();
+      let greeting = 'Chào bạn';
+      if (hr >= 5 && hr < 11) greeting = '🌅 Chào buổi sáng';
+      else if (hr >= 11 && hr < 14) greeting = '☀️ Chào buổi trưa';
+      else if (hr >= 14 && hr < 18) greeting = '🌇 Chào buổi chiều';
+      else if (hr >= 18 && hr < 22) greeting = '🌙 Chào buổi tối';
+      else greeting = '🌌 Cú đêm chăm chỉ';
+      const hello = greeting + (userName ? ', ' + userName : '') + '!';
+      const otherSec = D.other || 0;
+
+      const doReset = () => {
+        if (!confirm('Bạn có chắc chắn muốn xoá toàn bộ số liệu thống kê?\n(Thời gian học và lượt đúng/sai sẽ đặt về 0. Từ vựng và danh sách từ sai của bạn KHÔNG bị ảnh hưởng).')) return;
+        Stats.reset();
+      };
+
+      return (
+        <Shell>
+          {/* BANNER LỜI CHÚC & ĐỘNG LỰC HỌC TẬP */}
+          <div className={`rounded-3xl ${tColor.bg} text-white p-6 md:p-8 shadow-lg space-y-3 transition-all`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs md:text-sm font-bold tracking-wide uppercase opacity-90">{hello}</span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-white/20 font-bold backdrop-blur">
+                {streak > 0 ? `🔥 Streak ${streak} ngày` : '🌱 Khởi động hôm nay'}
+              </span>
+            </div>
+            <p className="text-xl md:text-2xl font-black leading-snug tracking-tight">{wish}</p>
+            <div className="pt-1 flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setWishSeed(newSeed())}
+                className="px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+              >
+                <span>🎲</span>
+                <span>Đổi câu chúc khác</span>
+              </button>
+              <span className="text-[11px] opacity-75">Bấm để nhận thêm danh ngôn và lời chúc tạo động lực</span>
+            </div>
+          </div>
+
+          {/* CÁC THẺ CHỈ SỐ TỔNG QUAN */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <SumTile
+              icon="⏱️"
+              label="Tổng thời gian học"
+              value={fmtDur(totalSec)}
+              sub={'Tích lũy từ ' + new Date(D.since || Date.now()).toLocaleDateString('vi-VN')}
+            />
+            <SumTile
+              icon="📅"
+              label="Thời gian hôm nay"
+              value={fmtDur(todaySec)}
+              sub={'7 ngày qua: ' + fmtDur(weekSec)}
+              cls={tColor.text}
+            />
+            <SumTile
+              icon="🔥"
+              label="Chuỗi ngày học"
+              value={streak + ' ngày'}
+              sub="Mỗi ngày học ≥ 1 phút"
+              cls="text-amber-500"
+            />
+            <SumTile
+              icon="📚"
+              label="Số từ đã học"
+              value={allLearned + ' / ' + allTotal}
+              sub={allTotal ? `Đạt ${Math.round((allLearned * 100) / allTotal)}% tổng số từ` : 'Chưa có từ'}
+            />
+            <SumTile
+              icon="✅"
+              label="Số từ đã thuộc"
+              value={allKnown}
+              sub="Làm đúng và không bị sai"
+              cls="text-emerald-600"
+            />
+            <SumTile
+              icon="⚠️"
+              label="Số từ đang sai"
+              value={allWrong}
+              sub="Cần ôn lại trong bài tập"
+              cls="text-rose-500"
+            />
+            <SumTile
+              icon="🎯"
+              label="Tỷ lệ chính xác"
+              value={answers ? acc + '%' : '—'}
+              sub={`${allOk} đúng · ${allBad} sai (lượt)`}
+              cls={acc >= 80 ? 'text-emerald-600' : acc >= 50 ? 'text-amber-500' : 'text-slate-800 dark:text-slate-200'}
+            />
+            <SumTile
+              icon="📝"
+              label="Lượt làm bài tập"
+              value={answers}
+              sub="Quiz, Điền từ, Nghe, Ghép cặp"
+            />
+          </div>
+
+          {/* BIỂU ĐỒ THỜI GIAN 7 NGÀY GẦN NHẤT */}
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-black text-base flex items-center gap-2">
+                <span>📊</span>
+                <span>Thời gian học 7 ngày gần nhất</span>
+              </h3>
+              <span className="text-xs font-bold text-slate-400">Tổng tuần này: {fmtDur(weekSec)}</span>
+            </div>
+            <div className="flex items-end gap-2 sm:gap-3 h-32 pt-3">
+              {week.map(w => (
+                <div key={w.key} className="flex-1 flex flex-col items-center justify-end gap-1.5 h-full">
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {w.sec >= 60 ? Math.round(w.sec / 60) + 'p' : w.sec > 0 ? w.sec + 's' : ''}
+                  </span>
+                  <div
+                    className={`w-full rounded-t-xl transition-all duration-300 ${
+                      w.isToday ? tColor.bg : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600'
+                    }`}
+                    style={{ height: Math.max(w.sec ? 8 : 4, Math.round((w.sec / maxSec) * 75)) + 'px' }}
+                    title={`${w.label} (${w.key}): ${fmtDur(w.sec)}`}
+                  />
+                  <span className={`text-[11px] font-bold ${w.isToday ? tColor.text + ' font-black' : 'text-slate-500'}`}>
+                    {w.label}{w.isToday ? ' (Nay)' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {otherSec > 0 && (
+              <p className="text-xs text-slate-400 pt-1">
+                Thời gian học ở phần Ngữ pháp / Luyện nghe (hoặc ngoài Deck): <b>{fmtDur(otherSec)}</b>
+              </p>
+            )}
+          </div>
+
+          {/* TỔNG KẾT TỪNG DECK */}
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <div>
+                <h3 className="font-black text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>📁</span>
+                  <span>Tổng kết theo từng Deck ({decks.length} Deck)</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">Theo dõi chi tiết số từ thuộc, sai và thời gian học của riêng từng thư mục</p>
+              </div>
+            </div>
+
+            {rows.length === 0 && (
+              <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 text-sm">
+                Chưa có Deck nào. Hãy tạo Deck ở mục Học & Luyện tập hoặc Nạp từ vựng.
+              </div>
+            )}
+
+            {rows.map(r => {
+              const pc = (n) => (r.total ? (n * 100) / r.total : 0) + '%';
+              const dAns = r.k.ok + r.k.bad;
+              const isExpanded = expandedDeck === r.deck.id;
+
+              let filteredWords = r.cards;
+              if (filterWordType === 'wrong') filteredWords = r.cards.filter(c => wset.has(c.n));
+              else if (filterWordType === 'known') filteredWords = r.cards.filter(c => !wset.has(c.n) && r.k.known && r.k.known[c.n]);
+              else if (filterWordType === 'viewed') filteredWords = r.cards.filter(c => !wset.has(c.n) && (!r.k.known || !r.k.known[c.n]) && r.k.seen && r.k.seen[c.n]);
+              else if (filterWordType === 'none') filteredWords = r.cards.filter(c => !wset.has(c.n) && (!r.k.known || !r.k.known[c.n]) && (!r.k.seen || !r.k.seen[c.n]));
+
+              return (
+                <div
+                  key={r.deck.id}
+                  className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-10 h-10 rounded-xl ${tColor.light} ${tColor.text} flex items-center justify-center font-black`}>
+                        <Icon name="folder" className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-black text-base text-slate-900 dark:text-white leading-tight">{r.deck.name}</h4>
+                        <span className="text-xs text-slate-400 font-bold">{r.total} từ vựng</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      {onGoStudy && (
+                        <button
+                          onClick={() => onGoStudy(r.deck.id)}
+                          className={`px-3.5 py-1.5 rounded-xl ${tColor.bg} text-white text-xs font-bold shadow-sm hover:opacity-95`}
+                        >
+                          ▶️ Học Deck này
+                        </button>
+                      )}
+                      {onGoStudy && r.wrong > 0 && (
+                        <button
+                          onClick={() => onGoStudy(r.deck.id, true)}
+                          className="px-3.5 py-1.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold hover:bg-rose-100"
+                        >
+                          ⚠️ Ôn từ sai ({r.wrong})
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* THANH TIẾN ĐỘ 4 MÀU */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-slate-500">Tiến độ đã học: {r.learned} / {r.total} từ ({r.total ? Math.round((r.learned * 100) / r.total) : 0}%)</span>
+                      <span className="text-emerald-600">Thuộc: {r.known} từ</span>
+                    </div>
+                    <div className="flex h-3.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-inner">
+                      <div className="bg-emerald-500 transition-all duration-500" style={{ width: pc(r.known) }} title={`Đã thuộc: ${r.known} từ`} />
+                      <div className="bg-rose-500 transition-all duration-500" style={{ width: pc(r.wrong) }} title={`Đang sai: ${r.wrong} từ`} />
+                      <div className="bg-amber-400 transition-all duration-500" style={{ width: pc(r.viewed) }} title={`Đã xem: ${r.viewed} từ`} />
+                    </div>
+                  </div>
+
+                  {/* 5 Ô THỐNG KÊ CHI TIẾT */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs font-bold">
+                    <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-100 dark:border-emerald-900/40">
+                      <div className="text-xl font-black">{r.known}</div>
+                      <div>Đã thuộc</div>
+                      <div className="text-[10px] opacity-75 mt-0.5">{r.total ? Math.round((r.known * 100) / r.total) : 0}%</div>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 border border-rose-100 dark:border-rose-900/40">
+                      <div className="text-xl font-black">{r.wrong}</div>
+                      <div>Đang sai</div>
+                      <div className="text-[10px] opacity-75 mt-0.5">{r.total ? Math.round((r.wrong * 100) / r.total) : 0}%</div>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 border border-amber-100 dark:border-amber-900/40">
+                      <div className="text-xl font-black">{r.viewed}</div>
+                      <div>Đã xem</div>
+                      <div className="text-[10px] opacity-75 mt-0.5">{r.total ? Math.round((r.viewed * 100) / r.total) : 0}%</div>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200/60 dark:border-slate-700/60">
+                      <div className="text-xl font-black">{r.none}</div>
+                      <div>Chưa học</div>
+                      <div className="text-[10px] opacity-75 mt-0.5">{r.total ? Math.round((r.none * 100) / r.total) : 0}%</div>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 border border-indigo-100 dark:border-indigo-900/40 col-span-2 sm:col-span-1">
+                      <div className="text-xl font-black">{r.learned}</div>
+                      <div>Đã học ({r.total ? Math.round((r.learned * 100) / r.total) : 0}%)</div>
+                      <div className="text-[10px] opacity-75 mt-0.5">trên {r.total} từ</div>
+                    </div>
+                  </div>
+
+                  {/* THỜI GIAN & LƯỢT LÀM BÀI */}
+                  <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <span>⏱ Tổng thời gian: <b className="text-slate-800 dark:text-slate-200">{fmtDur(r.k.sec)}</b></span>
+                    <span>Hôm nay: <b className="text-slate-800 dark:text-slate-200">{fmtDur((r.k.days && r.k.days[todayKey]) || 0)}</b></span>
+                    <span>
+                      Lượt đúng: <b className="text-emerald-600">{r.k.ok}</b> · Lượt sai: <b className="text-rose-500">{r.k.bad}</b>
+                      {dAns > 0 && <> · Độ chính xác: <b className="text-slate-800 dark:text-slate-200">{Math.round((r.k.ok * 100) / dAns)}%</b></>}
+                    </span>
+                  </div>
+
+                  {/* NHẬN XÉT CỦA DECK & NÚT XỔ DANH SÁCH TỪ */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      {deckNote(r)}
+                    </p>
+                    <button
+                      onClick={() => {
+                        if (isExpanded) setExpandedDeck(null);
+                        else {
+                          setExpandedDeck(r.deck.id);
+                          setFilterWordType(r.wrong > 0 ? 'wrong' : 'all');
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-400 transition"
+                    >
+                      {isExpanded ? '▴ Thu gọn danh sách từ' : `▾ Xem danh sách từ (${r.total})`}
+                    </button>
+                  </div>
+
+                  {/* BẢNG MỞ RỘNG DANH SÁCH TỪ CỦA DECK */}
+                  {isExpanded && (
+                    <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                      <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                        {[
+                          ['all', `Tất cả (${r.total})`],
+                          ['wrong', `Đang sai (${r.wrong})`],
+                          ['known', `Đã thuộc (${r.known})`],
+                          ['viewed', `Đã xem (${r.viewed})`],
+                          ['none', `Chưa học (${r.none})`]
+                        ].map(([k, label]) => (
+                          <button
+                            key={k}
+                            onClick={() => setFilterWordType(k)}
+                            className={`px-3 py-1.5 rounded-lg transition ${
+                              filterWordType === k
+                                ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+                        {filteredWords.length === 0 ? (
+                          <p className="p-4 text-center text-xs text-slate-400">Không có từ nào trong mục này.</p>
+                        ) : (
+                          filteredWords.map(c => {
+                            const isWr = wset.has(c.n);
+                            const isKn = !isWr && r.k.known && r.k.known[c.n];
+                            return (
+                              <div
+                                key={c.n}
+                                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-2 text-xs"
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-baseline space-x-2">
+                                    <span className="font-bold text-slate-900 dark:text-white text-sm">{c.w}</span>
+                                    {c.p && <span className="text-[11px] text-slate-400">({c.p})</span>}
+                                    {c.i && <span className="text-[11px] font-mono text-indigo-500">{c.i}</span>}
+                                  </div>
+                                  <p className="text-slate-600 dark:text-slate-300 truncate mt-0.5">{c.s || c.v}</p>
+                                </div>
+
+                                <div className="flex items-center space-x-1.5 shrink-0">
+                                  <button
+                                    onClick={() => speak(c.w, 'en-GB')}
+                                    className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 text-[10px] font-bold"
+                                    title="Nghe phát âm UK"
+                                  >
+                                    UK
+                                  </button>
+                                  <button
+                                    onClick={() => speak(c.w, 'en-US')}
+                                    className="px-2 py-1 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 text-[10px] font-bold"
+                                    title="Nghe phát âm US"
+                                  >
+                                    US
+                                  </button>
+
+                                  {isWr && (
+                                    <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[10px] font-bold">
+                                      Sai
+                                    </span>
+                                  )}
+                                  {isKn && (
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                      Thuộc
+                                    </span>
+                                  )}
+
+                                  {onMarkWrong && (
+                                    <button
+                                      onClick={() => onMarkWrong(c.n, !isWr)}
+                                      className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition ${
+                                        isWr
+                                          ? 'border-emerald-300 text-emerald-600 hover:bg-emerald-50'
+                                          : 'border-rose-300 text-rose-500 hover:bg-rose-50'
+                                      }`}
+                                      title={isWr ? 'Đánh dấu đã thuộc từ này' : 'Lưu từ này vào danh sách sai'}
+                                    >
+                                      {isWr ? '✓ Đã thuộc' : '✕ Lưu sai'}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* CHÚ THÍCH & NÚT RESET */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+            <p className="text-[11px] text-slate-400 leading-relaxed max-w-xl">
+              ⏱ Thời gian học chỉ tính khi bạn đang thao tác thực tế trong tab Học, Ngữ pháp hoặc Luyện nghe (tự động ngắt khi bạn chuyển tab hoặc không thao tác quá 90 giây). Dữ liệu được lưu an toàn trên trình duyệt của bạn.
+            </p>
+            <button
+              onClick={doReset}
+              className="px-4 py-2 rounded-xl border border-rose-200 text-rose-500 text-xs font-bold hover:bg-rose-50 dark:hover:bg-rose-950 transition"
+            >
+              Xoá số liệu thống kê
+            </button>
+          </div>
+        </Shell>
+      );
+    }
+
     const MODES = [
       ['flashcard', 'cardCircle', 'Từ vựng:', 'Flashcards', 'Phiên âm UK/US, định nghĩa và nghe từng câu ví dụ'],
       ['quiz', 'pencilCircle', 'Luyện tập:', 'Trắc nghiệm từ vựng', 'Đơn từ (từng câu) hoặc toàn bộ các từ'],
@@ -1411,11 +2059,13 @@ void main(){
       ['dictation', 'pencilCircle', 'Luyện tập:', 'Nghe chính tả', 'Nghe phát âm và gõ lại từng ký tự']
     ];
 
-    function StudyWorkspace({ decks, cards, wrongIds, onMarkWrong, tColor, goImport, setDecks, setCards, showToast }) {
-      const [deckId, setDeckId] = useNavState('study_deckId', null);
+    function StudyWorkspace({ decks, cards, wrongIds, onMarkWrong, tColor, goImport, setDecks, setCards, showToast, studyDeckId, setStudyDeckId }) {
+      const [deckId, setDeckId] = (studyDeckId !== undefined && setStudyDeckId) ? [studyDeckId, setStudyDeckId] : useNavState('study_deckId', null);
       const [scope, setScope] = useNavState('study_scope', 'lists');
       const [listId, setListId] = useNavState('study_listId', null);
       const [mode, setMode] = useNavState('study_mode', null);
+      const [shuf, setShuf] = useNavState('study_shuffle', false);
+      const [shufSeed, setShufSeed] = useNavState('study_shuffle_seed', 1);
       const [wrongSnap, setWrongSnap] = useState(null);
       const [showWrong, setShowWrong] = useState(false);
       const [adding, setAdding] = useState(false);
@@ -1433,10 +2083,23 @@ void main(){
       const onlyWrong = wrongSnap !== null;
       // Trong lúc luyện tập, danh sách từ sai được "chốt" để không bị co lại khi bạn trả lời đúng
       const pool = onlyWrong ? scopePool.filter(c => (mode ? wrongSnap : wrongIds).includes(c.n)) : scopePool;
+      const playPool = useMemo(() => shuf ? seededShuffle(pool, shufSeed) : pool, [pool, shuf, shufSeed]);
       const wrongInDeck = deckCards.filter(c => wrongIds.includes(c.n)).length;
       const optionsPool = deckCards.length >= 4 ? deckCards : cards;
       const scopeLabel = scope === 'all' ? 'Toàn bộ deck' : (curList ? `List ${curList.id}` : '');
 
+      const toggleShuf = () => { if (!shuf) setShufSeed(newSeed()); setShuf(!shuf); };
+      const reshuffle = () => setShufSeed(newSeed());
+      const shufBtns = (
+        <>
+          <button onClick={toggleShuf} title="Đảo thứ tự câu hỏi ngẫu nhiên" className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${shuf ? 'bg-indigo-600 text-white border-indigo-600 shadow' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-indigo-400'}`}>
+            <Icon name="shuffle" className="w-4 h-4" /><span>Đảo câu: {shuf ? 'Bật' : 'Tắt'}</span>
+          </button>
+          {shuf && (
+            <button onClick={reshuffle} title="Xáo lại thứ tự mới" className="px-3 py-2 rounded-xl text-xs font-bold border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950">↻ Xáo lại</button>
+          )}
+        </>
+      );
       const toggleWrong = () => { setShowWrong(false); setWrongSnap(onlyWrong ? null : wrongInScope.map(c => c.n)); };
       const startMode = (m) => { if (onlyWrong) setWrongSnap(wrongInScope.map(c => c.n)); setShowWrong(false); setMode(m); };
       const openDeck = (id) => { setDeckId(id); setScope('lists'); setListId(null); setMode(null); setWrongSnap(null); };
@@ -1518,8 +2181,9 @@ void main(){
               <button onClick={() => { setMode(null); setShowWrong(false); }} className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center space-x-1.5 shadow-sm">
                 <Icon name="arrowLeft" className="w-4 h-4" /><span>Quay lại menu</span>
               </button>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold text-slate-400 hidden sm:inline">{deck.name} › {scopeLabel} ({pool.length} từ)</span>
+                {shufBtns}
                 <button onClick={toggleWrong} className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${onlyWrong ? 'bg-rose-500 text-white border-rose-500 shadow' : 'bg-white dark:bg-slate-900 border-rose-200 text-rose-500 hover:bg-rose-50'}`}>
                   <Icon name="warning" className="w-4 h-4" />
                   <span>{onlyWrong ? `Đang ôn từ sai (${pool.length}) · Bấm để quay lại` : `Ôn từ sai (${wrongInScope.length})`}</span>
@@ -1542,15 +2206,15 @@ void main(){
               </div>
             )}
             {(() => {
-              const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}`;
+              const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}_${shuf ? 's' + shufSeed : 'o'}`;
               return (
                 <div key={`${mode}-${posKey}`}>
-                  {mode === 'flashcard' && <FlashcardMode pool={pool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'quiz' && <QuizUnifiedMode pool={pool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'match' && <MatchMode pool={pool} posKey={posKey} />}
-                  {mode === 'listen_word' && <ListenWordMode pool={pool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'fill' && <FillMode pool={pool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'dictation' && <DictationMode pool={pool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'flashcard' && <FlashcardMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'quiz' && <QuizUnifiedMode pool={playPool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'match' && <MatchMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'listen_word' && <ListenWordMode pool={playPool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'fill' && <FillMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'dictation' && <DictationMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
                 </div>
               );
             })()}
@@ -1568,7 +2232,8 @@ void main(){
               </button>
               <h2 className="text-xl font-black truncate">{deck.name}</h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {shufBtns}
               <button onClick={toggleWrong} className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${onlyWrong ? 'bg-rose-500 text-white border-rose-500 shadow' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}`}>
                 <Icon name="warning" className="w-4 h-4 text-rose-500" /><span>Chỉ ôn từ sai ({wrongInDeck})</span>
               </button>
@@ -1652,6 +2317,7 @@ void main(){
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
       const [flipped, setFlipped] = useState(false);
       const card = pool[idx];
+      useEffect(() => { if (card) Stats.seen(card.n); }, [card && card.n]);
 
       if (!card) return <div className="p-8 text-center text-slate-400">Không có từ vựng nào.</div>;
 
@@ -2045,7 +2711,7 @@ void main(){
     // ==========================================
     // 3. TÌM CẶP (6/6 KÈM CHỨC NĂNG ĐẢO TỪ TRONG TOÀN BỘ LIST & TOÀN BỘ TỪ)
     // ==========================================
-    function MatchMode({ pool, posKey = 'default' }) {
+    function MatchMode({ pool, onMarkWrong, posKey = 'default' }) {
       const [shuffledDeck, setShuffledDeck] = useState(() => [...pool]);
       const [rawBatchIdx, setBatchIdx] = useNavState('mt_batch_' + posKey, 0);
       const [leftId, setLeftId] = useState(null);
@@ -2188,9 +2854,11 @@ void main(){
                     if (!leftId) return;
                     if (leftId === c.n) {
                       SoundFx.correct();
+                      if (onMarkWrong) onMarkWrong(c.n, false);
                       setMatched(prev => [...prev, c.n]);
                     } else {
                       SoundFx.wrong();
+                      if (onMarkWrong) onMarkWrong(leftId, true);
                     }
                     setLeftId(null);
                   }}
@@ -3101,7 +3769,9 @@ void main(){
     ];
 
     function GrammarQuiz({ topic, onScore }) {
-      const qs = topic.quiz;
+      const [shuf, setShuf] = useNavState('grammar_quiz_shuffle', false);
+      const [seed, setSeed] = useState(() => newSeed());
+      const qs = useMemo(() => shuf ? seededShuffle(topic.quiz, seed) : topic.quiz, [topic, shuf, seed]);
       const [idx, setIdx] = useState(0);
       const [picked, setPicked] = useState(null);
       const [score, setScore] = useState(0);
@@ -3117,7 +3787,14 @@ void main(){
         if (idx >= qs.length - 1) { setFin(true); onScore(score); }
         else { setIdx(idx + 1); setPicked(null); }
       };
-      const retry = () => { setIdx(0); setPicked(null); setScore(0); setFin(false); };
+      const resetRun = () => { setIdx(0); setPicked(null); setScore(0); setFin(false); };
+      const retry = () => { if (shuf) setSeed(newSeed()); resetRun(); };
+      const toggleShuf = () => { setSeed(newSeed()); setShuf(!shuf); resetRun(); };
+      const shufBtn = (
+        <button onClick={toggleShuf} title="Đảo thứ tự câu hỏi ngẫu nhiên" className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${shuf ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-400'}`}>
+          <Icon name="shuffle" className="w-3.5 h-3.5" /><span>Đảo câu: {shuf ? 'Bật' : 'Tắt'}</span>
+        </button>
+      );
 
       if (fin) {
         return (
@@ -3125,7 +3802,10 @@ void main(){
             <p className="text-sm font-bold text-slate-400">KẾT QUẢ</p>
             <p className="text-5xl font-black text-indigo-600 dark:text-indigo-400">{score} / {qs.length}</p>
             <p className="text-slate-500 dark:text-slate-400">{score === qs.length ? 'Tuyệt vời! Bạn nắm chắc chủ đề này 🎉' : 'Hãy đọc lại phần Tóm tắt rồi làm lại nhé.'}</p>
-            <button onClick={retry} className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">Làm lại</button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button onClick={retry} className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">{shuf ? 'Làm lại (đảo câu mới)' : 'Làm lại'}</button>
+              {shufBtn}
+            </div>
           </div>
         );
       }
@@ -3135,7 +3815,8 @@ void main(){
         <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
           <div className="flex justify-between items-center text-xs font-bold text-slate-400">
             <span>CÂU {idx + 1} / {qs.length}</span>
-            <button onClick={() => speak(q[0].replace('___', 'blank'), 'en-US')} className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">🔊 Nghe câu</button>
+            <div className="flex items-center gap-2">{shufBtn}
+            <button onClick={() => speak(q[0].replace('___', 'blank'), 'en-US')} className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">🔊 Nghe câu</button></div>
           </div>
           <p className="text-xl md:text-2xl font-bold leading-relaxed text-slate-900 dark:text-white">
             {parts[0]}
