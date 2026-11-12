@@ -105,6 +105,20 @@
       set(k, v) { localStorage.setItem(this.p + k, v); }
     };
 
+    function useNavState(key, initVal) {
+      const [val, setVal] = useState(() => {
+        try {
+          const raw = Store.get('myvocab_nav_' + key);
+          if (raw !== null && raw !== undefined) return JSON.parse(raw);
+        } catch (e) {}
+        return typeof initVal === 'function' ? initVal() : initVal;
+      });
+      useEffect(() => {
+        try { Store.set('myvocab_nav_' + key, JSON.stringify(val)); } catch (e) {}
+      }, [key, val]);
+      return [val, setVal];
+    }
+
     // --- TÀI KHOẢN (lưu cục bộ trên trình duyệt, mật khẩu được băm PBKDF2) ---
     const Auth = {
       users() { try { return JSON.parse(localStorage.getItem('myvocab_auth_users')) || {}; } catch (e) { return {}; } },
@@ -976,8 +990,18 @@ void main(){
       const [wrongIds, setWrongIds] = useState(() => {
         try { return JSON.parse(Store.get('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
-      const [tab, setTab] = useState('study');
-      const [libDeck, setLibDeck] = useState(init.decks[0].id);
+      const VALID_TABS = ['study', 'grammar', 'listen', 'library', 'import'];
+      const [rawTab, setTab] = useNavState('tab', 'study');
+      const tab = VALID_TABS.includes(rawTab) ? rawTab : 'study';
+      const [libDeck, setLibDeck] = useNavState('libDeck', init.decks[0] ? init.decks[0].id : null);
+      const mainRef = useRef(null);
+      useEffect(() => {
+        const y = Number(Store.get('myvocab_nav_scroll'));
+        if (y > 0) {
+          const t = setTimeout(() => { if (mainRef.current) mainRef.current.scrollTop = y; }, 80);
+          return () => clearTimeout(t);
+        }
+      }, []);
       const [draft, setDraft] = useState([]);
       const loadUI = () => { try { return JSON.parse(Store.get('myvocab_v4_ui')) || {}; } catch (e) { return {}; } };
       const [themeColor, setThemeColor] = useState(() => loadUI().themeColor || 'indigo');
@@ -1099,7 +1123,7 @@ void main(){
             </div>
           </aside>
 
-          <main className="flex-1 overflow-y-auto pb-20 md:pb-6">
+          <main ref={mainRef} onScroll={e => { try { Store.set('myvocab_nav_scroll', String(e.currentTarget.scrollTop)); } catch (err) {} }} className="flex-1 overflow-y-auto pb-20 md:pb-6">
             <div className={tab === 'study' ? '' : 'hidden'}>
               <StudyWorkspace decks={decks} cards={cards} wrongIds={wrongIds} onMarkWrong={handleMarkWrong} tColor={tColor} goImport={() => setTab('import')} setDecks={setDecks} setCards={setCards} showToast={showToast} />
             </div>
@@ -1151,10 +1175,10 @@ void main(){
     ];
 
     function StudyWorkspace({ decks, cards, wrongIds, onMarkWrong, tColor, goImport, setDecks, setCards, showToast }) {
-      const [deckId, setDeckId] = useState(null);
-      const [scope, setScope] = useState('lists');
-      const [listId, setListId] = useState(null);
-      const [mode, setMode] = useState(null);
+      const [deckId, setDeckId] = useNavState('study_deckId', null);
+      const [scope, setScope] = useNavState('study_scope', 'lists');
+      const [listId, setListId] = useNavState('study_listId', null);
+      const [mode, setMode] = useNavState('study_mode', null);
       const [wrongSnap, setWrongSnap] = useState(null);
       const [showWrong, setShowWrong] = useState(false);
       const [adding, setAdding] = useState(false);
@@ -1280,14 +1304,19 @@ void main(){
                 )}
               </div>
             )}
-            <div key={mode + '-' + onlyWrong}>
-              {mode === 'flashcard' && <FlashcardMode pool={pool} onMarkWrong={onMarkWrong} />}
-              {mode === 'quiz' && <QuizUnifiedMode pool={pool} allCards={optionsPool} onMarkWrong={onMarkWrong} />}
-              {mode === 'match' && <MatchMode pool={pool} />}
-              {mode === 'listen_word' && <ListenWordMode pool={pool} allCards={optionsPool} onMarkWrong={onMarkWrong} />}
-              {mode === 'fill' && <FillMode pool={pool} onMarkWrong={onMarkWrong} />}
-              {mode === 'dictation' && <DictationMode pool={pool} onMarkWrong={onMarkWrong} />}
-            </div>
+            {(() => {
+              const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}`;
+              return (
+                <div key={`${mode}-${posKey}`}>
+                  {mode === 'flashcard' && <FlashcardMode pool={pool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'quiz' && <QuizUnifiedMode pool={pool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'match' && <MatchMode pool={pool} posKey={posKey} />}
+                  {mode === 'listen_word' && <ListenWordMode pool={pool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'fill' && <FillMode pool={pool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                  {mode === 'dictation' && <DictationMode pool={pool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                </div>
+              );
+            })()}
           </Shell>
         );
       }
@@ -1381,8 +1410,9 @@ void main(){
     // ==========================================
     // 1. FLASHCARD MODE (GỌN GÀNG VỪA KHÍT MÀN HÌNH + CÓ NÚT NGHE TỪNG CÂU VÍ DỤ)
     // ==========================================
-    function FlashcardMode({ pool, onMarkWrong }) {
-      const [idx, setIdx] = useState(0);
+    function FlashcardMode({ pool, onMarkWrong, posKey = 'default' }) {
+      const [rawIdx, setIdx] = useNavState('fc_idx_' + posKey, 0);
+      const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
       const [flipped, setFlipped] = useState(false);
       const card = pool[idx];
 
@@ -1550,10 +1580,11 @@ void main(){
     // ==========================================
     // 2. TRẮC NGHIỆM TỪ VỰNG
     // ==========================================
-    function QuizUnifiedMode({ pool, allCards, onMarkWrong }) {
-      const [isAllMode, setIsAllMode] = useState(false);
+    function QuizUnifiedMode({ pool, allCards, onMarkWrong, posKey = 'default' }) {
+      const [isAllMode, setIsAllMode] = useNavState('qz_all_' + posKey, false);
 
-      const [idx, setIdx] = useState(0);
+      const [rawIdx, setIdx] = useNavState('qz_idx_' + posKey, 0);
+      const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
       const [picked, setPicked] = useState(null);
       const card = pool[idx];
 
@@ -1777,13 +1808,15 @@ void main(){
     // ==========================================
     // 3. TÌM CẶP (6/6 KÈM CHỨC NĂNG ĐẢO TỪ TRONG TOÀN BỘ LIST & TOÀN BỘ TỪ)
     // ==========================================
-    function MatchMode({ pool }) {
+    function MatchMode({ pool, posKey = 'default' }) {
       const [shuffledDeck, setShuffledDeck] = useState(() => [...pool]);
-      const [batchIdx, setBatchIdx] = useState(0);
+      const [rawBatchIdx, setBatchIdx] = useNavState('mt_batch_' + posKey, 0);
       const [leftId, setLeftId] = useState(null);
       const [matched, setMatched] = useState([]);
+      const didMountRef = useRef(false);
 
       useEffect(() => {
+        if (!didMountRef.current) { didMountRef.current = true; return; }
         setShuffledDeck([...pool].sort(() => 0.5 - Math.random()));
         setBatchIdx(0);
         setMatched([]);
@@ -1791,6 +1824,7 @@ void main(){
       }, [pool]);
 
       const totalBatches = Math.max(1, Math.ceil(shuffledDeck.length / 6));
+      const batchIdx = Math.min(Math.max(0, rawBatchIdx), totalBatches - 1);
       const currentBatch = useMemo(() => {
         const start = batchIdx * 6;
         return shuffledDeck.slice(start, start + 6);
@@ -1960,11 +1994,12 @@ void main(){
       return cands.has(v);
     }
 
-    function FillMode({ pool, onMarkWrong }) {
-      const [isMulti, setIsMulti] = useState(true);
-      const [rev, setRev] = useState(false); // false: cho nghĩa → gõ từ Anh | true: cho từ Anh → gõ nghĩa
+    function FillMode({ pool, onMarkWrong, posKey = 'default' }) {
+      const [isMulti, setIsMulti] = useNavState('fl_multi_' + posKey, true);
+      const [rev, setRev] = useNavState('fl_rev_' + posKey, false); // false: cho nghĩa → gõ từ Anh | true: cho từ Anh → gõ nghĩa
       const [rows, setRows] = useState({});
-      const [sIdx, setSIdx] = useState(0);
+      const [rawSIdx, setSIdx] = useNavState('fl_idx_' + posKey, 0);
+      const sIdx = Math.min(Math.max(0, rawSIdx), Math.max(0, pool.length - 1));
       const [sVal, setSVal] = useState('');
       const [sRes, setSRes] = useState(null);
 
@@ -2136,8 +2171,9 @@ void main(){
     // ==========================================
     // 5. NGHE TỪ VỰNG & NGHE CHÍNH TẢ
     // ==========================================
-    function ListenWordMode({ pool, allCards, onMarkWrong }) {
-      const [idx, setIdx] = useState(0);
+    function ListenWordMode({ pool, allCards, onMarkWrong, posKey = 'default' }) {
+      const [rawIdx, setIdx] = useNavState('lw_idx_' + posKey, 0);
+      const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
       const [picked, setPicked] = useState(null);
       const card = pool[idx];
 
@@ -2185,8 +2221,9 @@ void main(){
       );
     }
 
-    function DictationMode({ pool, onMarkWrong }) {
-      const [idx, setIdx] = useState(0);
+    function DictationMode({ pool, onMarkWrong, posKey = 'default' }) {
+      const [rawIdx, setIdx] = useNavState('dc_idx_' + posKey, 0);
+      const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
       const [val, setVal] = useState('');
       const card = pool[idx];
       if (!card) return null;
@@ -2223,8 +2260,8 @@ void main(){
     // THƯ VIỆN (TRA CỨU THEO DECK)
     // ==========================================
     function LibrarySection({ decks, cards, setDecks, setCards, deckId, setDeckId, goImport, tColor }) {
-      const [lf, setLf] = useState('all');
-      const [q, setQ] = useState('');
+      const [lf, setLf] = useNavState('lib_lf', 'all');
+      const [q, setQ] = useNavState('lib_q', '');
       const deck = decks.find(d => d.id === deckId) || decks[0];
 
       if (!deck) {
@@ -2337,7 +2374,7 @@ void main(){
     // NẠP TỪ VỰNG: EXCEL / BÀN PHÍM / HÌNH ẢNH / GIỌNG NÓI -> CHỌN THƯ MỤC
     // ==========================================
     function ImportSection({ decks, cards, setDecks, setCards, draft, setDraft, showToast, tColor, onDone }) {
-      const [src, setSrc] = useState('excel');
+      const [src, setSrc] = useNavState('import_src', 'excel');
       const [bulk, setBulk] = useState('');
       const [f, setF] = useState({ w: '', s: '', p: '', i: '', e: '', x: '' });
       const [busy, setBusy] = useState('');
@@ -2896,8 +2933,8 @@ void main(){
 
     function GrammarSection({ tColor }) {
       const [st, setSt] = useState(() => { try { return JSON.parse(Store.get('myvocab_v4_grammar')) || {}; } catch (e) { return {}; } });
-      const [tid, setTid] = useState(null);
-      const [view, setView] = useState('summary');
+      const [tid, setTid] = useNavState('grammar_tid', null);
+      const [view, setView] = useNavState('grammar_view', 'summary');
       useEffect(() => { try { Store.set('myvocab_v4_grammar', JSON.stringify(st)); } catch (e) {} }, [st]);
 
       const done = st.done || {};
@@ -3169,7 +3206,8 @@ void main(){
     }
 
     function DictationPlayer({ lesson, sentences, done, onDone, onAttempt, onTimes, onSaveWord, onBack, tColor }) {
-      const [idx, setIdx] = useState(() => { const f = sentences.findIndex((_, i) => !done[i]); return f < 0 ? 0 : f; });
+      const [rawIdx, setIdx] = useNavState('dict_idx_' + lesson.id, () => { const f = sentences.findIndex((_, i) => !done[i]); return f < 0 ? 0 : f; });
+      const idx = Math.min(Math.max(0, rawIdx), Math.max(0, sentences.length - 1));
       const [val, setVal] = useState('');
       const [res, setRes] = useState(null);
       const [hint, setHint] = useState(false);
@@ -3340,9 +3378,9 @@ void main(){
     function ListeningSection({ tColor, decks, cards, setDecks, setCards, showToast }) {
       const load = () => { try { return JSON.parse(Store.get('myvocab_v4_dict')) || {}; } catch (e) { return {}; } };
       const [st, setSt] = useState(load);
-      const [openId, setOpenId] = useState(null);
-      const [activeTopicId, setActiveTopicId] = useState(null);
-      const [viewMode, setViewMode] = useState('topics'); // 'topics' (All topics DailyDictation) | 'lessons' (Tất cả bài nghe)
+      const [openId, setOpenId] = useNavState('listen_openId', null);
+      const [activeTopicId, setActiveTopicId] = useNavState('listen_topicId', null);
+      const [viewMode, setViewMode] = useNavState('listen_viewMode', 'topics'); // 'topics' (All topics DailyDictation) | 'lessons' (Tất cả bài nghe)
       const [openDescs, setOpenDescs] = useState({});
       const [form, setForm] = useState(false);
       const [title, setTitle] = useState('');
@@ -3350,7 +3388,7 @@ void main(){
       const [file, setFile] = useState(null);
       const [topicSel, setTopicSel] = useState('conv');
       const [newTopic, setNewTopic] = useState('');
-      const [filter, setFilter] = useState('all');
+      const [filter, setFilter] = useNavState('listen_filter', 'all');
       const [busy, setBusy] = useState('');
       const [dk, setDk] = useState('');
       const [lk, setLk] = useState('');
