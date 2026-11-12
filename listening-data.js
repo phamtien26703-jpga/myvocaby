@@ -1,4 +1,4 @@
-/* Dữ liệu thử nghiệm 5 bài Short Stories */
+/* Bài nghe cào từ DailyDictation: short-stories */
 window.LISTENING_DATA = [
   {
     "id": "dd_short-stories_1",
