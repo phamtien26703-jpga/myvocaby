@@ -1974,6 +1974,7 @@ void main(){
                               >
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-baseline space-x-2">
+                                    <span className="text-[11px] font-mono text-slate-400">#{numOf(c)}</span>
                                     <span className="font-bold text-slate-900 dark:text-white text-sm">{c.w}</span>
                                     {c.p && <span className="text-[11px] text-slate-400">({c.p})</span>}
                                     {c.i && <span className="text-[11px] font-mono text-indigo-500">{c.i}</span>}
@@ -2666,7 +2667,7 @@ void main(){
                   return (
                     <div key={q.card.n} className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
                       <div className="flex justify-between items-center text-xs text-slate-400 font-bold">
-                        <span>CÂU {qIdx + 1} [#{q.card.n} - List {q.card.l}]</span>
+                        <span>CÂU {qIdx + 1} [#{numOf(q.card)} - List {q.card.l}]</span>
                         <div className="flex space-x-2">
                           <button onClick={() => speak(q.card.w, "en-GB")} className="text-indigo-600 hover:underline">🔊 UK</button>
                           <button onClick={() => speak(q.card.w, "en-US")} className="text-rose-600 hover:underline">🔊 US</button>
@@ -2980,7 +2981,7 @@ void main(){
                       const r = rows[c.n] || { val: '', checked: false, ok: false };
                       return (
                         <tr key={rev + '-' + c.n} className="grid grid-cols-[2.5rem_1fr] items-center gap-x-1 gap-y-2 px-3 py-3 md:table-row md:p-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                          <td className="md:p-4 text-center text-xs font-mono text-slate-400">#{c.n}</td>
+                          <td className="md:p-4 text-center text-xs font-mono text-slate-400">#{numOf(c)}</td>
                           <td className="md:p-4 font-semibold text-base text-slate-800 dark:text-slate-200">
                             {rev ? (
                               <span className="inline-flex flex-wrap items-baseline gap-x-2">
