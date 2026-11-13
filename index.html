@@ -85,6 +85,7 @@
     .char-theme .bg-white{background:var(--sk-card)!important;backdrop-filter:blur(10px)}
     .char-theme .sk-modal{background:rgba(var(--sk-wash),.97)!important}
     .char-theme .bg-slate-50{background:var(--sk-soft)!important}
+    .char-theme .vocab-row:hover{background:var(--sk-soft)!important}
     .char-theme .bg-slate-100,.char-theme .bg-slate-200\/70{background:var(--sk-chip)!important}
     .char-theme .border-slate-200,.char-theme .border-slate-100,.char-theme .border-slate-300,.char-theme .divide-slate-100>*{border-color:var(--sk-bd)!important}
     .char-theme .text-slate-400{color:var(--sk-t3)!important}
@@ -2970,21 +2971,21 @@ void main(){
                   <thead className="hidden md:table-header-group bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-bold border-b border-slate-200 dark:border-slate-800">
                     <tr>
                       <th className="p-4 w-14 text-center">#</th>
-                      <th className="p-4 w-2/5">{rev ? 'Từ tiếng Anh' : 'Nghĩa tiếng Việt'}</th>
+                      <th className="p-4 w-2/5 text-center">{rev ? 'Từ tiếng Anh' : 'Nghĩa tiếng Việt'}</th>
                       <th className="p-0 w-12 text-center"><span className="inline-flex">{swapBtn()}</span></th>
-                      <th className="p-4 w-2/5">{rev ? 'Nhập nghĩa tiếng Việt (Nhấn Enter)' : 'Điền từ tiếng Anh (Nhấn Enter)'}</th>
-                      <th className="p-4">Kết quả</th>
+                      <th className="p-4 w-2/5 text-center">{rev ? 'Nhập nghĩa tiếng Việt (Nhấn Enter)' : 'Điền từ tiếng Anh (Nhấn Enter)'}</th>
+                      <th className="p-4 text-center">Kết quả</th>
                     </tr>
                   </thead>
                   <tbody className="block md:table-row-group divide-y divide-slate-100 dark:divide-slate-800">
                     {pool.map((c, i) => {
                       const r = rows[c.n] || { val: '', checked: false, ok: false };
                       return (
-                        <tr key={rev + '-' + c.n} className="grid grid-cols-[2.5rem_1fr] items-center gap-x-1 gap-y-2 px-3 py-3 md:table-row md:p-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <tr key={rev + '-' + c.n} className="vocab-row grid grid-cols-[2.5rem_1fr] items-center gap-x-1 gap-y-2 px-3 py-3 md:table-row md:p-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                           <td className="md:p-4 text-center text-xs font-mono text-slate-400">#{numOf(c)}</td>
-                          <td className="md:p-4 font-semibold text-base text-slate-800 dark:text-slate-200">
+                          <td className="md:p-4 font-semibold text-base text-center text-slate-800 dark:text-slate-200">
                             {rev ? (
-                              <span className="inline-flex flex-wrap items-baseline gap-x-2">
+                              <span className="inline-flex flex-wrap items-baseline justify-center gap-x-2">
                                 <button type="button" onClick={() => speak(c.w, 'en-US')} title="Nghe phát âm" className="font-black text-slate-900 dark:text-white text-left hover:underline">{c.w}</button>
                                 {c.p && <span className="text-xs font-mono text-slate-400">({c.p})</span>}
                                 {c.i && <span className="text-xs font-mono text-slate-400">{c.i}</span>}
@@ -3008,14 +3009,14 @@ void main(){
                                   if (nextEl) nextEl.focus();
                                 }
                               }}
-                              className={`w-full min-w-0 px-4 py-3 md:py-2.5 rounded-xl border text-base font-bold outline-none ${
+                              className={`w-full min-w-0 px-4 py-3 md:py-2.5 rounded-xl border text-base text-center font-bold outline-none ${
                                 r.checked
                                   ? r.ok ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-rose-500 bg-rose-50 text-rose-700'
                                   : 'border-slate-200 dark:border-slate-700 bg-transparent focus:border-indigo-500'
                               }`}
                             />
                           </td>
-                          <td className="col-span-2 md:col-auto md:p-4 break-words">
+                          <td className="col-span-2 md:col-auto md:p-4 break-words text-center">
                             {r.checked ? (
                               r.ok ? <span className="text-emerald-600 text-base font-bold">✓ Đúng</span> : <span className="text-rose-600 text-base font-bold">✗ Sai ({answerOf(c)})</span>
                             ) : (
