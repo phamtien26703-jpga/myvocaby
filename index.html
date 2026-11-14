@@ -1262,6 +1262,8 @@ void main(){
       const [init] = useState(loadData);
       const [decks, setDecks] = useState(init.decks);
       const [cards, setCards] = useState(init.cards);
+      const [marks, setMarks] = useState(() => { try { return JSON.parse(Store.get('myvocab_v4_marks')) || {}; } catch (e) { return {}; } });
+      useEffect(() => { try { Store.set('myvocab_v4_marks', JSON.stringify(marks)); } catch (e) {} }, [marks]);
       const [wrongIds, setWrongIds] = useState(() => {
         try { return JSON.parse(Store.get('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
@@ -1387,6 +1389,7 @@ void main(){
       return (
         <div className="flex h-screen overflow-hidden font-sans">
           <div className="char-bg" />
+          <MarkTool cards={cards} marks={marks} setMarks={setMarks} showToast={showToast} />
           {showVoice && <VoicePicker onClose={() => setShowVoice(false)} />}
           {showSkins && <SkinPicker skin={skin} setSkin={setSkin} customSkins={customSkins} setCustomSkins={setCustomSkins} onClose={() => setShowSkins(false)} showToast={showToast} waterOn={waterOn} setWaterOn={setWaterOn} waterAmp={waterAmp} setWaterAmp={setWaterAmp} />}
           {skinOn && <WaterFab waterOn={waterOn} setWaterOn={setWaterOn} waterAmp={waterAmp} setWaterAmp={setWaterAmp} />}
@@ -1455,7 +1458,7 @@ void main(){
                 onMarkWrong={handleMarkWrong} />
             </div>
             <div className={tab === 'library' ? '' : 'hidden'}>
-              <LibrarySection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} deckId={libDeck} setDeckId={setLibDeck} goImport={() => setTab('import')} tColor={tColor} />
+              <LibrarySection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} deckId={libDeck} setDeckId={setLibDeck} goImport={() => setTab('import')} tColor={tColor} marks={marks} />
             </div>
             <div className={tab === 'import' ? '' : 'hidden'}>
               <ImportSection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} draft={draft} setDraft={setDraft} showToast={showToast} tColor={tColor}
@@ -1490,6 +1493,107 @@ void main(){
     // HỌC & LUYỆN TẬP: CHỌN DECK -> LIST -> CHẾ ĐỘ
     // ==========================================
     // ==========================================
+    // ==========================================
+    // TIỆN ÍCH BÔI ĐEN: ĐÁNH DẤU TỪ ĐÃ HỌC (chỉ hiện khi đang bôi đen từ vựng)
+    // ==========================================
+    function dayLabel(ts) {
+      const d = new Date(ts), t = new Date(), y = new Date(); y.setDate(y.getDate() - 1);
+      const k = x => x.getFullYear() * 10000 + x.getMonth() * 100 + x.getDate();
+      if (k(d) === k(t)) return 'hôm nay';
+      if (k(d) === k(y)) return 'hôm qua';
+      return d.getDate() + '/' + (d.getMonth() + 1);
+    }
+    function MarkTool({ cards, marks, setMarks, showToast }) {
+      const [pop, setPop] = useState(null);
+      const ref = useRef({ cards, marks });
+      ref.current = { cards, marks };
+      useEffect(() => {
+        let timer = null, down = false;
+        const norm = (t) => String(t).toLowerCase().replace(/[^\p{L}\p{N}'\- ]/gu, ' ').replace(/\s+/g, ' ').trim();
+        const compute = () => {
+          const sel = window.getSelection();
+          if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { setPop(null); return; }
+          const text = sel.toString().trim();
+          if (!text || text.length > 600) { setPop(null); return; }
+          const range = sel.getRangeAt(0);
+          const anc = range.commonAncestorContainer;
+          const el = anc.nodeType === 1 ? anc : anc.parentElement;
+          if (el && el.closest && el.closest('input,textarea,select,[contenteditable="true"],[data-marktool]')) { setPop(null); return; }
+          const { cards: cs, marks: mk } = ref.current;
+          let ns = [];
+          // 1) Bôi đen trong bảng Thư viện: lấy mọi dòng nằm trong vùng chọn
+          document.querySelectorAll('tr[data-card-n]').forEach(r => {
+            try {
+              const r2 = document.createRange(); r2.selectNodeContents(r);
+              if (range.compareBoundaryPoints(Range.START_TO_END, r2) === 1 && range.compareBoundaryPoints(Range.END_TO_START, r2) === -1) ns.push(Number(r.getAttribute('data-card-n')));
+            } catch (e) {}
+          });
+          // 2) Nơi khác (flashcard, ví dụ...): khớp theo chính từ được bôi đen
+          if (!ns.length) {
+            const full = norm(text);
+            let m = full ? cs.filter(c => norm(c.w) === full) : [];
+            if (!m.length) {
+              const toks = full.split(' ').filter(Boolean);
+              if (toks.length && toks.length <= 4) { const set = new Set(toks); m = cs.filter(c => set.has(norm(c.w))); }
+            }
+            ns = m.map(c => c.n);
+          }
+          ns = Array.from(new Set(ns));
+          if (!ns.length) { setPop(null); return; }
+          const rects = range.getClientRects();
+          const rc = rects.length ? rects[rects.length - 1] : range.getBoundingClientRect();
+          const first = range.getBoundingClientRect();
+          let y = first.top - 46; if (y < 8) y = rc.bottom + 10;
+          const x = Math.min(Math.max(first.left + first.width / 2, 110), window.innerWidth - 110);
+          const all = ns.every(n => mk[n]);
+          const label = ns.length === 1 ? ((cs.find(c => c.n === ns[0]) || {}).w || '1 từ') : ns.length + ' từ';
+          setPop({ x, y, ns, all, label });
+        };
+        const schedule = () => { clearTimeout(timer); timer = setTimeout(() => { if (!down) compute(); }, 180); };
+        const onDown = (e) => { if (e.pointerType === 'mouse' && !(e.target.closest && e.target.closest('[data-marktool]'))) down = true; };
+        const onUp = () => { down = false; schedule(); };
+        const hide = () => setPop(null);
+        document.addEventListener('selectionchange', schedule);
+        document.addEventListener('pointerdown', onDown, true);
+        document.addEventListener('pointerup', onUp, true);
+        document.addEventListener('keyup', schedule, true);
+        window.addEventListener('scroll', hide, true);
+        window.addEventListener('resize', hide);
+        return () => {
+          clearTimeout(timer);
+          document.removeEventListener('selectionchange', schedule);
+          document.removeEventListener('pointerdown', onDown, true);
+          document.removeEventListener('pointerup', onUp, true);
+          document.removeEventListener('keyup', schedule, true);
+          window.removeEventListener('scroll', hide, true);
+          window.removeEventListener('resize', hide);
+        };
+      }, []);
+      if (!pop) return null;
+      const apply = () => {
+        const ts = Date.now();
+        setMarks(prev => {
+          const next = { ...prev };
+          if (pop.all) pop.ns.forEach(n => { delete next[n]; }); else pop.ns.forEach(n => { next[n] = ts; });
+          return next;
+        });
+        if (!pop.all) pop.ns.forEach(n => Stats.seen(n));
+        showToast(pop.all ? 'Đã bỏ đánh dấu: ' + pop.label : 'Đã đánh dấu đã học: ' + pop.label);
+        const sel = window.getSelection(); if (sel) sel.removeAllRanges();
+        setPop(null);
+      };
+      return (
+        <div data-marktool onMouseDown={e => e.preventDefault()} onPointerDown={e => e.preventDefault()}
+          style={{ position: 'fixed', left: pop.x, top: pop.y, transform: 'translateX(-50%)', zIndex: 70 }}>
+          <button onClick={apply} style={{ background: pop.all ? '#475569' : '#059669', color: '#fff' }}
+            className="px-3.5 py-2 rounded-full text-xs font-bold shadow-xl border border-white/30 flex items-center gap-1.5 whitespace-nowrap">
+            <span>{pop.all ? '↩ Bỏ đánh dấu' : '✅ Đánh dấu đã học'}</span>
+            <span className="opacity-80 max-w-[140px] truncate">· {pop.label}</span>
+          </button>
+        </div>
+      );
+    }
+
     // ==========================================
     // TỔNG KẾT & THỐNG KÊ HỌC TẬP CHUYÊN SÂU
     // ==========================================
@@ -3166,7 +3270,7 @@ void main(){
     // ==========================================
     // THƯ VIỆN (TRA CỨU THEO DECK)
     // ==========================================
-    function LibrarySection({ decks, cards, setDecks, setCards, deckId, setDeckId, goImport, tColor }) {
+    function LibrarySection({ decks, cards, setDecks, setCards, deckId, setDeckId, goImport, tColor, marks }) {
       const [lf, setLf] = useNavState('lib_lf', 'all');
       const [q, setQ] = useNavState('lib_q', '');
       const [rev, setRev] = useNavState('lib_rev', false); // false: Anh → Việt, true: Việt → Anh
@@ -3191,6 +3295,13 @@ void main(){
         .filter(c => (lf === 'all' || c.l === Number(lf)) && (!ql || c.w.toLowerCase().includes(ql) || (c.s || '').toLowerCase().includes(ql)))
         .sort((a, b) => numOf(a) - numOf(b));
 
+      const dm = deckCards.filter(c => marks && marks[c.n]);
+      const lastMark = dm.length ? dm.reduce((a, b) => (numOf(b) > numOf(a) ? b : a)) : null;
+      const jumpMark = () => {
+        if (!lastMark) return;
+        setLf(String(lastMark.l)); setQ('');
+        setTimeout(() => { const el = document.getElementById('lib-row-' + lastMark.n); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 150);
+      };
       const rename = () => {
         const name = prompt('Tên mới cho thư mục:', deck.name);
         if (name && name.trim()) setDecks(ds => ds.map(d => d.id === deck.id ? { ...d, name: name.trim() } : d));
@@ -3252,6 +3363,14 @@ void main(){
                 <input type="text" placeholder="Tìm từ hoặc nghĩa..." value={q} onChange={e => setQ(e.target.value)} className="flex-1 min-w-[180px] px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm outline-none focus:border-indigo-500" />
               </div>
 
+              {lastMark ? (
+                <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-sm">
+                  <span className="text-emerald-800 dark:text-emerald-300">📍 Đã học đến: <b>{lastMark.w}</b> (#{numOf(lastMark)} · List {lastMark.l}) · đánh dấu {dayLabel(marks[lastMark.n])} · <b>{dm.length}</b>/{deckCards.length} từ đã đánh dấu</span>
+                  <button onClick={jumpMark} className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold">Đi tới từ này</button>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 px-1">💡 Bôi đen một từ (hoặc kéo chọn nhiều dòng) để hiện nút “Đánh dấu đã học”.</p>
+              )}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-sm">
                 <table className="w-full min-w-[640px] table-fixed text-left text-sm">
                   <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-xs">
@@ -3268,8 +3387,8 @@ void main(){
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filtered.slice(0, 300).map(c => (
-                      <tr key={c.n}>
-                        <td className="p-3 font-mono text-slate-400">#{numOf(c)}</td>
+                      <tr key={c.n} id={'lib-row-' + c.n} data-card-n={c.n} className={marks && marks[c.n] ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
+                        <td className="p-3 font-mono text-slate-400 whitespace-nowrap">#{numOf(c)}{marks && marks[c.n] ? <span title={'Đã học · ' + dayLabel(marks[c.n])} className="text-emerald-500 ml-1 font-sans font-bold">✓</span> : null}</td>
                         <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'text-slate-600 dark:text-slate-300' : 'font-bold'}`}>{rev ? (c.s || c.v) : <>{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></>}</td>
                         <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{rev ? <>{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></> : (c.s || c.v)}</td>
                         <td className="p-3 text-center font-bold text-slate-400 whitespace-nowrap border-l border-slate-200 dark:border-slate-700">List {c.l}</td>
