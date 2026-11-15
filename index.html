@@ -1493,6 +1493,17 @@ void main(){
     // HỌC & LUYỆN TẬP: CHỌN DECK -> LIST -> CHẾ ĐỘ
     // ==========================================
     // ==========================================
+    // Nút loa dùng chung: đặt cạnh MỌI từ vựng -> từ nào thêm sau này cũng tự có loa
+    function SpeakBtn({ text, lang = 'en-US', small = false, className = '', title = 'Nghe phát âm' }) {
+      return (
+        <button type="button" title={title} aria-label={title}
+          onClick={(e) => { e.stopPropagation(); speak(String(text || '').replace(/\(.*?\)/g, '').trim(), lang); }}
+          className={`inline-flex items-center justify-center shrink-0 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 hover:scale-110 active:scale-95 transition ${small ? 'w-6 h-6' : 'w-7 h-7'} ${className}`}>
+          <Icon name="volume" className={small ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+        </button>
+      );
+    }
+
     // ==========================================
     // TIỆN ÍCH BÔI ĐEN: ĐÁNH DẤU TỪ ĐÃ HỌC (chỉ hiện khi đang bôi đen từ vựng)
     // ==========================================
@@ -2303,7 +2314,7 @@ void main(){
                   <div className="flex flex-wrap gap-2 mt-2.5">
                     {pool.slice(0, 80).map(c => (
                       <button key={c.n} onClick={() => speak(c.w, 'en-US')} className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900 text-xs text-left">
-                        <b>{c.w}</b> <span className="text-slate-400">· {c.s || c.v}</span>
+                        <Icon name="volume" className="w-3 h-3 inline -mt-0.5 mr-1 text-rose-400" /><b>{c.w}</b> <span className="text-slate-400">· {c.s || c.v}</span>
                       </button>
                     ))}
                     {pool.length > 80 && <span className="text-xs text-slate-400 self-center">... và {pool.length - 80} từ nữa</span>}
@@ -2947,7 +2958,7 @@ void main(){
                       : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400'
                   }`}
                 >
-                  {c.w}
+                  <span className="inline-flex items-center justify-center gap-2"><Icon name="volume" className="w-4 h-4 opacity-60 shrink-0" />{c.w}</span>
                 </button>
               ))}
             </div>
@@ -3089,12 +3100,18 @@ void main(){
                           <td className="md:p-4 text-center text-xs font-mono text-slate-400">#{numOf(c)}</td>
                           <td className="md:p-4 font-semibold text-base text-center text-slate-800 dark:text-slate-200">
                             {rev ? (
-                              <span className="inline-flex flex-wrap items-baseline justify-center gap-x-2">
+                              <span className="inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+                                <SpeakBtn text={c.w} small />
                                 <button type="button" onClick={() => speak(c.w, 'en-US')} title="Nghe phát âm" className="font-black text-slate-900 dark:text-white text-left hover:underline">{c.w}</button>
                                 {c.p && <span className="text-xs font-mono text-slate-400">({c.p})</span>}
                                 {c.i && <span className="text-xs font-mono text-slate-400">{c.i}</span>}
                               </span>
-                            ) : meaningOf(c)}
+                            ) : (
+                              <span className="inline-flex items-center justify-center gap-2">
+                                {meaningOf(c)}
+                                {r.checked && <SpeakBtn text={c.w} small title="Nghe đáp án" />}
+                              </span>
+                            )}
                           </td>
                           <td className="hidden md:table-cell md:p-0 text-center text-slate-300 dark:text-slate-600 select-none">⇄</td>
                           <td className="col-span-2 md:col-auto md:p-4">
@@ -3389,8 +3406,8 @@ void main(){
                     {filtered.slice(0, 300).map(c => (
                       <tr key={c.n} id={'lib-row-' + c.n} data-card-n={c.n} className={marks && marks[c.n] ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
                         <td className="p-3 font-mono text-slate-400 whitespace-nowrap">#{numOf(c)}{marks && marks[c.n] ? <span title={'Đã học · ' + dayLabel(marks[c.n])} className="text-emerald-500 ml-1 font-sans font-bold">✓</span> : null}</td>
-                        <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'text-slate-600 dark:text-slate-300' : 'font-bold'}`}>{rev ? (c.s || c.v) : <>{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></>}</td>
-                        <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{rev ? <>{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></> : (c.s || c.v)}</td>
+                        <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'text-slate-600 dark:text-slate-300' : 'font-bold'}`}>{rev ? (c.s || c.v) : <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span>}</td>
+                        <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{rev ? <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span> : (c.s || c.v)}</td>
                         <td className="p-3 text-center font-bold text-slate-400 whitespace-nowrap border-l border-slate-200 dark:border-slate-700">List {c.l}</td>
                         <td className="p-3 border-l border-slate-200 dark:border-slate-700"><button title="Xoá từ này" onClick={() => setCards(cs => cs.filter(x => x.n !== c.n))} className="text-slate-300 hover:text-rose-500"><Icon name="trash" className="w-4 h-4" /></button></td>
                       </tr>
@@ -3643,7 +3660,8 @@ void main(){
                   <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">
                     {draft.slice(0, 200).map(x => (
                       <div key={x.k} className="flex items-center gap-1.5 p-2">
-                        <input value={x.w} onChange={e => upd(x.k, { w: e.target.value })} className="w-2/5 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm font-bold outline-none" />
+                        <SpeakBtn text={x.w} small />
+                        <input value={x.w} onChange={e => upd(x.k, { w: e.target.value })} className="w-[38%] px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm font-bold outline-none" />
                         <input value={x.s || ''} placeholder="(chưa có nghĩa)" onChange={e => upd(x.k, { s: e.target.value })} className="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm outline-none" />
                         <Mic lang="vi-VN" onText={t => upd(x.k, { s: t })} />
                         <button onClick={() => setDraft(d => d.filter(y => y.k !== x.k))} className="text-slate-300 hover:text-rose-500 p-1"><Icon name="x" className="w-4 h-4" /></button>
