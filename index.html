@@ -297,7 +297,7 @@
         if (!this._p) {
           let p = {};
           try { p = JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) {}
-          this._p = { gender: p.gender || 'female', 'en-GB': p['en-GB'] || 'auto', 'en-US': p['en-US'] || 'auto',
+          this._p = { gender: p.gender || 'female', same: !!p.same, 'en-GB': p['en-GB'] || 'auto', 'en-US': p['en-US'] || 'auto',
             pitch: Number(p.pitch) >= 0.7 && Number(p.pitch) <= 1.5 ? Number(p.pitch) : 1 };
         }
         return this._p;
@@ -1167,13 +1167,21 @@ void main(){
       const p = VoiceKit.prefs();
       const update = (patch) => { VoiceKit.set(patch); force(n => n + 1); };
       const SAMPLE = "Hello! Nice to meet you. Let's practice English together.";
-      const list = VoiceKit.ranked(slot, p.gender);
+      const allVoices = VoiceKit.english();
+      const ranked = VoiceKit.ranked(slot, p.gender);
       const current = VoiceKit.pick(slot);
       const auto = p[slot] === 'auto';
+      const autoVoice = VoiceKit.best(slot, p.gender);
+      // Giọng bạn đã chọn luôn được ghim lên đầu, kể cả khi đang bị bộ lọc nam/nữ ẩn đi
+      const manual = !auto ? allVoices.find(v => v.name === p[slot]) : null;
+      const sameV = (a, b) => a.name === b.name && a.lang === b.lang;
+      const list = manual && !ranked.some(v => sameV(v, manual)) ? [manual, ...ranked] : ranked;
+      const hiddenCount = allVoices.filter(v => !VoiceKit.allowed(v, p.gender)).length;
       const flag = (v) => ({ GB: '🇬🇧', US: '🇺🇸', AU: '🇦🇺', IN: '🇮🇳', IE: '🇮🇪', ZA: '🇿🇦', CA: '🇨🇦', NZ: '🇳🇿' }[VoiceKit.region(v).toUpperCase()] || '🌐');
       const niceName = (v) => String(v.name).replace(/^Microsoft\s+/i, '').replace(/\s*-\s*English.*$/i, '').replace(/^Google\s+/i, 'Google ');
       const preview = (v) => VoiceKit.say(SAMPLE, v, slot);
-      const choose = (v) => { update({ [slot]: v.name }); preview(v); };
+      const both = (val) => (p.same ? { 'en-GB': val, 'en-US': val } : { [slot]: val });
+      const choose = (v) => { update(both(v.name)); preview(v); };
       const seg = (val, cur, label, onClick) => (
         <button key={val} onClick={onClick} className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold ${cur === val ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow' : 'text-slate-500'}`}>{label}</button>
       );
@@ -1207,15 +1215,20 @@ void main(){
                 </div>
 
                 <div className="space-y-1.5">
-                  <button onClick={() => { update({ [slot]: 'auto' }); const b = VoiceKit.best(slot, p.gender); if (b) preview(b); }}
+                  <button onClick={() => { update(both('auto')); if (autoVoice) preview(autoVoice); }}
                     className={`w-full text-left px-3.5 py-3 rounded-xl border flex items-center gap-3 ${auto ? 'ring-2 ring-indigo-500 border-transparent' : 'border-slate-200 dark:border-slate-700'}`}>
                     <span className="text-xl">✨</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-bold">Tự động (khuyên dùng)</span>
-                      <span className="block text-[11px] text-slate-400 truncate">{current ? 'Đang dùng: ' + niceName(current) : 'Chưa có giọng nào'}</span>
+                      <span className="block text-[11px] text-slate-400 truncate">{autoVoice ? 'Sẽ dùng: ' + niceName(autoVoice) : 'Chưa có giọng nào'}</span>
                     </span>
                   </button>
 
+                  {hiddenCount > 0 && (
+                    <button onClick={() => update({ gender: 'any' })} className="w-full text-left text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold px-1 py-0.5">
+                      Đang ẩn {hiddenCount} giọng {p.gender === 'female' ? 'nam' : 'nữ'} — bấm để hiện tất cả giọng
+                    </button>
+                  )}
                   {list.length === 0 && (
                     <p className="text-xs text-slate-500 leading-relaxed px-1">Chưa tìm thấy giọng tiếng Anh nào trên thiết bị. Nếu vừa mở trang, đợi vài giây rồi mở lại. Trên Windows có thể thêm giọng tại Settings → Time & language → Speech.</p>
                   )}
@@ -1228,17 +1241,22 @@ void main(){
                         className={`w-full text-left px-3.5 py-2.5 rounded-xl border flex items-center gap-3 ${sel ? 'ring-2 ring-indigo-500 border-transparent' : 'border-slate-200 dark:border-slate-700'}`}>
                         <span className="text-lg">{flag(v)}</span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-bold truncate">{niceName(v)}</span>
+                          <span className="block text-sm font-bold truncate">{niceName(v)}{sel && <span className="ml-2 px-1.5 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-bold align-middle">✓ Đang dùng</span>}</span>
                           <span className="block text-[11px] text-slate-400">
                             {g === 'f' ? '♀ Nữ' : g === 'm' ? '♂ Nam' : 'Không rõ giới tính'}
                             {VoiceKit.isGood(v) ? ' · ⭐ Giọng tự nhiên' : ''} · {String(v.lang).replace('_', '-')}
                           </span>
                         </span>
-                        <span className="shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center text-xs">▶</span>
+                        <span role="button" title="Nghe thử (không đổi giọng đang dùng)" onClick={(e) => { e.stopPropagation(); preview(v); }} className="shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center text-xs hover:bg-indigo-100">▶</span>
                       </button>
                     );
                   })}
                 </div>
+
+                <label className="flex items-center gap-2.5 px-1 text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                  <input type="checkbox" checked={!!p.same} onChange={e => { const on = e.target.checked; update(on ? { same: true, 'en-GB': p[slot], 'en-US': p[slot] } : { same: false }); }} className="w-4 h-4 accent-indigo-600" />
+                  <span>Dùng cùng một giọng cho cả nút UK và US</span>
+                </label>
 
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between">
