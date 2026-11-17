@@ -3309,7 +3309,7 @@ void main(){
     const readLibLayout = () => {
       try {
         const o = JSON.parse(Store.get(LIB_LAYOUT_KEY));
-        if (o && typeof o === 'object') const fr = o.frame || {}; return { cols: Array.isArray(o.cols) && o.cols.length === 5 ? o.cols : null, rows: o.rows && typeof o.rows === 'object' ? o.rows : {}, frame: { w: Number(fr.w) > 0 ? Number(fr.w) : null, h: Number(fr.h) > 0 ? Number(fr.h) : null } };
+        if (o && typeof o === 'object') { const fr = o.frame || {}; return { cols: Array.isArray(o.cols) && o.cols.length === 5 ? o.cols : null, rows: o.rows && typeof o.rows === 'object' ? o.rows : {}, frame: { w: Number(fr.w) > 0 ? Number(fr.w) : null, h: Number(fr.h) > 0 ? Number(fr.h) : null } }; }
       } catch (e) {}
       return { cols: null, rows: {}, frame: { w: null, h: null } };
     };
@@ -3327,8 +3327,8 @@ void main(){
       const layoutDirty = JSON.stringify(layout) !== savedLayout;
       const layoutCustom = !!layout.cols || Object.keys(layout.rows).length > 0 || !!layout.frame.w || !!layout.frame.h;
       const frameRef = useRef(null);
-      const colStyle = (i) => (layout.cols ? { width: layout.cols[i] } : undefined);
-      const tblStyle = layout.cols ? { width: layout.cols.reduce((a, b) => a + b, 0), minWidth: 0 } : undefined;
+      const colStyle = (i) => (layout.cols ? { width: i === 4 ? 'auto' : layout.cols[i] } : undefined); // cột cuối (thùng rác) tự giãn để lấp đầy khung
+      const tblStyle = layout.cols ? { width: '100%', minWidth: layout.cols.reduce((a, b) => a + b, 0) } : undefined;
 
       const saveLayout = () => {
         const str = JSON.stringify(layout);
@@ -3358,7 +3358,7 @@ void main(){
 
       const startColDrag = (e, i, onTap) => {
         e.preventDefault(); e.stopPropagation();
-        const base = layout.cols || thRefs.current.map(th => Math.round(th.getBoundingClientRect().width));
+        const base = layout.cols || thRefs.current.map((th, k) => (k === 4 ? 48 : Math.round(th.getBoundingClientRect().width)));
         const x0 = e.clientX, w0 = base[i];
         let moved = false;
         dragStart('col-resize');
@@ -3393,8 +3393,22 @@ void main(){
       const colGrip = (i, onTap) => (
         <span onPointerDown={e => startColDrag(e, i, onTap)} title="Kéo để đổi độ rộng cột"
           className="group absolute top-0 -right-[6px] w-[12px] h-full cursor-col-resize z-20 touch-none">
-          <span className={`absolute left-1/2 -translate-x-1/2 top-[20%] h-[60%] w-[4px] rounded-full pointer-events-none ${tColor.bg} opacity-40 group-hover:opacity-100 group-hover:h-full group-hover:top-0 transition-all`} />
+          <span className={`absolute left-1/2 -translate-x-1/2 top-0 h-full w-[3px] pointer-events-none ${tColor.bg} opacity-0 group-hover:opacity-80`} />
         </span>
+      );
+
+      // tay nắm trong từng ô của thân bảng: mép phải = đổi cột, mép dưới = đổi hàng (ô nào cũng kéo được)
+      const cellGrips = (c, i) => (
+        <>
+          {i < 4 && (
+            <span onPointerDown={e => startColDrag(e, i)} title="Kéo để đổi độ rộng cột" className="group absolute top-0 -right-[6px] w-[12px] h-full cursor-col-resize z-20 touch-none">
+              <span className={`absolute left-1/2 -translate-x-1/2 top-0 h-full w-[3px] pointer-events-none ${tColor.bg} opacity-0 group-hover:opacity-80`} />
+            </span>
+          )}
+          <span onPointerDown={e => startRowDrag(e, c.n)} title="Kéo để đổi độ cao hàng" className="group absolute left-0 bottom-0 w-full h-[12px] cursor-row-resize z-10 touch-none">
+            <span className={`absolute bottom-0 left-0 w-full h-[3px] pointer-events-none ${tColor.bg} opacity-0 group-hover:opacity-80`} />
+          </span>
+        </>
       );
 
       if (!deck) {
@@ -3516,11 +3530,11 @@ void main(){
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filtered.slice(0, 300).map(c => (
                       <tr key={c.n} id={'lib-row-' + c.n} data-card-n={c.n} style={layout.rows[c.n] ? { height: layout.rows[c.n] } : undefined} className={marks && marks[c.n] ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
-                        <td className="p-3 font-mono text-slate-400 whitespace-nowrap relative">#{numOf(c)}{marks && marks[c.n] ? <span title={'Đã học · ' + dayLabel(marks[c.n])} className="text-emerald-500 ml-1 font-sans font-bold">✓</span> : null}<span onPointerDown={e => startRowDrag(e, c.n)} title="Kéo để đổi độ cao hàng" className="group absolute left-0 bottom-0 w-full h-[12px] cursor-row-resize z-10 touch-none"><span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[4px] rounded-full pointer-events-none ${tColor.bg} opacity-40 group-hover:opacity-100 group-hover:w-full transition-all`} /></span></td>
-                        <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'text-slate-600 dark:text-slate-300' : 'font-bold'}`}>{rev ? (c.s || c.v) : <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span>}</td>
-                        <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{rev ? <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span> : (c.s || c.v)}</td>
-                        <td className="p-3 text-center font-bold text-slate-400 whitespace-nowrap border-l border-slate-200 dark:border-slate-700">List {c.l}</td>
-                        <td className="p-3 border-l border-slate-200 dark:border-slate-700"><button title="Xoá từ này" onClick={() => setCards(cs => cs.filter(x => x.n !== c.n))} className="text-slate-300 hover:text-rose-500"><Icon name="trash" className="w-4 h-4" /></button></td>
+                        <td className="p-3 font-mono text-slate-400 whitespace-nowrap relative">#{numOf(c)}{marks && marks[c.n] ? <span title={'Đã học · ' + dayLabel(marks[c.n])} className="text-emerald-500 ml-1 font-sans font-bold">✓</span> : null}{cellGrips(c, 0)}</td>
+                        <td className={`p-3 text-center relative border-l border-slate-200 dark:border-slate-700 ${rev ? 'text-slate-600 dark:text-slate-300' : 'font-bold'}`}>{rev ? (c.s || c.v) : <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span>}{cellGrips(c, 1)}</td>
+                        <td className={`p-3 text-center relative border-l border-slate-200 dark:border-slate-700 ${rev ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{rev ? <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span> : (c.s || c.v)}{cellGrips(c, 2)}</td>
+                        <td className="p-3 text-center font-bold text-slate-400 whitespace-nowrap relative border-l border-slate-200 dark:border-slate-700">List {c.l}{cellGrips(c, 3)}</td>
+                        <td className="p-3 relative border-l border-slate-200 dark:border-slate-700"><button title="Xoá từ này" onClick={() => setCards(cs => cs.filter(x => x.n !== c.n))} className="text-slate-300 hover:text-rose-500"><Icon name="trash" className="w-4 h-4" /></button>{cellGrips(c, 4)}</td>
                       </tr>
                     ))}
                     {filtered.length === 0 && <tr><td colSpan="5" className="p-8 text-center text-slate-400">Không có từ nào.</td></tr>}
@@ -3529,12 +3543,12 @@ void main(){
                 {filtered.length > 300 && <p className="p-3 text-center text-xs text-slate-400">Hiển thị 300 / {filtered.length} từ. Hãy lọc theo List hoặc tìm kiếm để xem thêm.</p>}
               </div>
               <span onPointerDown={e => startFrameDrag(e, 'x')} title="Kéo để đổi độ rộng khung bảng" className="group absolute top-0 -right-[7px] w-[14px] h-full cursor-ew-resize z-40 touch-none">
-                <span className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[5px] h-[56px] rounded-full pointer-events-none ${tColor.bg} opacity-50 group-hover:opacity-100`} />
+                <span className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[3px] h-full pointer-events-none ${tColor.bg} opacity-0 group-hover:opacity-80`} />
               </span>
               <span onPointerDown={e => startFrameDrag(e, 'y')} title="Kéo để đổi độ cao khung bảng" className="group absolute left-0 -bottom-[7px] h-[14px] w-full cursor-ns-resize z-40 touch-none">
-                <span className={`absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-[5px] w-[56px] rounded-full pointer-events-none ${tColor.bg} opacity-50 group-hover:opacity-100`} />
+                <span className={`absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-[3px] w-full pointer-events-none ${tColor.bg} opacity-0 group-hover:opacity-80`} />
               </span>
-              <span onPointerDown={e => startFrameDrag(e, 'xy')} title="Kéo để đổi cả rộng và cao" className={`absolute -right-[7px] -bottom-[7px] w-[18px] h-[18px] cursor-nwse-resize z-50 touch-none rounded-full ${tColor.bg} opacity-60 hover:opacity-100`} />
+              <span onPointerDown={e => startFrameDrag(e, 'xy')} title="Kéo để đổi cả rộng và cao" className={`absolute -right-[7px] -bottom-[7px] w-[18px] h-[18px] cursor-nwse-resize z-50 touch-none rounded-full ${tColor.bg} opacity-0 hover:opacity-80`} />
               </div>
             </div>
           </div>
