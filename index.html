@@ -1476,7 +1476,7 @@ void main(){
                 onMarkWrong={handleMarkWrong} />
             </div>
             <div className={tab === 'library' ? '' : 'hidden'}>
-              <LibrarySection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} deckId={libDeck} setDeckId={setLibDeck} goImport={() => setTab('import')} tColor={tColor} marks={marks} />
+              <LibrarySection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} deckId={libDeck} setDeckId={setLibDeck} goImport={() => setTab('import')} tColor={tColor} marks={marks} showToast={showToast} />
             </div>
             <div className={tab === 'import' ? '' : 'hidden'}>
               <ImportSection decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} draft={draft} setDraft={setDraft} showToast={showToast} tColor={tColor}
@@ -3305,11 +3305,97 @@ void main(){
     // ==========================================
     // THƯ VIỆN (TRA CỨU THEO DECK)
     // ==========================================
-    function LibrarySection({ decks, cards, setDecks, setCards, deckId, setDeckId, goImport, tColor, marks }) {
+    const LIB_LAYOUT_KEY = 'myvocab_lib_layout';
+    const readLibLayout = () => {
+      try {
+        const o = JSON.parse(Store.get(LIB_LAYOUT_KEY));
+        if (o && typeof o === 'object') const fr = o.frame || {}; return { cols: Array.isArray(o.cols) && o.cols.length === 5 ? o.cols : null, rows: o.rows && typeof o.rows === 'object' ? o.rows : {}, frame: { w: Number(fr.w) > 0 ? Number(fr.w) : null, h: Number(fr.h) > 0 ? Number(fr.h) : null } };
+      } catch (e) {}
+      return { cols: null, rows: {}, frame: { w: null, h: null } };
+    };
+
+    function LibrarySection({ decks, cards, setDecks, setCards, deckId, setDeckId, goImport, tColor, marks, showToast }) {
       const [lf, setLf] = useNavState('lib_lf', 'all');
       const [q, setQ] = useNavState('lib_q', '');
       const [rev, setRev] = useNavState('lib_rev', false); // false: Anh → Việt, true: Việt → Anh
       const deck = decks.find(d => d.id === deckId) || decks[0];
+
+      // --- Kéo giãn cột/hàng như Excel + lưu cấu hình giao diện ---
+      const [layout, setLayout] = useState(readLibLayout);
+      const [savedLayout, setSavedLayout] = useState(() => JSON.stringify(readLibLayout()));
+      const thRefs = useRef([]);
+      const layoutDirty = JSON.stringify(layout) !== savedLayout;
+      const layoutCustom = !!layout.cols || Object.keys(layout.rows).length > 0 || !!layout.frame.w || !!layout.frame.h;
+      const frameRef = useRef(null);
+      const colStyle = (i) => (layout.cols ? { width: layout.cols[i] } : undefined);
+      const tblStyle = layout.cols ? { width: layout.cols.reduce((a, b) => a + b, 0), minWidth: 0 } : undefined;
+
+      const saveLayout = () => {
+        const str = JSON.stringify(layout);
+        try { Store.set(LIB_LAYOUT_KEY, str); setSavedLayout(str); showToast && showToast('Đã lưu cấu hình giao diện bảng'); }
+        catch (e) { showToast && showToast('Không lưu được cấu hình giao diện.'); }
+      };
+      const resetLayout = () => setLayout({ cols: null, rows: {}, frame: { w: null, h: null } });
+
+      // kéo mép ngoài của khung bảng: axis = 'x' (rộng) | 'y' (cao) | 'xy' (cả hai)
+      const startFrameDrag = (e, axis) => {
+        e.preventDefault(); e.stopPropagation();
+        const r = frameRef.current.getBoundingClientRect();
+        const x0 = e.clientX, y0 = e.clientY;
+        dragStart(axis === 'x' ? 'ew-resize' : axis === 'y' ? 'ns-resize' : 'nwse-resize');
+        const mv = (ev) => {
+          setLayout(l => ({ ...l, frame: {
+            w: axis.includes('x') ? Math.max(320, Math.round(r.width + ev.clientX - x0)) : l.frame.w,
+            h: axis.includes('y') ? Math.max(140, Math.round(r.height + ev.clientY - y0)) : l.frame.h
+          } }));
+        };
+        const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); dragEnd(); };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+      };
+
+      const dragStart = (cursor) => { document.body.style.cursor = cursor; document.body.style.userSelect = 'none'; };
+      const dragEnd = () => { document.body.style.cursor = ''; document.body.style.userSelect = ''; };
+
+      const startColDrag = (e, i, onTap) => {
+        e.preventDefault(); e.stopPropagation();
+        const base = layout.cols || thRefs.current.map(th => Math.round(th.getBoundingClientRect().width));
+        const x0 = e.clientX, w0 = base[i];
+        let moved = false;
+        dragStart('col-resize');
+        const mv = (ev) => {
+          const dx = ev.clientX - x0;
+          if (Math.abs(dx) > 3) moved = true;
+          if (!moved) return;
+          const cols = base.slice(); cols[i] = Math.max(48, Math.round(w0 + dx));
+          setLayout(l => ({ ...l, cols }));
+        };
+        const up = () => {
+          window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up);
+          dragEnd();
+          if (!moved && onTap) onTap();
+        };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+      };
+
+      const startRowDrag = (e, n) => {
+        e.preventDefault(); e.stopPropagation();
+        const tr = e.currentTarget.closest('tr');
+        const y0 = e.clientY, h0 = tr.getBoundingClientRect().height;
+        dragStart('row-resize');
+        const mv = (ev) => {
+          const h = Math.max(36, Math.round(h0 + ev.clientY - y0));
+          setLayout(l => ({ ...l, rows: { ...l.rows, [n]: h } }));
+        };
+        const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); dragEnd(); };
+        window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up);
+      };
+
+      const colGrip = (i, onTap) => (
+        <span onPointerDown={e => startColDrag(e, i, onTap)} title="Kéo để đổi độ rộng cột"
+          className="group absolute top-0 -right-[6px] w-[12px] h-full cursor-col-resize z-20 touch-none">
+          <span className={`absolute left-1/2 -translate-x-1/2 top-[20%] h-[60%] w-[4px] rounded-full pointer-events-none ${tColor.bg} opacity-40 group-hover:opacity-100 group-hover:h-full group-hover:top-0 transition-all`} />
+        </span>
+      );
 
       if (!deck) {
         return (
@@ -3349,7 +3435,7 @@ void main(){
       };
 
       return (
-        <div className="p-3 md:p-4 w-full max-w-[950px] space-y-5">
+        <div style={layout.frame.w ? { maxWidth: 'none', width: layout.frame.w + 172 + 20 + 32 } : undefined} className="p-3 md:p-4 w-full max-w-[950px] space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-2xl font-black">Thư viện từ vựng</h2>
@@ -3360,7 +3446,7 @@ void main(){
             </button>
           </div>
 
-          <div className="grid md:grid-cols-[172px_minmax(0,1fr)] gap-5 items-start">
+          <div style={layout.frame.w ? { '--lib-w': layout.frame.w + 'px' } : undefined} className={`grid ${layout.frame.w ? 'md:grid-cols-[172px_var(--lib-w)]' : 'md:grid-cols-[172px_minmax(0,1fr)]'} gap-5 items-start`}>
             <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-1">
               {decks.map(d => {
                 const n = cards.filter(c => c.d === d.id).length;
@@ -3398,6 +3484,12 @@ void main(){
                 <input type="text" placeholder="Tìm từ hoặc nghĩa..." value={q} onChange={e => setQ(e.target.value)} className="flex-1 min-w-[180px] px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm outline-none focus:border-indigo-500" />
               </div>
 
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="flex-1 min-w-[200px] text-xs text-slate-400">Kéo mép tiêu đề để đổi cột · mép dưới ô “#” để đổi hàng · mép phải / mép dưới / góc của khung bảng để phóng to, thu nhỏ cả khung.</span>
+                <button onClick={resetLayout} disabled={!layoutCustom} className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40">Mặc định</button>
+                <button onClick={saveLayout} disabled={!layoutDirty} className={`px-3.5 py-2 rounded-lg ${tColor.bg} text-white text-xs font-bold disabled:opacity-40`}>{layoutDirty ? 'Lưu giao diện' : '✓ Đã lưu'}</button>
+              </div>
+
               {lastMark ? (
                 <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-sm">
                   <span className="text-emerald-800 dark:text-emerald-300">📍 Đã học đến: <b>{lastMark.w}</b> (#{numOf(lastMark)} · List {lastMark.l}) · đánh dấu {dayLabel(marks[lastMark.n])} · <b>{dm.length}</b>/{deckCards.length} từ đã đánh dấu</span>
@@ -3406,24 +3498,25 @@ void main(){
               ) : (
                 <p className="text-xs text-slate-400 px-1">💡 Bôi đen một từ (hoặc kéo chọn nhiều dòng) để hiện nút “Đánh dấu đã học”.</p>
               )}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-x-auto shadow-sm">
-                <table className="w-full min-w-[640px] table-fixed text-left text-sm">
-                  <thead className="bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-xs">
+              <div className="relative" style={layout.frame.w ? { width: layout.frame.w } : undefined}>
+              <div ref={frameRef} style={layout.frame.h ? { height: layout.frame.h } : undefined} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-auto shadow-sm">
+                <table style={tblStyle} className="w-full min-w-[640px] table-fixed text-left text-sm">
+                  <thead className="sticky top-0 z-30 bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-xs">
                     <tr>
-                      <th className="p-3 w-16">#</th>
-                      <th className="p-3 w-[34%] text-center relative border-l border-slate-200 dark:border-slate-700">{rev ? 'Nghĩa' : 'Từ vựng'}</th>
-                      <th className="p-3 text-center relative border-l border-slate-200 dark:border-slate-700">
+                      <th ref={el => thRefs.current[0] = el} style={colStyle(0)} className="p-3 w-16 relative">#{colGrip(0)}</th>
+                      <th ref={el => thRefs.current[1] = el} style={colStyle(1)} className="p-3 w-[34%] text-center relative border-l border-slate-200 dark:border-slate-700">{rev ? 'Nghĩa' : 'Từ vựng'}{colGrip(1, () => setRev(r => !r))}</th>
+                      <th ref={el => thRefs.current[2] = el} style={colStyle(2)} className="p-3 text-center relative border-l border-slate-200 dark:border-slate-700">
                         <button onClick={() => setRev(!rev)} title={rev ? 'Đang xem Việt → Anh (bấm để đảo lại)' : 'Đang xem Anh → Việt (bấm để đảo lại)'} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-7 h-7 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-indigo-500 shadow flex items-center justify-center hover:bg-indigo-50 dark:hover:bg-slate-800 transition"><Icon name="shuffle" className="w-4 h-4" /></button>
-                        {rev ? 'Từ vựng' : 'Nghĩa'}
+                        {rev ? 'Từ vựng' : 'Nghĩa'}{colGrip(2)}
                       </th>
-                      <th className="p-3 w-24 text-center border-l border-slate-200 dark:border-slate-700">List</th>
-                      <th className="p-3 w-12 border-l border-slate-200 dark:border-slate-700"></th>
+                      <th ref={el => thRefs.current[3] = el} style={colStyle(3)} className="p-3 w-24 text-center relative border-l border-slate-200 dark:border-slate-700">List{colGrip(3)}</th>
+                      <th ref={el => thRefs.current[4] = el} style={colStyle(4)} className="p-3 w-12 border-l border-slate-200 dark:border-slate-700"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filtered.slice(0, 300).map(c => (
-                      <tr key={c.n} id={'lib-row-' + c.n} data-card-n={c.n} className={marks && marks[c.n] ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
-                        <td className="p-3 font-mono text-slate-400 whitespace-nowrap">#{numOf(c)}{marks && marks[c.n] ? <span title={'Đã học · ' + dayLabel(marks[c.n])} className="text-emerald-500 ml-1 font-sans font-bold">✓</span> : null}</td>
+                      <tr key={c.n} id={'lib-row-' + c.n} data-card-n={c.n} style={layout.rows[c.n] ? { height: layout.rows[c.n] } : undefined} className={marks && marks[c.n] ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}>
+                        <td className="p-3 font-mono text-slate-400 whitespace-nowrap relative">#{numOf(c)}{marks && marks[c.n] ? <span title={'Đã học · ' + dayLabel(marks[c.n])} className="text-emerald-500 ml-1 font-sans font-bold">✓</span> : null}<span onPointerDown={e => startRowDrag(e, c.n)} title="Kéo để đổi độ cao hàng" className="group absolute left-0 bottom-0 w-full h-[12px] cursor-row-resize z-10 touch-none"><span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[4px] rounded-full pointer-events-none ${tColor.bg} opacity-40 group-hover:opacity-100 group-hover:w-full transition-all`} /></span></td>
                         <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'text-slate-600 dark:text-slate-300' : 'font-bold'}`}>{rev ? (c.s || c.v) : <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span>}</td>
                         <td className={`p-3 text-center border-l border-slate-200 dark:border-slate-700 ${rev ? 'font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{rev ? <span className="inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1"><SpeakBtn text={c.w} small />{c.w} <span className="text-indigo-500 font-mono font-normal ml-1">{c.i}</span></span> : (c.s || c.v)}</td>
                         <td className="p-3 text-center font-bold text-slate-400 whitespace-nowrap border-l border-slate-200 dark:border-slate-700">List {c.l}</td>
@@ -3434,6 +3527,14 @@ void main(){
                   </tbody>
                 </table>
                 {filtered.length > 300 && <p className="p-3 text-center text-xs text-slate-400">Hiển thị 300 / {filtered.length} từ. Hãy lọc theo List hoặc tìm kiếm để xem thêm.</p>}
+              </div>
+              <span onPointerDown={e => startFrameDrag(e, 'x')} title="Kéo để đổi độ rộng khung bảng" className="group absolute top-0 -right-[7px] w-[14px] h-full cursor-ew-resize z-40 touch-none">
+                <span className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[5px] h-[56px] rounded-full pointer-events-none ${tColor.bg} opacity-50 group-hover:opacity-100`} />
+              </span>
+              <span onPointerDown={e => startFrameDrag(e, 'y')} title="Kéo để đổi độ cao khung bảng" className="group absolute left-0 -bottom-[7px] h-[14px] w-full cursor-ns-resize z-40 touch-none">
+                <span className={`absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 h-[5px] w-[56px] rounded-full pointer-events-none ${tColor.bg} opacity-50 group-hover:opacity-100`} />
+              </span>
+              <span onPointerDown={e => startFrameDrag(e, 'xy')} title="Kéo để đổi cả rộng và cao" className={`absolute -right-[7px] -bottom-[7px] w-[18px] h-[18px] cursor-nwse-resize z-50 touch-none rounded-full ${tColor.bg} opacity-60 hover:opacity-100`} />
               </div>
             </div>
           </div>
