@@ -2205,6 +2205,10 @@ void main(){
       const [showWrong, setShowWrong] = useState(false);
       const [adding, setAdding] = useState(false);
       const [newName, setNewName] = useState('');
+      // NỘP BÀI: ghi nhận kết quả từng từ trong lượt làm hiện tại
+      const [attempt, setAttempt] = useState(0);
+      const [sess, setSess] = useState({});
+      const [submitted, setSubmitted] = useState(false);
 
       const deck = decks.find(d => d.id === deckId);
       const deckCards = useMemo(() => cards.filter(c => c.d === deckId), [cards, deckId]);
@@ -2222,6 +2226,31 @@ void main(){
       const wrongInDeck = deckCards.filter(c => wrongIds.includes(c.n)).length;
       const optionsPool = deckCards.length >= 4 ? deckCards : cards;
       const scopeLabel = scope === 'all' ? 'Toàn bộ deck' : (curList ? `List ${curList.id}` : '');
+      const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}_${shuf ? 's' + shufSeed : 'o'}`;
+      const sessKey = `${mode}-${posKey}-${attempt}`;
+      useEffect(() => { setSess({}); setSubmitted(false); }, [sessKey]);
+      const trackMark = (n, isWrong) => {
+        // Tìm cặp: đã ghép sai 1 lần thì tính là sai; các chế độ khác lấy kết quả mới nhất
+        setSess(s => (mode === 'match' && s[n] === false) ? s : { ...s, [n]: !isWrong });
+        onMarkWrong(n, isWrong);
+      };
+      const doneN = pool.filter(c => sess[c.n] !== undefined).length;
+      const okN = pool.filter(c => sess[c.n] === true).length;
+      const badN = pool.filter(c => sess[c.n] === false).length;
+      const skipN = pool.length - doneN;
+      const submitNow = () => {
+        if (skipN > 0 && !confirm(`Còn ${skipN} từ chưa làm (sẽ tính là bỏ qua). Bạn vẫn muốn nộp bài?`)) return;
+        setSubmitted(true);
+        window.scrollTo && window.scrollTo(0, 0);
+        const m = document.querySelector('main'); if (m) m.scrollTop = 0;
+      };
+      const retryAll = () => { setSubmitted(false); setAttempt(a => a + 1); };
+      const reviewMissed = () => {
+        const nums = pool.filter(c => sess[c.n] !== true).map(c => c.n);
+        setWrongSnap(nums);
+        setSubmitted(false);
+        setAttempt(a => a + 1);
+      };
 
       const toggleShuf = () => { if (!shuf) setShufSeed(newSeed()); setShuf(!shuf); };
       const reshuffle = () => setShufSeed(newSeed());
@@ -2308,10 +2337,29 @@ void main(){
         );
       }
 
+      // MÀN HÌNH KẾT QUẢ SAU KHI NỘP BÀI
+      if (mode && submitted) {
+        const details = pool.filter(c => sess[c.n] !== true).map(c => ({
+          key: c.n, label: c.w, sub: c.s || c.v, speak: c.w, kind: sess[c.n] === false ? 'wrong' : 'skip'
+        }));
+        return (
+          <Shell>
+            <ResultView title={`${deck.name} › ${scopeLabel}${onlyWrong ? ' › Từ sai' : ''}`} correct={okN} wrong={badN} skipped={skipN} details={details}>
+              <button onClick={retryAll} className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">↻ Làm lại bài này</button>
+              {details.length > 0 && (
+                <button onClick={reviewMissed} className="px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-bold shadow">Ôn lại từ sai &amp; bỏ qua ({details.length})</button>
+              )}
+              <button onClick={() => { setMode(null); setShowWrong(false); }} className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm font-bold">Quay lại menu</button>
+            </ResultView>
+          </Shell>
+        );
+      }
+
       // BƯỚC 3: ĐANG LUYỆN TẬP (có nút Ôn từ sai ngay trong bài)
       if (mode) {
         return (
           <Shell>
+            <SubmitBar done={doneN} total={pool.length} onSubmit={submitNow} />
             <div className="flex flex-wrap justify-between items-center gap-2">
               <button onClick={() => { setMode(null); setShowWrong(false); }} className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center space-x-1.5 shadow-sm">
                 <Icon name="arrowLeft" className="w-4 h-4" /><span>Quay lại menu</span>
@@ -2341,15 +2389,14 @@ void main(){
               </div>
             )}
             {(() => {
-              const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}_${shuf ? 's' + shufSeed : 'o'}`;
               return (
-                <div key={`${mode}-${posKey}`}>
-                  {mode === 'flashcard' && <FlashcardMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'quiz' && <QuizUnifiedMode pool={playPool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'match' && <MatchMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'listen_word' && <ListenWordMode pool={playPool} allCards={optionsPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'fill' && <FillMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
-                  {mode === 'dictation' && <DictationMode pool={playPool} onMarkWrong={onMarkWrong} posKey={posKey} />}
+                <div key={`${mode}-${posKey}-${attempt}`}>
+                  {mode === 'flashcard' && <FlashcardMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
+                  {mode === 'quiz' && <QuizUnifiedMode pool={playPool} allCards={optionsPool} onMarkWrong={trackMark} posKey={posKey} />}
+                  {mode === 'match' && <MatchMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
+                  {mode === 'listen_word' && <ListenWordMode pool={playPool} allCards={optionsPool} onMarkWrong={trackMark} posKey={posKey} />}
+                  {mode === 'fill' && <FillMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
+                  {mode === 'dictation' && <DictationMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
                 </div>
               );
             })()}
@@ -2417,6 +2464,112 @@ void main(){
             </div>
           </>)}
         </Shell>
+      );
+    }
+
+    // ==========================================
+    // NỘP BÀI: THANH CỐ ĐỊNH Ở CUỐI + MÀN HÌNH KẾT QUẢ (BIỂU ĐỒ TRÒN)
+    // ==========================================
+    function SubmitBar({ done, total, onSubmit }) {
+      const pct = total ? Math.min(100, Math.round(done / total * 100)) : 0;
+      return (
+        <>
+          {/* Màn hình rộng: thanh nhỏ dọc, cố định ở lề phải (nằm ngoài vùng làm bài, không che ô nhập) */}
+          <div className="hidden 2xl:flex fixed top-3 right-5 z-30 w-28 flex-col gap-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur shadow-md p-2.5">
+            <div className="flex justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              <span>{done}/{total}</span><span>{pct}%</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+              <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: pct + '%' }} />
+            </div>
+            <button onClick={onSubmit} className="w-full py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black whitespace-nowrap">✓ Nộp bài</button>
+          </div>
+          {/* Màn hình hẹp: nằm trong luồng ở đầu trang, bên phải, không đè lên nội dung */}
+          <div className="2xl:hidden flex justify-end">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm pl-3 pr-1 py-1">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">{done}/{total}</span>
+              <div className="w-14 sm:w-20 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: pct + '%' }} />
+              </div>
+              <button onClick={onSubmit} className="px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black whitespace-nowrap">✓ Nộp bài</button>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    function ResultPie({ correct, wrong, skipped, size = 220 }) {
+      const total = correct + wrong + skipped;
+      const R = 10.5, C = 2 * Math.PI * R;
+      const segs = [[correct, '#10b981'], [wrong, '#f43f5e'], [skipped, '#94a3b8']];
+      let off = 0;
+      return (
+        <svg viewBox="0 0 42 42" width={size} height={size} style={{ transform: 'rotate(-90deg)' }} role="img" aria-label="Biểu đồ tròn kết quả">
+          <circle cx="21" cy="21" r="21" fill="#e2e8f0" opacity="0.4" />
+          {total > 0 && segs.map(([v, col], i) => {
+            if (!v) return null;
+            const len = v / total * C;
+            const el = <circle key={i} cx="21" cy="21" r={R} fill="none" stroke={col} strokeWidth="21" strokeDasharray={len + ' ' + (C - len)} strokeDashoffset={-off} />;
+            off += len;
+            return el;
+          })}
+        </svg>
+      );
+    }
+
+    function ResultView({ title, correct, wrong, skipped, details, children }) {
+      const total = correct + wrong + skipped;
+      const pct = total ? Math.round(correct / total * 100) : 0;
+      const msg = pct >= 90 ? 'Xuất sắc! 🎉' : pct >= 70 ? 'Làm tốt lắm 👏' : pct >= 50 ? 'Khá ổn, cố gắng thêm nhé 💪' : 'Hãy ôn lại và thử lại nhé 📚';
+      const pctOf = (v) => total ? Math.round(v / total * 100) : 0;
+      const legend = [
+        ['Đúng', correct, 'bg-emerald-500', 'text-emerald-600 dark:text-emerald-400'],
+        ['Sai', wrong, 'bg-rose-500', 'text-rose-600 dark:text-rose-400'],
+        ['Bỏ qua', skipped, 'bg-slate-400', 'text-slate-500 dark:text-slate-400']
+      ];
+      return (
+        <div className="space-y-5">
+          <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-center space-y-5">
+            <div>
+              <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">Kết quả bài làm</p>
+              {title && <p className="text-sm font-bold text-slate-500 mt-1">{title}</p>}
+            </div>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
+              <ResultPie correct={correct} wrong={wrong} skipped={skipped} />
+              <div className="space-y-3 text-left">
+                <p className="text-5xl font-black text-emerald-600 dark:text-emerald-400">{pct}%</p>
+                <p className="text-sm text-slate-500">{msg}</p>
+                <div className="space-y-2 pt-1">
+                  {legend.map(l => (
+                    <div key={l[0]} className="flex items-center gap-2.5 text-sm">
+                      <span className={'w-3.5 h-3.5 rounded-full ' + l[2]} />
+                      <span className="w-16 font-bold">{l[0]}</span>
+                      <span className={'font-black text-lg ' + l[3]}>{l[1]}</span>
+                      <span className="text-xs text-slate-400">({pctOf(l[1])}%)</span>
+                    </div>
+                  ))}
+                  <p className="text-xs text-slate-400 pt-1">Tổng cộng: {total} câu</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-1">{children}</div>
+          </div>
+          {details && details.length > 0 && (
+            <div className="p-4 md:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <p className="text-sm font-black mb-3">Các từ cần ôn lại ({details.length})</p>
+              <div className="flex flex-wrap gap-2">
+                {details.slice(0, 120).map(d => (
+                  <button key={d.key} onClick={() => d.speak && speak(d.speak, 'en-US')}
+                    className={'px-2.5 py-1.5 rounded-lg border text-xs text-left ' + (d.kind === 'wrong' ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900' : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700')}>
+                    <span className={d.kind === 'wrong' ? 'text-rose-500' : 'text-slate-400'}>{d.kind === 'wrong' ? '✗' : '–'}</span> <b>{d.label}</b> <span className="text-slate-400">· {d.sub}</span>
+                  </button>
+                ))}
+                {details.length > 120 && <span className="text-xs text-slate-400 self-center">... và {details.length - 120} mục nữa</span>}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-2.5">✗ Làm sai &nbsp;·&nbsp; – Bỏ qua (chưa làm)</p>
+            </div>
+          )}
+        </div>
       );
     }
 
@@ -3051,10 +3204,57 @@ void main(){
         : val.trim().toLowerCase() === c.w.trim().toLowerCase();
       const answerOf = (c) => rev ? meaningOf(c) : c.w;
 
+      // Phím ↑ / ↓: nhảy sang ô nhập của dòng trên / dưới (bỏ qua các dòng đã kiểm tra vì ô đã bị khoá)
+      const moveRow = (from, dir) => {
+        for (let j = from + dir; j >= 0 && j < pool.length; j += dir) {
+          const el = document.getElementById(`row-in-${j}`);
+          if (el && !el.disabled) {
+            el.focus();
+            if (el.select) el.select();
+            el.scrollIntoView({ block: 'nearest' });
+            return;
+          }
+        }
+      };
+
+      const [submitted, setSubmitted] = useState(false);
       const changeDir = (v) => {
         if (v === rev) return;
-        setRev(v); setRows({}); setSVal(''); setSRes(null);
+        setRev(v); setRows({}); setSVal(''); setSRes(null); setSubmitted(false);
       };
+
+      // NỘP BÀI: chấm toàn bộ các dòng còn lại (dòng bỏ trống tính là sai)
+      const rowStat = () => {
+        let right = 0, wrong = 0, blank = 0, pending = 0;
+        pool.forEach(c => {
+          const r = rows[c.n];
+          if (r && r.checked) { if (r.ok) right++; else if (!(r.val || '').trim()) blank++; else wrong++; }
+          else if (r && (r.val || '').trim()) pending++;
+          else blank++;
+        });
+        return { right, wrong, blank, pending };
+      };
+      const submitAll = () => {
+        const st = rowStat();
+        const empty = pool.filter(c => !(rows[c.n] && rows[c.n].checked) && !(rows[c.n] && (rows[c.n].val || '').trim())).length;
+        if (empty > 0 && !confirm(`Còn ${empty} dòng chưa điền. Nộp bài sẽ tính các dòng này là sai. Bạn vẫn muốn nộp?`)) return;
+        const next = { ...rows };
+        let okN = 0;
+        pool.forEach(c => {
+          const r = rows[c.n] || { val: '' };
+          if (r.checked) return;
+          const val = r.val || '';
+          const ok = val.trim() ? isRight(c, val) : false;
+          if (ok) okN++;
+          onMarkWrong(c.n, !ok);
+          next[c.n] = { val, ok, checked: true };
+        });
+        setRows(next);
+        setSubmitted(true);
+        if (okN) SoundFx.correct(); else SoundFx.wrong();
+        setTimeout(() => { const el = document.getElementById('fill-result'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 120);
+      };
+      const redoAll = () => { setRows({}); setSubmitted(false); const f = document.getElementById('row-in-0'); if (f) f.focus(); };
 
       const checkRow = (c, val) => {
         if (!val || !val.trim()) return;
@@ -3094,6 +3294,7 @@ void main(){
           </div>
 
           {isMulti ? (
+            <>
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
               <div className="md:hidden flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                 <span className="text-xs font-bold text-slate-500">{rev ? 'Từ tiếng Anh → Nghĩa' : 'Nghĩa → Từ tiếng Anh'}</span>
@@ -3142,6 +3343,11 @@ void main(){
                               value={r.val}
                               onChange={e => setRows(prev => ({ ...prev, [c.n]: { ...r, val: e.target.value } }))}
                               onKeyDown={e => {
+                                if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.nativeEvent.isComposing) {
+                                  e.preventDefault();
+                                  moveRow(i, e.key === 'ArrowDown' ? 1 : -1);
+                                  return;
+                                }
                                 if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
                                   checkRow(c, r.val);
                                   const nextEl = document.getElementById(`row-in-${i + 1}`);
@@ -3169,6 +3375,33 @@ void main(){
                 </table>
               </div>
             </div>
+
+            {(() => {
+              const st = rowStat();
+              const total = pool.length;
+              const answered = st.right + st.wrong + st.pending;
+              const graded = st.right + st.wrong + st.blank;
+              const allGraded = submitted;
+              const score10 = total ? Math.round((st.right * 100) / total) / 10 : 0;
+              return (
+                <div className="sticky bottom-16 md:bottom-2 z-30 space-y-2">
+                  {allGraded && (
+                    <div id="fill-result" className="p-4 rounded-2xl bg-white dark:bg-slate-900 border-2 border-indigo-300 dark:border-indigo-800 shadow-lg flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold text-slate-400">KẾT QUẢ BÀI LÀM</p>
+                        <p className="text-lg font-black">
+                          <span className="text-emerald-600">{st.right} đúng</span> · <span className="text-rose-500">{st.wrong + st.blank} sai</span>
+                          {st.blank > 0 && <span className="text-xs font-bold text-slate-400"> (trong đó {st.blank} dòng bỏ trống)</span>}
+                        </p>
+                        <p className="text-sm font-bold text-slate-500">Điểm: <span className="text-indigo-600">{score10}/10</span> · {total ? Math.round((st.right * 100) / total) : 0}% chính xác</p>
+                      </div>
+                      <button onClick={redoAll} className="px-5 py-2.5 rounded-xl border border-indigo-300 text-indigo-600 text-sm font-bold hover:bg-indigo-50 dark:hover:bg-indigo-950">↻ Làm lại bài</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+            </>
           ) : (
             <div className="p-8 md:p-12 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-6 max-w-2xl mx-auto shadow-md">
               <span className="text-xs text-slate-400 font-bold">CÂU {sIdx + 1} / {pool.length}</span>
@@ -3579,6 +3812,18 @@ void main(){
       const upd = (k, patch) => setDraft(d => d.map(x => x.k === k ? { ...x, ...patch, ...(patch.s !== undefined && !x.num ? { v: patch.s } : {}) } : x));
       const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
+      // Phím ↑ / ↓ trong danh sách chờ: giữ nguyên cột (Từ / Nghĩa), nhảy sang dòng trên / dưới
+      const navDraft = (e) => {
+        if ((e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || e.nativeEvent.isComposing) return;
+        e.preventDefault();
+        const box = e.currentTarget.closest('[data-draft]');
+        if (!box) return;
+        const col = e.currentTarget.getAttribute('data-col');
+        const list = Array.from(box.querySelectorAll('input[data-col="' + col + '"]'));
+        const t = list[list.indexOf(e.currentTarget) + (e.key === 'ArrowDown' ? 1 : -1)];
+        if (t) { t.focus(); t.select(); t.scrollIntoView({ block: 'nearest' }); }
+      };
+
       // --- Excel (giữ nguyên bộ đọc cũ; thêm đọc được .xlsx thật) ---
       const onExcel = async (e) => {
         const files = Array.from(e.target.files || []);
@@ -3790,12 +4035,12 @@ void main(){
                   {draft.length > 0 && <button onClick={() => setDraft([])} className="text-xs font-bold text-rose-500">Xoá hết</button>}
                 </div>
                 {draft.length === 0 ? <p className="py-6 text-center text-sm text-slate-400">Chưa có từ nào. Hãy nhập từ ở Bước 1.</p> : (
-                  <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">
+                  <div data-draft="1" className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 rounded-xl border border-slate-100 dark:border-slate-800">
                     {draft.slice(0, 200).map(x => (
                       <div key={x.k} className="flex items-center gap-1.5 p-2">
                         <SpeakBtn text={x.w} small />
-                        <input value={x.w} onChange={e => upd(x.k, { w: e.target.value })} className="w-[38%] px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm font-bold outline-none" />
-                        <input value={x.s || ''} placeholder="(chưa có nghĩa)" onChange={e => upd(x.k, { s: e.target.value })} className="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm outline-none" />
+                        <input data-col="w" onKeyDown={navDraft} value={x.w} onChange={e => upd(x.k, { w: e.target.value })} className="w-[38%] px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm font-bold outline-none" />
+                        <input data-col="s" onKeyDown={navDraft} value={x.s || ''} placeholder="(chưa có nghĩa)" onChange={e => upd(x.k, { s: e.target.value })} className="flex-1 min-w-0 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm outline-none" />
                         <Mic lang="vi-VN" onText={t => upd(x.k, { s: t })} />
                         <button onClick={() => setDraft(d => d.filter(y => y.k !== x.k))} className="text-slate-300 hover:text-rose-500 p-1"><Icon name="x" className="w-4 h-4" /></button>
                       </div>
@@ -4058,18 +4303,26 @@ void main(){
       const [picked, setPicked] = useState(null);
       const [score, setScore] = useState(0);
       const [fin, setFin] = useState(false);
+      const [doneQ, setDoneQ] = useState(0);
       const q = qs[idx];
 
       const pick = (i) => {
         if (picked !== null) return;
         setPicked(i);
+        setDoneQ(d => d + 1);
         if (i === q[2]) { SoundFx.correct(); setScore(s => s + 1); } else { SoundFx.wrong(); }
       };
       const next = () => {
         if (idx >= qs.length - 1) { setFin(true); onScore(score); }
         else { setIdx(idx + 1); setPicked(null); }
       };
-      const resetRun = () => { setIdx(0); setPicked(null); setScore(0); setFin(false); };
+      const resetRun = () => { setIdx(0); setPicked(null); setScore(0); setFin(false); setDoneQ(0); };
+      const submitEarly = () => {
+        const left = qs.length - doneQ;
+        if (left > 0 && !confirm(`Còn ${left} câu chưa làm (sẽ tính là bỏ qua). Bạn vẫn muốn nộp bài?`)) return;
+        setFin(true); onScore(score);
+        const m = document.querySelector('main'); if (m) m.scrollTop = 0;
+      };
       const retry = () => { if (shuf) setSeed(newSeed()); resetRun(); };
       const toggleShuf = () => { setSeed(newSeed()); setShuf(!shuf); resetRun(); };
       const shufBtn = (
@@ -4080,20 +4333,17 @@ void main(){
 
       if (fin) {
         return (
-          <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-4 shadow-sm">
-            <p className="text-sm font-bold text-slate-400">KẾT QUẢ</p>
-            <p className="text-5xl font-black text-indigo-600 dark:text-indigo-400">{score} / {qs.length}</p>
-            <p className="text-slate-500 dark:text-slate-400">{score === qs.length ? 'Tuyệt vời! Bạn nắm chắc chủ đề này 🎉' : 'Hãy đọc lại phần Tóm tắt rồi làm lại nhé.'}</p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <button onClick={retry} className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">{shuf ? 'Làm lại (đảo câu mới)' : 'Làm lại'}</button>
-              {shufBtn}
-            </div>
-          </div>
+          <ResultView title={`Điểm: ${score} / ${qs.length}`} correct={score} wrong={doneQ - score} skipped={qs.length - doneQ}>
+            <button onClick={retry} className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">{shuf ? 'Làm lại (đảo câu mới)' : 'Làm lại'}</button>
+            {shufBtn}
+          </ResultView>
         );
       }
 
       const parts = q[0].split('___');
       return (
+        <div className="space-y-3">
+        <SubmitBar done={doneQ} total={qs.length} onSubmit={submitEarly} />
         <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
           <div className="flex justify-between items-center text-xs font-bold text-slate-400">
             <span>CÂU {idx + 1} / {qs.length}</span>
@@ -4127,6 +4377,7 @@ void main(){
               <button onClick={next} className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow">{idx >= qs.length - 1 ? 'Xem kết quả' : 'Câu tiếp theo →'}</button>
             </div>
           )}
+        </div>
         </div>
       );
     }
