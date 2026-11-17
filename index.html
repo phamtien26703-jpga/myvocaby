@@ -144,20 +144,65 @@
       p: '',
       setUser(u) { this.p = u ? 'u_' + u + '__' : ''; },
       get(k) { return localStorage.getItem(this.p + k); },
-      set(k, v) { localStorage.setItem(this.p + k, v); }
+      set(k, v) {
+        try {
+          localStorage.setItem(this.p + k, v);
+        } catch (e) {
+          const prefix = this.p + 'myvocab_nav_';
+          const tempKeys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const kk = localStorage.key(i);
+            if (kk && kk.startsWith(prefix) && /_(study_sess_|study_sub_|fl_rows_|qz_ans_)/.test(kk)) {
+              tempKeys.push(kk);
+            }
+          }
+          tempKeys.slice(0, Math.max(4, Math.ceil(tempKeys.length / 2))).forEach(kk => {
+            try { localStorage.removeItem(kk); } catch (err) {}
+          });
+          localStorage.setItem(this.p + k, v);
+        }
+      }
     };
 
+    function strSeed(str) {
+      let h = 2166136261;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0) || 1;
+    }
+
     function useNavState(key, initVal) {
-      const [val, setVal] = useState(() => {
+      const read = (k) => {
         try {
-          const raw = Store.get('myvocab_nav_' + key);
+          const raw = Store.get('myvocab_nav_' + k);
           if (raw !== null && raw !== undefined) return JSON.parse(raw);
         } catch (e) {}
         return typeof initVal === 'function' ? initVal() : initVal;
-      });
+      };
+      const [state, setState] = useState(() => ({ k: key, v: read(key) }));
+      const val = state.k === key ? state.v : read(key);
+
       useEffect(() => {
-        try { Store.set('myvocab_nav_' + key, JSON.stringify(val)); } catch (e) {}
-      }, [key, val]);
+        const v = read(key);
+        if (state.k !== key) setState({ k: key, v });
+        try {
+          if (Store.get('myvocab_nav_' + key) === null) {
+            Store.set('myvocab_nav_' + key, JSON.stringify(v));
+          }
+        } catch (e) {}
+      }, [key]);
+
+      const setVal = React.useCallback((updater) => {
+        setState(prev => {
+          const cur = prev.k === key ? prev.v : read(key);
+          const next = typeof updater === 'function' ? updater(cur) : updater;
+          try { Store.set('myvocab_nav_' + key, JSON.stringify(next)); } catch (e) {}
+          return { k: key, v: next };
+        });
+      }, [key]);
+
       return [val, setVal];
     }
 
@@ -1301,7 +1346,7 @@ void main(){
           return () => clearTimeout(t);
         }
       }, []);
-      const [draft, setDraft] = useState([]);
+      const [draft, setDraft] = useNavState('import_draft', []);
       const loadUI = () => { try { return JSON.parse(Store.get('myvocab_v4_ui')) || {}; } catch (e) { return {}; } };
       const [themeColor, setThemeColor] = useState(() => loadUI().themeColor || 'indigo');
       const [darkMode, setDarkMode] = useState(() => !!loadUI().darkMode);
@@ -2201,14 +2246,12 @@ void main(){
       const [mode, setMode] = useNavState('study_mode', null);
       const [shuf, setShuf] = useNavState('study_shuffle', false);
       const [shufSeed, setShufSeed] = useNavState('study_shuffle_seed', 1);
-      const [wrongSnap, setWrongSnap] = useState(null);
+      const [wrongSnap, setWrongSnap] = useNavState('study_wrongSnap', null);
       const [showWrong, setShowWrong] = useState(false);
       const [adding, setAdding] = useState(false);
       const [newName, setNewName] = useState('');
-      // NỘP BÀI: ghi nhận kết quả từng từ trong lượt làm hiện tại
-      const [attempt, setAttempt] = useState(0);
-      const [sess, setSess] = useState({});
-      const [submitted, setSubmitted] = useState(false);
+      // NỘP BÀI: lưu tiến độ từng lượt làm để tải lại trang không bị mất
+      const [attempt, setAttempt] = useNavState('study_attempt', 0);
 
       const deck = decks.find(d => d.id === deckId);
       const deckCards = useMemo(() => cards.filter(c => c.d === deckId), [cards, deckId]);
@@ -2227,8 +2270,10 @@ void main(){
       const optionsPool = deckCards.length >= 4 ? deckCards : cards;
       const scopeLabel = scope === 'all' ? 'Toàn bộ deck' : (curList ? `List ${curList.id}` : '');
       const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}_${shuf ? 's' + shufSeed : 'o'}`;
+      const modeKey = `${posKey}_a${attempt}`;
       const sessKey = `${mode}-${posKey}-${attempt}`;
-      useEffect(() => { setSess({}); setSubmitted(false); }, [sessKey]);
+      const [sess, setSess] = useNavState('study_sess_' + sessKey, {});
+      const [submitted, setSubmitted] = useNavState('study_sub_' + sessKey, false);
       const trackMark = (n, isWrong) => {
         // Tìm cặp: đã ghép sai 1 lần thì tính là sai; các chế độ khác lấy kết quả mới nhất
         setSess(s => (mode === 'match' && s[n] === false) ? s : { ...s, [n]: !isWrong });
@@ -2391,12 +2436,12 @@ void main(){
             {(() => {
               return (
                 <div key={`${mode}-${posKey}-${attempt}`}>
-                  {mode === 'flashcard' && <FlashcardMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
-                  {mode === 'quiz' && <QuizUnifiedMode pool={playPool} allCards={optionsPool} onMarkWrong={trackMark} posKey={posKey} />}
-                  {mode === 'match' && <MatchMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
-                  {mode === 'listen_word' && <ListenWordMode pool={playPool} allCards={optionsPool} onMarkWrong={trackMark} posKey={posKey} />}
-                  {mode === 'fill' && <FillMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
-                  {mode === 'dictation' && <DictationMode pool={playPool} onMarkWrong={trackMark} posKey={posKey} />}
+                  {mode === 'flashcard' && <FlashcardMode pool={playPool} onMarkWrong={trackMark} posKey={modeKey} />}
+                  {mode === 'quiz' && <QuizUnifiedMode pool={playPool} allCards={optionsPool} onMarkWrong={trackMark} posKey={modeKey} />}
+                  {mode === 'match' && <MatchMode pool={playPool} onMarkWrong={trackMark} posKey={modeKey} />}
+                  {mode === 'listen_word' && <ListenWordMode pool={playPool} allCards={optionsPool} onMarkWrong={trackMark} posKey={modeKey} />}
+                  {mode === 'fill' && <FillMode pool={playPool} onMarkWrong={trackMark} posKey={modeKey} />}
+                  {mode === 'dictation' && <DictationMode pool={playPool} onMarkWrong={trackMark} posKey={modeKey} />}
                 </div>
               );
             })()}
@@ -2603,7 +2648,7 @@ void main(){
     function FlashcardMode({ pool, onMarkWrong, posKey = 'default' }) {
       const [rawIdx, setIdx] = useNavState('fc_idx_' + posKey, 0);
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
-      const [flipped, setFlipped] = useState(false);
+      const [flipped, setFlipped] = useNavState('fc_flip_' + posKey, false);
       const card = pool[idx];
       useEffect(() => { if (card) Stats.seen(card.n); }, [card && card.n]);
 
@@ -2776,39 +2821,35 @@ void main(){
 
       const [rawIdx, setIdx] = useNavState('qz_idx_' + posKey, 0);
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
-      const [picked, setPicked] = useState(null);
+      const [picked, setPicked] = useNavState('qz_pick_' + posKey, null);
       const card = pool[idx];
 
-      const [answers, setAnswers] = useState({});
-      const [submitted, setSubmitted] = useState(false);
+      const [answers, setAnswers] = useNavState('qz_ans_' + posKey, {});
+      const [submitted, setSubmitted] = useNavState('qz_sub_' + posKey, false);
 
       const singleOptions = useMemo(() => {
         if (!card) return [];
         const rightMeaning = card.s || card.v;
-        const distractors = allCards
-          .filter(c => c.n !== card.n && (c.s || c.v) !== rightMeaning)
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 3);
-        return [
+        const base = allCards.filter(c => c.n !== card.n && (c.s || c.v) !== rightMeaning);
+        const distractors = seededShuffle(base, strSeed(posKey + '_q1d_' + card.n)).slice(0, 3);
+        return seededShuffle([
           { isRight: true, text: rightMeaning },
           ...distractors.map(d => ({ isRight: false, text: d.s || d.v }))
-        ].sort(() => 0.5 - Math.random());
-      }, [card, allCards]);
+        ], strSeed(posKey + '_q1o_' + card.n));
+      }, [card, allCards, posKey]);
 
       const allQuestions = useMemo(() => {
         return pool.map(c => {
           const rightMeaning = c.s || c.v;
-          const distractors = allCards
-            .filter(other => other.n !== c.n && (other.s || other.v) !== rightMeaning)
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 3);
-          const opts = [
+          const base = allCards.filter(other => other.n !== c.n && (other.s || other.v) !== rightMeaning);
+          const distractors = seededShuffle(base, strSeed(posKey + '_qad_' + c.n)).slice(0, 3);
+          const opts = seededShuffle([
             { isRight: true, text: rightMeaning },
             ...distractors.map(d => ({ isRight: false, text: d.s || d.v }))
-          ].sort(() => 0.5 - Math.random());
+          ], strSeed(posKey + '_qao_' + c.n));
           return { card: c, opts };
         });
-      }, [pool, allCards]);
+      }, [pool, allCards, posKey]);
 
       const handlePickAll = (cardNum, optIdx, isRight) => {
         if (submitted) return;
@@ -3000,19 +3041,14 @@ void main(){
     // 3. TÌM CẶP (6/6 KÈM CHỨC NĂNG ĐẢO TỪ TRONG TOÀN BỘ LIST & TOÀN BỘ TỪ)
     // ==========================================
     function MatchMode({ pool, onMarkWrong, posKey = 'default' }) {
-      const [shuffledDeck, setShuffledDeck] = useState(() => [...pool]);
+      const [matchSeed, setMatchSeed] = useNavState('mt_seed_' + posKey, 0);
+      const shuffledDeck = useMemo(
+        () => (matchSeed === 0 ? [...pool] : seededShuffle(pool, matchSeed)),
+        [pool, matchSeed]
+      );
       const [rawBatchIdx, setBatchIdx] = useNavState('mt_batch_' + posKey, 0);
       const [leftId, setLeftId] = useState(null);
-      const [matched, setMatched] = useState([]);
-      const didMountRef = useRef(false);
-
-      useEffect(() => {
-        if (!didMountRef.current) { didMountRef.current = true; return; }
-        setShuffledDeck([...pool].sort(() => 0.5 - Math.random()));
-        setBatchIdx(0);
-        setMatched([]);
-        setLeftId(null);
-      }, [pool]);
+      const [matched, setMatched] = useNavState('mt_matched_' + posKey, []);
 
       const totalBatches = Math.max(1, Math.ceil(shuffledDeck.length / 6));
       const batchIdx = Math.min(Math.max(0, rawBatchIdx), totalBatches - 1);
@@ -3022,12 +3058,11 @@ void main(){
       }, [shuffledDeck, batchIdx]);
 
       const rightItems = useMemo(() => {
-        return [...currentBatch].sort(() => 0.5 - Math.random());
-      }, [currentBatch]);
+        return seededShuffle(currentBatch, strSeed(`${posKey}_r_${batchIdx}_${matchSeed}`));
+      }, [currentBatch, posKey, batchIdx, matchSeed]);
 
       const handleShuffleAll = () => {
-        const newlyShuffled = [...pool].sort(() => 0.5 - Math.random());
-        setShuffledDeck(newlyShuffled);
+        setMatchSeed(newSeed());
         setBatchIdx(0);
         setMatched([]);
         setLeftId(null);
@@ -3190,11 +3225,11 @@ void main(){
     function FillMode({ pool, onMarkWrong, posKey = 'default' }) {
       const [isMulti, setIsMulti] = useNavState('fl_multi_' + posKey, true);
       const [rev, setRev] = useNavState('fl_rev_' + posKey, false); // false: cho nghĩa → gõ từ Anh | true: cho từ Anh → gõ nghĩa
-      const [rows, setRows] = useState({});
+      const [rows, setRows] = useNavState('fl_rows_' + posKey, {});
       const [rawSIdx, setSIdx] = useNavState('fl_idx_' + posKey, 0);
       const sIdx = Math.min(Math.max(0, rawSIdx), Math.max(0, pool.length - 1));
-      const [sVal, setSVal] = useState('');
-      const [sRes, setSRes] = useState(null);
+      const [sVal, setSVal] = useNavState('fl_sval_' + posKey, '');
+      const [sRes, setSRes] = useNavState('fl_sres_' + posKey, null);
 
       const curCard = pool[sIdx];
       const meaningOf = (c) => c.s || c.v || '';
@@ -3217,7 +3252,7 @@ void main(){
         }
       };
 
-      const [submitted, setSubmitted] = useState(false);
+      const [submitted, setSubmitted] = useNavState('fl_sub_' + posKey, false);
       const changeDir = (v) => {
         if (v === rev) return;
         setRev(v); setRows({}); setSVal(''); setSRes(null); setSubmitted(false);
@@ -3453,14 +3488,15 @@ void main(){
     function ListenWordMode({ pool, allCards, onMarkWrong, posKey = 'default' }) {
       const [rawIdx, setIdx] = useNavState('lw_idx_' + posKey, 0);
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
-      const [picked, setPicked] = useState(null);
+      const [picked, setPicked] = useNavState('lw_pick_' + posKey, null);
       const card = pool[idx];
 
       const opts = useMemo(() => {
         if (!card) return [];
-        const wrongs = allCards.filter(c => c.n !== card.n).sort(() => 0.5 - Math.random()).slice(0, 3);
-        return [card, ...wrongs].sort(() => 0.5 - Math.random());
-      }, [card, allCards]);
+        const base = allCards.filter(c => c.n !== card.n);
+        const wrongs = seededShuffle(base, strSeed(posKey + '_lwd_' + card.n)).slice(0, 3);
+        return seededShuffle([card, ...wrongs], strSeed(posKey + '_lwo_' + card.n));
+      }, [card, allCards, posKey]);
 
       if (!card) return null;
 
@@ -3503,7 +3539,7 @@ void main(){
     function DictationMode({ pool, onMarkWrong, posKey = 'default' }) {
       const [rawIdx, setIdx] = useNavState('dc_idx_' + posKey, 0);
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, pool.length - 1));
-      const [val, setVal] = useState('');
+      const [val, setVal] = useNavState('dc_val_' + posKey, '');
       const card = pool[idx];
       if (!card) return null;
 
@@ -3794,16 +3830,16 @@ void main(){
     // ==========================================
     function ImportSection({ decks, cards, setDecks, setCards, draft, setDraft, showToast, tColor, onDone }) {
       const [src, setSrc] = useNavState('import_src', 'excel');
-      const [bulk, setBulk] = useState('');
-      const [f, setF] = useState({ w: '', s: '', p: '', i: '', e: '', x: '' });
+      const [bulk, setBulk] = useNavState('import_bulk', '');
+      const [f, setF] = useNavState('import_form', { w: '', s: '', p: '', i: '', e: '', x: '' });
       const [busy, setBusy] = useState('');
       const [ocrLang, setOcrLang] = useState('eng+vie');
       const [vLang, setVLang] = useState('en-US');
       const [preview, setPreview] = useState(null);
-      const [dest, setDest] = useState('new');
-      const [name, setName] = useState('Deck ' + (decks.length + 1));
-      const [deckSel, setDeckSel] = useState(decks[0] ? decks[0].id : '');
-      const [listSel, setListSel] = useState('auto');
+      const [dest, setDest] = useNavState('import_dest', 'new');
+      const [name, setName] = useNavState('import_name', 'Deck ' + (decks.length + 1));
+      const [deckSel, setDeckSel] = useNavState('import_deckSel', decks[0] ? decks[0].id : '');
+      const [listSel, setListSel] = useNavState('import_listSel', 'auto');
 
       const addDraft = (items) => {
         if (!items.length) { showToast('Không tìm thấy từ nào để thêm.'); return false; }
@@ -4297,13 +4333,14 @@ void main(){
 
     function GrammarQuiz({ topic, onScore }) {
       const [shuf, setShuf] = useNavState('grammar_quiz_shuffle', false);
-      const [seed, setSeed] = useState(() => newSeed());
+      const [seed, setSeed] = useNavState('gq_seed_' + topic.id, () => newSeed());
       const qs = useMemo(() => shuf ? seededShuffle(topic.quiz, seed) : topic.quiz, [topic, shuf, seed]);
-      const [idx, setIdx] = useState(0);
-      const [picked, setPicked] = useState(null);
-      const [score, setScore] = useState(0);
-      const [fin, setFin] = useState(false);
-      const [doneQ, setDoneQ] = useState(0);
+      const [rawIdx, setIdx] = useNavState('gq_idx_' + topic.id, 0);
+      const idx = Math.min(Math.max(0, rawIdx), Math.max(0, qs.length - 1));
+      const [picked, setPicked] = useNavState('gq_pick_' + topic.id, null);
+      const [score, setScore] = useNavState('gq_score_' + topic.id, 0);
+      const [fin, setFin] = useNavState('gq_fin_' + topic.id, false);
+      const [doneQ, setDoneQ] = useNavState('gq_done_' + topic.id, 0);
       const q = qs[idx];
 
       const pick = (i) => {
@@ -4659,11 +4696,11 @@ void main(){
     function DictationPlayer({ lesson, sentences, done, onDone, onAttempt, onTimes, onSaveWord, onBack, tColor }) {
       const [rawIdx, setIdx] = useNavState('dict_idx_' + lesson.id, () => { const f = sentences.findIndex((_, i) => !done[i]); return f < 0 ? 0 : f; });
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, sentences.length - 1));
-      const [val, setVal] = useState('');
-      const [res, setRes] = useState(null);
-      const [hint, setHint] = useState(false);
-      const [rate, setRate] = useState(0.9);
-      const [acc, setAcc] = useState('en-US');
+      const [val, setVal] = useNavState('dict_val_' + lesson.id, '');
+      const [res, setRes] = useNavState('dict_res_' + lesson.id, null);
+      const [hint, setHint] = useNavState('dict_hint_' + lesson.id, false);
+      const [rate, setRate] = useNavState('dict_rate', 0.9);
+      const [acc, setAcc] = useNavState('dict_acc', 'en-US');
       const [audioReady, setAudioReady] = useState(false);
       const [edit, setEdit] = useState(false);
       const [pw, setPw] = useState('');
@@ -4699,9 +4736,10 @@ void main(){
           stopRef.current = setInterval(() => { if (a.currentTime >= seg[1] || a.ended) { a.pause(); clearInterval(stopRef.current); } }, 40);
         } else speak(sent, acc, rt);
       };
-      useEffect(() => { setVal(''); setRes(null); setHint(false); setPw(''); setPm('');
+      useEffect(() => {
         const t = setTimeout(() => { play(); if (inputRef.current) inputRef.current.focus(); }, 250);
-        return () => clearTimeout(t); }, [idx, lesson.id, audioReady]);
+        return () => clearTimeout(t);
+      }, [idx, lesson.id, audioReady]);
 
       const check = () => {
         if (!val.trim()) return;
@@ -4712,7 +4750,10 @@ void main(){
         setRes({ ...d, score, userWords: wordsOf(val) });
       };
       const total = sentences.length, cnt = Object.keys(done).filter(k => done[k]).length;
-      const go = (d) => setIdx(i => Math.min(total - 1, Math.max(0, i + d)));
+      const go = (d) => {
+        setVal(''); setRes(null); setHint(false); setPw(''); setPm('');
+        setIdx(i => Math.min(total - 1, Math.max(0, i + d)));
+      };
       const hintText = target.map(w => w[0] + '·'.repeat(Math.max(0, w.length - 1))).join('  ');
       const pill = 'px-3 py-1.5 rounded-xl text-xs font-bold';
       const setSeg = (k, v) => { const s = seg ? [...seg] : [0, 0]; s[k] = Math.max(0, Number(v) || 0); onTimes(idx, s); };
@@ -4833,12 +4874,12 @@ void main(){
       const [activeTopicId, setActiveTopicId] = useNavState('listen_topicId', null);
       const [viewMode, setViewMode] = useNavState('listen_viewMode', 'topics'); // 'topics' (All topics DailyDictation) | 'lessons' (Tất cả bài nghe)
       const [openDescs, setOpenDescs] = useState({});
-      const [form, setForm] = useState(false);
-      const [title, setTitle] = useState('');
-      const [text, setText] = useState('');
+      const [form, setForm] = useNavState('listen_form', false);
+      const [title, setTitle] = useNavState('listen_title', '');
+      const [text, setText] = useNavState('listen_text', '');
       const [file, setFile] = useState(null);
-      const [topicSel, setTopicSel] = useState('conv');
-      const [newTopic, setNewTopic] = useState('');
+      const [topicSel, setTopicSel] = useNavState('listen_topicSel', 'conv');
+      const [newTopic, setNewTopic] = useNavState('listen_newTopic', '');
       const [filter, setFilter] = useNavState('listen_filter', 'all');
       const [busy, setBusy] = useState('');
       const [dk, setDk] = useState('');
@@ -4869,7 +4910,12 @@ void main(){
         return { ...s, daily: { ...(s.daily || {}), [k]: { t: d.t + 1, c: d.c + (ok ? 1 : 0) } } };
       });
       const markDone = (id, i) => setSt(s => ({ ...s, prog: { ...(s.prog || {}), [id]: { ...((s.prog || {})[id] || {}), [i]: true } } }));
-      const resetProg = (id) => setSt(s => { const p = { ...(s.prog || {}) }; delete p[id]; return { ...s, prog: p }; });
+      const resetProg = (id) => {
+        ['dict_idx_', 'dict_val_', 'dict_res_', 'dict_hint_'].forEach(k => {
+          try { localStorage.removeItem(Store.p + 'myvocab_nav_' + k + id); } catch (e) {}
+        });
+        setSt(s => { const p = { ...(s.prog || {}) }; delete p[id]; return { ...s, prog: p }; });
+      };
       const setTimes = (id, i, seg) => setSt(s => ({ ...s, lessons: (s.lessons || []).map(l => { if (l.id !== id) return l; const t = [...(l.times || [])]; t[i] = seg; return { ...l, times: t }; }) }));
 
       const addLesson = async (t, body, topicId, f) => {
