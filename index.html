@@ -633,7 +633,7 @@
       });
     }
 
-    const Shell = ({ children }) => <div className="p-4 md:p-6 max-w-5xl mx-auto w-full space-y-5">{children}</div>;
+    const Shell = ({ children, className = "max-w-5xl" }) => <div className={`p-4 md:p-6 mx-auto w-full space-y-5 ${className}`}>{children}</div>;
 
     // ==========================================
     // DECK (THƯ MỤC) + TIỆN ÍCH
@@ -2239,9 +2239,18 @@ void main(){
       ['dictation', 'pencilCircle', 'Luyện tập:', 'Nghe chính tả', 'Nghe phát âm và gõ lại từng ký tự']
     ];
 
+    // ==========================================
+    // HỌC & LUYỆN TẬP: CHỌN DECK -> LIST -> CHẾ ĐỘ + MỤC TIÊU HÔM NAY
+    // ==========================================
+    // ==========================================
+    // HỌC & LUYỆN TẬP: CHỌN DECK -> LIST -> CHẾ ĐỘ + MỤC TIÊU HÔM NAY (DROPDOWN KHOA HỌC)
+    // ==========================================
+    // ==========================================
+    // HỌC & LUYỆN TẬP: MỤC TIÊU HỌC TẬP & LỊCH NGÀY THÁNG NĂM
+    // ==========================================
     function StudyWorkspace({ decks, cards, wrongIds, onMarkWrong, tColor, goImport, setDecks, setCards, showToast, studyDeckId, setStudyDeckId }) {
       const [deckId, setDeckId] = (studyDeckId !== undefined && setStudyDeckId) ? [studyDeckId, setStudyDeckId] : useNavState('study_deckId', null);
-      const [scope, setScope] = useNavState('study_scope', 'lists');
+      const [scope, setScope] = useNavState('study_scope', 'lists'); // 'lists' | 'all' | 'custom_goal'
       const [listId, setListId] = useNavState('study_listId', null);
       const [mode, setMode] = useNavState('study_mode', null);
       const [shuf, setShuf] = useNavState('study_shuffle', false);
@@ -2253,29 +2262,109 @@ void main(){
       // NỘP BÀI: lưu tiến độ từng lượt làm để tải lại trang không bị mất
       const [attempt, setAttempt] = useNavState('study_attempt', 0);
 
+      // --- DỮ LIỆU LỊCH VÀ MỤC TIÊU THEO TỪNG NGÀY ---
+      const todayKey = Stats.dateStr(); // YYYY-MM-DD
+      const [selectedDateKey, setSelectedDateKey] = useNavState('goal_selected_date', todayKey);
+      const [calYear, setCalYear] = useState(() => new Date().getFullYear());
+      const [calMonth, setCalMonth] = useState(() => new Date().getMonth()); // 0-indexed
+
+      // Lưu trữ mục tiêu riêng cho từng ngày: { [dateKey]: { deckMode, deckMultiIds, listMode, selectedLists, wordLimit } }
+      const [dailyGoals, setDailyGoals] = useNavState('study_daily_goals', {});
+      const [customGoalPool, setCustomGoalPool] = useNavState('goal_active_pool', null);
+
+      // Lấy mục tiêu của ngày đang chọn trên lịch
+      const currentGoal = dailyGoals[selectedDateKey] || {
+        deckMode: 'all',
+        deckMultiIds: decks.map(d => d.id),
+        listMode: 'all',
+        selectedLists: [1],
+        wordLimit: 20
+      };
+
+      // Cập nhật mục tiêu cho ngày đang chọn
+      const updateCurrentGoal = (patch) => {
+        setDailyGoals(prev => {
+          const existing = prev[selectedDateKey] || {
+            deckMode: 'all',
+            deckMultiIds: decks.map(d => d.id),
+            listMode: 'all',
+            selectedLists: [1],
+            wordLimit: 20
+          };
+          return {
+            ...prev,
+            [selectedDateKey]: { ...existing, ...patch }
+          };
+        });
+      };
+
+      // --- STATE GIỚI HẠN SỐ TỪ KHI HỌC TRỰC TIẾP TRONG DECK ---
+      const [listWordLimit, setListWordLimit] = useNavState('study_list_limit', '');
+      const [allDeckWordLimit, setAllDeckWordLimit] = useNavState('study_all_deck_limit', '');
+      const [showListGridInDeck, setShowListGridInDeck] = useNavState('study_show_list_grid', false);
+
       const deck = decks.find(d => d.id === deckId);
       const deckCards = useMemo(() => cards.filter(c => c.d === deckId), [cards, deckId]);
       const lists = useMemo(() => listMeta(deckCards), [deckCards]);
       const curList = scope === 'lists' ? (lists.find(l => l.id === listId) || lists[0]) : null;
+
+      // Định dạng hiển thị ngày: DD/MM/YYYY
+      const formatDateDisplay = (key) => {
+        if (!key) return '';
+        const parts = key.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : key;
+      };
+
+      const getDayOfWeekName = (key) => {
+        if (!key) return '';
+        const [y, m, d] = key.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+        return dayNames[dt.getDay()];
+      };
+
+      // Danh sách từ theo phạm vi đã chọn
       const scopePool = useMemo(() => {
-        const p = scope === 'all' ? deckCards : deckCards.filter(c => curList && c.l === curList.id);
-        return [...p].sort((a, b) => numOf(a) - numOf(b));
-      }, [deckCards, scope, curList]);
+        if (scope === 'custom_goal' && customGoalPool && customGoalPool.length) {
+          const idSet = new Set(customGoalPool);
+          return cards.filter(c => idSet.has(c.n)).sort((a, b) => numOf(a) - numOf(b));
+        }
+        if (scope === 'all') {
+          const sorted = [...deckCards].sort((a, b) => numOf(a) - numOf(b));
+          const limit = parseInt(allDeckWordLimit, 10);
+          if (limit > 0 && limit < sorted.length) {
+            return shuf ? seededShuffle(sorted, shufSeed).slice(0, limit) : sorted.slice(0, limit);
+          }
+          return sorted;
+        }
+        const listCards = deckCards.filter(c => curList && c.l === curList.id).sort((a, b) => numOf(a) - numOf(b));
+        const limit = parseInt(listWordLimit, 10);
+        if (limit > 0 && limit < listCards.length) {
+          return shuf ? seededShuffle(listCards, shufSeed).slice(0, limit) : listCards.slice(0, limit);
+        }
+        return listCards;
+      }, [deckCards, cards, scope, curList, customGoalPool, allDeckWordLimit, listWordLimit, shuf, shufSeed]);
+
       const wrongInScope = scopePool.filter(c => wrongIds.includes(c.n));
       const onlyWrong = wrongSnap !== null;
-      // Trong lúc luyện tập, danh sách từ sai được "chốt" để không bị co lại khi bạn trả lời đúng
       const pool = onlyWrong ? scopePool.filter(c => (mode ? wrongSnap : wrongIds).includes(c.n)) : scopePool;
       const playPool = useMemo(() => shuf ? seededShuffle(pool, shufSeed) : pool, [pool, shuf, shufSeed]);
       const wrongInDeck = deckCards.filter(c => wrongIds.includes(c.n)).length;
       const optionsPool = deckCards.length >= 4 ? deckCards : cards;
-      const scopeLabel = scope === 'all' ? 'Toàn bộ deck' : (curList ? `List ${curList.id}` : '');
+
+      const scopeLabel = scope === 'custom_goal'
+        ? `Mục tiêu ${selectedDateKey === todayKey ? 'hôm nay' : 'ngày ' + formatDateDisplay(selectedDateKey)} (${pool.length} từ)`
+        : (scope === 'all'
+            ? `Toàn bộ deck ${allDeckWordLimit ? `(Mục tiêu: ${pool.length}/${deckCards.length} từ)` : `(${pool.length} từ)`}`
+            : (curList ? `List ${curList.id} ${listWordLimit ? `(Mục tiêu: ${pool.length}/${curList.count} từ)` : `(${pool.length} từ)`}` : ''));
+
       const posKey = `${deckId}_${scope}_${curList ? curList.id : 'all'}_${onlyWrong ? 'w' : 'a'}_${shuf ? 's' + shufSeed : 'o'}`;
       const modeKey = `${posKey}_a${attempt}`;
       const sessKey = `${mode}-${posKey}-${attempt}`;
       const [sess, setSess] = useNavState('study_sess_' + sessKey, {});
       const [submitted, setSubmitted] = useNavState('study_sub_' + sessKey, false);
+
       const trackMark = (n, isWrong) => {
-        // Tìm cặp: đã ghép sai 1 lần thì tính là sai; các chế độ khác lấy kết quả mới nhất
         setSess(s => (mode === 'match' && s[n] === false) ? s : { ...s, [n]: !isWrong });
         onMarkWrong(n, isWrong);
       };
@@ -2283,6 +2372,7 @@ void main(){
       const okN = pool.filter(c => sess[c.n] === true).length;
       const badN = pool.filter(c => sess[c.n] === false).length;
       const skipN = pool.length - doneN;
+
       const submitNow = () => {
         if (skipN > 0 && !confirm(`Còn ${skipN} từ chưa làm (sẽ tính là bỏ qua). Bạn vẫn muốn nộp bài?`)) return;
         setSubmitted(true);
@@ -2311,7 +2401,8 @@ void main(){
       );
       const toggleWrong = () => { setShowWrong(false); setWrongSnap(onlyWrong ? null : wrongInScope.map(c => c.n)); };
       const startMode = (m) => { if (onlyWrong) setWrongSnap(wrongInScope.map(c => c.n)); setShowWrong(false); setMode(m); };
-      const openDeck = (id) => { setDeckId(id); setScope('lists'); setListId(null); setMode(null); setWrongSnap(null); };
+      const openDeck = (id) => { setDeckId(id); setScope('lists'); setListId(null); setMode(null); setWrongSnap(null); setCustomGoalPool(null); };
+
       const addDeck = () => {
         const id = uid();
         const name = newName.trim() || ('Deck ' + (decks.length + 1));
@@ -2328,14 +2419,464 @@ void main(){
         showToast('Đã xoá Deck "' + d.name + '"');
       };
 
-      // BƯỚC 1: CHỌN / THÊM / XOÁ DECK
+      // Xử lý bắt đầu học theo mục tiêu của ngày đang chọn
+      const handleStartTodayGoal = () => {
+        let baseCards = [];
+        if (currentGoal.deckMode === 'all') {
+          baseCards = [...cards];
+        } else if (currentGoal.deckMode === 'multi') {
+          const setD = new Set(currentGoal.deckMultiIds);
+          baseCards = cards.filter(c => setD.has(c.d));
+        } else {
+          baseCards = cards.filter(c => c.d === currentGoal.deckMode);
+        }
+
+        if (!baseCards.length) {
+          alert('Không tìm thấy từ vựng nào trong Deck đã chọn!');
+          return;
+        }
+
+        let filteredPool = [];
+        if (currentGoal.listMode === 'all') {
+          filteredPool = [...baseCards];
+        } else if (currentGoal.listMode === 'multi') {
+          if (!currentGoal.selectedLists.length) {
+            alert('Vui lòng chọn ít nhất 1 List để học!');
+            return;
+          }
+          const listSet = new Set(currentGoal.selectedLists);
+          filteredPool = baseCards.filter(c => listSet.has(c.l));
+        } else {
+          const lNum = Number(currentGoal.listMode);
+          filteredPool = baseCards.filter(c => c.l === lNum);
+        }
+
+        if (!filteredPool.length) {
+          alert('Không có từ vựng nào trong danh mục đã chọn!');
+          return;
+        }
+
+        filteredPool.sort((a, b) => numOf(a) - numOf(b));
+        const limit = Math.max(1, Math.min(filteredPool.length, parseInt(currentGoal.wordLimit, 10) || filteredPool.length));
+        const finalCards = shuf ? seededShuffle(filteredPool, shufSeed).slice(0, limit) : filteredPool.slice(0, limit);
+
+        // Lưu mục tiêu cho ngày đang chọn
+        updateCurrentGoal({ wordLimit: limit });
+
+        const primaryDeckId = (currentGoal.deckMode !== 'all' && currentGoal.deckMode !== 'multi') ? currentGoal.deckMode : (decks[0]?.id || 'd1');
+        setDeckId(primaryDeckId);
+        setCustomGoalPool(finalCards.map(c => c.n));
+        setScope('custom_goal');
+        setMode(null);
+        setWrongSnap(null);
+        showToast(`Bắt đầu học mục tiêu ${selectedDateKey === todayKey ? 'hôm nay' : 'ngày ' + formatDateDisplay(selectedDateKey)}: ${finalCards.length} từ vựng.`);
+      };
+
+      // Sinh ma trận ngày cho lịch (T2 -> CN)
+      const calendarDays = useMemo(() => {
+        const firstDay = new Date(calYear, calMonth, 1);
+        const lastDay = new Date(calYear, calMonth + 1, 0);
+
+        let startDow = firstDay.getDay() - 1;
+        if (startDow === -1) startDow = 6; // Chủ nhật thành 6
+
+        const days = [];
+        const prevMonthLastDate = new Date(calYear, calMonth, 0).getDate();
+
+        // Ngày tháng trước
+        for (let i = startDow - 1; i >= 0; i--) {
+          const d = new Date(calYear, calMonth - 1, prevMonthLastDate - i);
+          days.push({ key: Stats.dateStr(d), dayNum: d.getDate(), isCurrentMonth: false });
+        }
+        // Ngày tháng hiện tại
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+          const d = new Date(calYear, calMonth, day);
+          days.push({ key: Stats.dateStr(d), dayNum: day, isCurrentMonth: true });
+        }
+        // Ngày tháng sau bù đủ lưới
+        const remaining = (7 - (days.length % 7)) % 7;
+        for (let day = 1; day <= remaining; day++) {
+          const d = new Date(calYear, calMonth + 1, day);
+          days.push({ key: Stats.dateStr(d), dayNum: day, isCurrentMonth: false });
+        }
+        return days;
+      }, [calYear, calMonth]);
+
+      // BƯỚC 1: CHỌN / THÊM / XOÁ DECK & BẢNG MỤC TIÊU + LỊCH NGÀY THÁNG
       if (!deck) {
-        return (
-          <Shell>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        // Dữ liệu từ vựng theo Deck đang chọn ở mục tiêu
+        let currentTargetCards = cards;
+        if (currentGoal.deckMode !== 'all' && currentGoal.deckMode !== 'multi') {
+          currentTargetCards = cards.filter(c => c.d === currentGoal.deckMode);
+        } else if (currentGoal.deckMode === 'multi') {
+          const setD = new Set(currentGoal.deckMultiIds);
+          currentTargetCards = cards.filter(c => setD.has(c.d));
+        }
+        const currentTargetLists = listMeta(currentTargetCards);
+
+        let availableCount = currentTargetCards.length;
+        if (currentGoal.listMode === 'multi') {
+          const listSet = new Set(currentGoal.selectedLists);
+          availableCount = currentTargetCards.filter(c => listSet.has(c.l)).length;
+        } else if (currentGoal.listMode !== 'all') {
+          const lNum = Number(currentGoal.listMode);
+          availableCount = currentTargetCards.filter(c => c.l === lNum).length;
+        }
+
+        const isToday = selectedDateKey === todayKey;
+        const statsData = Stats.data();
+        const selectedDateStudySec = (statsData.days && statsData.days[selectedDateKey]) || 0;
+
+                return (
+          <Shell className="max-w-[1380px]">
+            {/* HÀNG TRÊN CÙNG: 2 Ô ĐỘC LẬP SÓNG ĐÔI (BÊN TRÁI MỤC TIÊU - BÊN PHẢI LỊCH) */}
+            <div className="flex flex-col lg:flex-row gap-4 items-start">
+
+              {/* Ô 1 (BÊN TRÁI - 7 CỘT): MỤC TIÊU HỌC TẬP RIÊNG BIỆT */}
+              <div className="w-full lg:flex-1 lg:min-w-0 lg:[zoom:0.8] p-5 md:p-6 rounded-3xl bg-white dark:bg-slate-900 border-2 border-indigo-500/30 dark:border-indigo-500/40 shadow-xl flex flex-col gap-2">
+                <div className="space-y-4">
+                  {/* Tiêu đề & Nút bắt đầu học */}
+                  <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+                    <div className="flex items-center space-x-3 min-w-0">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-lg shrink-0">🎯</div>
+                      <div className="min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight truncate">
+                            {isToday ? 'Mục tiêu hôm nay' : `Mục tiêu ngày ${formatDateDisplay(selectedDateKey)}`}
+                          </h3>
+                          {isToday ? (
+                            <span className="px-2.5 py-0.5 rounded-full text-[13px] font-black bg-rose-100 dark:bg-rose-950 text-rose-600 shrink-0">Hôm nay</span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full text-[13px] font-black bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 shrink-0">
+                              {getDayOfWeekName(selectedDateKey)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-base text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                          {isToday ? 'Đặt mục tiêu học tập thông minh: chọn Deck, List và giới hạn số từ cần học' : `Kế hoạch học tập ngày ${formatDateDisplay(selectedDateKey)}`}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleStartTodayGoal}
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-500 via-pink-600 to-indigo-600 hover:opacity-95 text-white text-base font-black shadow-lg shadow-rose-500/25 transition flex items-center space-x-1.5 shrink-0"
+                    >
+                      <span>{isToday ? 'Bắt đầu học mục tiêu' : 'Học mục tiêu ngày này'}</span>
+                      <Icon name="arrowRight" className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* 3 Ô ĐIỀU KHIỂN: THẲNG HÀNG TUYỆT ĐỐI KHÔNG BỊ GÃY DÒNG */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+                    {/* 1. Chọn Deck */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center h-6">
+                        <label className="text-[14px] font-black uppercase text-slate-400 tracking-wider whitespace-nowrap truncate">
+                          1. Deck muốn học
+                        </label>
+                        <span className="text-[14px] font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap truncate max-w-[160px]">
+                          {currentGoal.deckMode === 'all' ? `Tất cả (${cards.length} từ)` : (currentGoal.deckMode === 'multi' ? `${currentGoal.deckMultiIds.length} Deck` : `${currentTargetCards.length} từ`)}
+                        </span>
+                      </div>
+                      <select
+                        value={currentGoal.deckMode}
+                        onChange={e => {
+                          updateCurrentGoal({ deckMode: e.target.value, listMode: 'all' });
+                        }}
+                        className="w-full h-[52px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-lg font-bold outline-none focus:border-indigo-500 shadow-sm cursor-pointer truncate"
+                      >
+                        <option value="all">Tất cả Deck ({cards.length} từ)</option>
+                        {decks.map(d => {
+                          const cnt = cards.filter(c => c.d === d.id).length;
+                          return <option key={d.id} value={d.id}>{d.name} ({cnt} từ)</option>;
+                        })}
+                        {decks.length > 1 && (
+                          <option value="multi">⚡ Chọn nhiều Deck...</option>
+                        )}
+                      </select>
+                    </div>
+
+                    {/* 2. Chọn List */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center h-6">
+                        <label className="text-[14px] font-black uppercase text-slate-400 tracking-wider whitespace-nowrap truncate">
+                          2. List muốn học
+                        </label>
+                        <span className="text-[14px] font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap truncate max-w-[160px]">
+                          {availableCount} từ khả dụng
+                        </span>
+                      </div>
+                      <select
+                        value={currentGoal.listMode}
+                        onChange={e => updateCurrentGoal({ listMode: e.target.value })}
+                        className="w-full h-[52px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-lg font-bold outline-none focus:border-indigo-500 shadow-sm cursor-pointer truncate"
+                      >
+                        <option value="all">Tất cả List ({currentTargetCards.length} từ)</option>
+                        {currentTargetLists.map(l => (
+                          <option key={l.id} value={l.id}>
+                            List {l.id} ({l.count} từ: {l.first} → {l.last})
+                          </option>
+                        ))}
+                        {currentTargetLists.length > 1 && (
+                          <option value="multi">⚡ Chọn nhiều List...</option>
+                        )}
+                      </select>
+                    </div>
+
+                    {/* 3. Số lượng từ */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center h-6">
+                        <label className="text-[14px] font-black uppercase text-slate-400 tracking-wider whitespace-nowrap truncate">
+                          3. Số lượng từ
+                        </label>
+                        <span className="text-[14px] font-black text-rose-500 whitespace-nowrap">
+                          {currentGoal.wordLimit ? `${Math.min(availableCount, parseInt(currentGoal.wordLimit, 10) || availableCount)}/${availableCount} từ` : `${availableCount}/${availableCount} từ`}
+                        </span>
+                      </div>
+                      <input
+                        type="number"
+                        min="1"
+                        max={availableCount || 1257}
+                        placeholder="Số từ..."
+                        value={currentGoal.wordLimit}
+                        onChange={e => updateCurrentGoal({ wordLimit: e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                        className="w-full h-[52px] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-lg font-bold outline-none focus:border-indigo-500 text-slate-900 dark:text-white shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Khi chọn nhiều Deck */}
+                  {currentGoal.deckMode === 'multi' && (
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                      <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+                        <span>Chọn các Deck muốn học gộp:</span>
+                        <button type="button" onClick={() => updateCurrentGoal({ deckMultiIds: decks.map(d => d.id) })} className="text-indigo-600 hover:underline">Chọn tất cả</button>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {decks.map(d => {
+                          const isSel = currentGoal.deckMultiIds.includes(d.id);
+                          const cnt = cards.filter(c => c.d === d.id).length;
+                          return (
+                            <button
+                              key={d.id}
+                              type="button"
+                              onClick={() => {
+                                const prev = currentGoal.deckMultiIds;
+                                const next = isSel ? (prev.length > 1 ? prev.filter(x => x !== d.id) : prev) : [...prev, d.id];
+                                updateCurrentGoal({ deckMultiIds: next });
+                              }}
+                              className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition flex items-center space-x-1 ${
+                                isSel ? 'bg-indigo-600 text-white border-transparent shadow' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                              }`}
+                            >
+                              <span>{isSel ? '✓' : '+'}</span>
+                              <span className="truncate max-w-[120px]">{d.name}</span>
+                              <span className={`text-[13px] px-1 py-0.5 rounded ${isSel ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>{cnt}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Khi chọn nhiều List */}
+                  {currentGoal.listMode === 'multi' && (
+                    <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                          Chọn các List ({currentGoal.selectedLists.length}/{currentTargetLists.length} đã chọn):
+                        </span>
+                        <div className="flex space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => updateCurrentGoal({ selectedLists: currentTargetLists.map(l => l.id) })}
+                            className="px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 text-[11px] font-bold hover:bg-indigo-100"
+                          >
+                            Chọn tất cả
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateCurrentGoal({ selectedLists: [1] })}
+                            className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-bold hover:bg-slate-200"
+                          >
+                            Chỉ List 1
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 max-h-44 overflow-y-auto p-1">
+                        {currentTargetLists.map(l => {
+                          const isSel = currentGoal.selectedLists.includes(l.id);
+                          return (
+                            <button
+                              key={l.id}
+                              type="button"
+                              onClick={() => {
+                                const prev = currentGoal.selectedLists;
+                                const next = isSel ? (prev.length > 1 ? prev.filter(x => x !== l.id) : prev) : [...prev, l.id].sort((a, b) => a - b);
+                                updateCurrentGoal({ selectedLists: next });
+                              }}
+                              className={`p-1.5 rounded-lg border text-center transition-all ${
+                                isSel
+                                  ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border-transparent shadow-sm'
+                                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-800 hover:border-indigo-400'
+                              }`}
+                            >
+                              <div className="text-[14px] font-bold">List {l.id}</div>
+                              <div className={`text-[13px] ${isSel ? 'text-white/80' : 'text-slate-400'}`}>{l.count} từ</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Dòng tóm tắt dưới cùng của ô Mục tiêu */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 text-base text-slate-500 border-t border-slate-100 dark:border-slate-800">
+                  <span className="truncate">
+                    💡 Đang chọn <b>{availableCount} từ khả dụng</b>. Sẽ bắt đầu học tối đa <b>{Math.min(availableCount, parseInt(currentGoal.wordLimit, 10) || availableCount)} từ</b>.
+                  </span>
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                    {currentGoal.listMode === 'all' ? 'Học tất cả các List' : (currentGoal.listMode === 'multi' ? `${currentGoal.selectedLists.length} List đã chọn` : `List ${currentGoal.listMode}`)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Ô 2 (BÊN PHẢI - 5 CỘT): LỊCH NGÀY THÁNG RIÊNG BIỆT */}
+              <div className="w-full lg:w-[640px] lg:shrink-0 lg:[zoom:0.75] p-5 md:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col gap-4">
+                <div className="space-y-3.5">
+                  {/* Thanh điều hướng tháng/năm */}
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <div>
+                      <h4 className="text-[32px] font-black text-slate-900 dark:text-white leading-tight">
+                        Tháng {calMonth + 1}, {calYear}
+                      </h4>
+                      <p className="text-[22px] text-slate-400 font-semibold mt-0.5">Bấm ngày để chọn mục tiêu học</p>
+                    </div>
+
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const today = new Date();
+                          setCalYear(today.getFullYear());
+                          setCalMonth(today.getMonth());
+                          setSelectedDateKey(todayKey);
+                        }}
+                        className="px-4 py-2 rounded-lg text-[24px] font-bold bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 shadow-sm transition"
+                        title="Về ngày hôm nay"
+                      >
+                        Hôm nay
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
+                          else { setCalMonth(m => m - 1); }
+                        }}
+                        className="w-12 h-12 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 flex items-center justify-center font-bold text-[28px] transition"
+                        title="Tháng trước"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
+                          else { setCalMonth(m => m + 1); }
+                        }}
+                        className="w-12 h-12 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 flex items-center justify-center font-bold text-[28px] transition"
+                        title="Tháng sau"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Lưới thứ trong tuần */}
+                  <div className="grid grid-cols-7 gap-1 text-center text-[22px] font-black text-slate-400 uppercase tracking-wider py-1 border-b border-slate-100 dark:border-slate-800">
+                    {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(d => (
+                      <div key={d}>{d}</div>
+                    ))}
+                  </div>
+
+                  {/* Lưới các ngày trong tháng */}
+                  <div className="grid grid-cols-7 gap-1 text-center">
+                    {calendarDays.map((d, idx) => {
+                      const isSelected = d.key === selectedDateKey;
+                      const isDayToday = d.key === todayKey;
+                      const hasGoal = !!dailyGoals[d.key];
+                      const hasStudied = ((statsData.days && statsData.days[d.key]) || 0) > 0;
+
+                      let cellCls = "relative py-2.5 rounded-xl text-[24px] font-bold transition flex flex-col items-center justify-center ";
+                      if (isSelected) {
+                        cellCls += "bg-gradient-to-r from-rose-500 to-indigo-600 text-white shadow-md ring-2 ring-indigo-400/40 ";
+                      } else if (isDayToday) {
+                        cellCls += "border-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-slate-800 font-black hover:bg-indigo-100 ";
+                      } else if (d.isCurrentMonth) {
+                        cellCls += "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 bg-slate-50/40 dark:bg-slate-800/30 ";
+                      } else {
+                        cellCls += "text-slate-300 dark:text-slate-600 opacity-40 hover:opacity-80 ";
+                      }
+
+                      return (
+                        <button
+                          key={d.key + '_' + idx}
+                          type="button"
+                          onClick={() => {
+                            setSelectedDateKey(d.key);
+                            if (!d.isCurrentMonth) {
+                              const [y, m] = d.key.split('-').map(Number);
+                              setCalYear(y);
+                              setCalMonth(m - 1);
+                            }
+                          }}
+                          className={cellCls}
+                        >
+                          <span className="text-[24px]">{d.dayNum}</span>
+                          <div className="flex space-x-1 mt-0.5 h-2">
+                            {hasGoal && (
+                              <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-rose-500'}`} title="Có mục tiêu đã đặt" />
+                            )}
+                            {hasStudied && (
+                              <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-yellow-300' : 'bg-emerald-500'}`} title="Có thời gian học tập" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Khung tóm tắt thông tin ngày đang chọn */}
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 space-y-2 text-[24px]">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-slate-800 dark:text-slate-100">
+                      📅 {getDayOfWeekName(selectedDateKey)}, {formatDateDisplay(selectedDateKey)}
+                    </span>
+                    {isToday && <span className="px-1.5 py-0.5 rounded text-[20px] font-black bg-rose-100 text-rose-600">Hôm nay</span>}
+                  </div>
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[22px]">
+                    <span>⏱ Đã học: <b>{fmtDur(selectedDateStudySec)}</b></span>
+                    <span>🎯 Mục tiêu: <b>{currentGoal.wordLimit || availableCount} từ</b></span>
+                  </div>
+                  <div className="flex items-center space-x-3 pt-1 text-[20px] text-slate-400 border-t border-slate-200 dark:border-slate-700/60">
+                    <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 mr-1"></span> Đã đặt mục tiêu</span>
+                    <span className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1"></span> Đã học</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* DANH SÁCH TẤT CẢ CÁC DECK */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4">
               <div>
-                <h2 className="text-2xl font-black">Học & Luyện tập</h2>
-                <p className="text-sm text-slate-400 mt-1">Bước 1: Chọn một Deck (thư mục) để bắt đầu học</p>
+                <h2 className="text-2xl font-black">Danh sách các Deck</h2>
+                <p className="text-sm text-slate-400 mt-0.5">Hoặc duyệt bài theo từng Deck riêng lẻ bên dưới</p>
               </div>
               <button onClick={() => setAdding(!adding)} className={`px-4 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold flex items-center gap-2 shadow`}>
                 <Icon name="plus" className="w-4 h-4" /><span>Thêm Deck</span>
@@ -2400,7 +2941,7 @@ void main(){
         );
       }
 
-      // BƯỚC 3: ĐANG LUYỆN TẬP (có nút Ôn từ sai ngay trong bài)
+      // BƯỚC 3: ĐANG LUYỆN TẬP
       if (mode) {
         return (
           <Shell>
@@ -2410,7 +2951,7 @@ void main(){
                 <Icon name="arrowLeft" className="w-4 h-4" /><span>Quay lại menu</span>
               </button>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold text-slate-400 hidden sm:inline">{deck.name} › {scopeLabel} ({pool.length} từ)</span>
+                <span className="text-xs font-bold text-slate-400 hidden sm:inline">{deck.name} › {scopeLabel}</span>
                 {shufBtns}
                 <button onClick={toggleWrong} className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition ${onlyWrong ? 'bg-rose-500 text-white border-rose-500 shadow' : 'bg-white dark:bg-slate-900 border-rose-200 text-rose-500 hover:bg-rose-50'}`}>
                   <Icon name="warning" className="w-4 h-4" />
@@ -2425,7 +2966,7 @@ void main(){
                   <div className="flex flex-wrap gap-2 mt-2.5">
                     {pool.slice(0, 80).map(c => (
                       <button key={c.n} onClick={() => speak(c.w, 'en-US')} className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900 text-xs text-left">
-                        <Icon name="volume" className="w-3 h-3 inline -mt-0.5 mr-1 text-rose-400" /><b>{c.w}</b> <span className="text-slate-400">· {c.s || c.v}</span>
+                        <Icon name="volume" className="w-3.5 h-3.5 inline -mt-0.5 mr-1 text-rose-400" /><b>{c.w}</b> <span className="text-slate-400">· {c.s || c.v}</span>
                       </button>
                     ))}
                     {pool.length > 80 && <span className="text-xs text-slate-400 self-center">... và {pool.length - 80} từ nữa</span>}
@@ -2454,7 +2995,7 @@ void main(){
         <Shell>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <button onClick={() => setDeckId(null)} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0">
+              <button onClick={() => { setDeckId(null); setCustomGoalPool(null); }} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0">
                 <Icon name="arrowLeft" className="w-4 h-4" /><span>Các Deck</span>
               </button>
               <h2 className="text-xl font-black truncate">{deck.name}</h2>
@@ -2476,22 +3017,108 @@ void main(){
               <button onClick={goImport} className={`px-5 py-2.5 rounded-xl ${tColor.bg} text-white text-sm font-bold`}>Nạp từ vựng</button>
             </div>
           ) : (<>
-            <div className="inline-flex bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
-              <button onClick={() => setScope('lists')} className={`px-4 py-2 rounded-lg transition ${scope === 'lists' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Theo từng List ({lists.length})</button>
-              <button onClick={() => setScope('all')} className={`px-4 py-2 rounded-lg transition ${scope === 'all' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Toàn bộ deck ({deckCards.length} từ)</button>
+            {/* KHUNG CHỌN PHẠM VI VÀ CÀI ĐẶT SỐ TỪ MỤC TIÊU TRONG DECK */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                  <button
+                    onClick={() => { setScope('lists'); setCustomGoalPool(null); }}
+                    className={`px-4 py-2 rounded-lg transition ${scope === 'lists' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+                  >
+                    Theo từng List ({lists.length})
+                  </button>
+                  <button
+                    onClick={() => { setScope('all'); setCustomGoalPool(null); }}
+                    className={`px-4 py-2 rounded-lg transition ${scope === 'all' ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+                  >
+                    Toàn bộ deck ({deckCards.length} từ)
+                  </button>
+                </div>
+
+                {/* Ô CHỌN SỐ LƯỢNG TỪ MUỐN HỌC */}
+                <div className="flex items-center space-x-2 text-xs font-bold text-slate-500">
+                  <span>Số từ muốn học:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max={scope === 'all' ? deckCards.length : (curList?.count || 55)}
+                    placeholder="Tất cả"
+                    value={scope === 'all' ? allDeckWordLimit : listWordLimit}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (scope === 'all') setAllDeckWordLimit(val);
+                      else setListWordLimit(val);
+                    }}
+                    className="w-24 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-center font-black outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                  />
+                  {(scope === 'all' ? allDeckWordLimit : listWordLimit) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (scope === 'all') setAllDeckWordLimit('');
+                        else setListWordLimit('');
+                      }}
+                      className="px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px] font-bold text-slate-400 hover:text-rose-500"
+                      title="Bỏ giới hạn (học tất cả)"
+                    >
+                      ✕ Tất cả
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* DROPDOWN CHỌN LIST KÈM NÚT CHUYỂN ĐỔI XEM DẠNG LƯỚI THẺ */}
+              {scope === 'lists' && (
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-bold text-slate-500 shrink-0">Chọn List:</span>
+                  <select
+                    value={curList ? curList.id : (lists[0]?.id || 1)}
+                    onChange={e => setListId(Number(e.target.value))}
+                    className="flex-1 min-w-[240px] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs md:text-sm font-bold outline-none focus:border-indigo-500 shadow-sm cursor-pointer"
+                  >
+                    {lists.map(l => (
+                      <option key={l.id} value={l.id}>
+                        List {l.id} ({l.count} từ: {l.first} → {l.last})
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowListGridInDeck(!showListGridInDeck)}
+                    className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-slate-50"
+                  >
+                    {showListGridInDeck ? '▴ Thu gọn lưới 23 thẻ' : '▾ Xem dạng lưới 23 thẻ'}
+                  </button>
+                </div>
+              )}
             </div>
 
-            {scope === 'lists' && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+            {/* LƯỚI 23 LIST NẾU BẬT NÚT XEM DẠNG LƯỚI */}
+            {scope === 'lists' && showListGridInDeck && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5 animate-fadeIn">
                 {lists.map(l => {
                   const sel = curList && curList.id === l.id;
                   return (
-                    <button key={l.id} onClick={() => setListId(l.id)} className={`p-3 rounded-xl border text-left transition ${sel ? `${tColor.bg} text-white border-transparent shadow-md` : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-400'}`}>
-                      <div className="flex justify-between items-center">
+                    <button
+                      key={l.id}
+                      onClick={() => setListId(l.id)}
+                      className={`p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden ${
+                        sel
+                          ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white border-transparent shadow-lg shadow-rose-500/25 ring-2 ring-rose-400/50'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-indigo-400'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-1">
                         <span className="font-black text-xs">List {l.id}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${sel ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>{l.count}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-black ${
+                          sel ? 'bg-white/25 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                        }`}>
+                          {l.count}
+                        </span>
                       </div>
-                      <p className={`text-[10px] mt-1 truncate ${sel ? 'text-white/80' : 'text-slate-400'}`}>{l.first} → {l.last}</p>
+                      <p className={`text-[10px] truncate ${sel ? 'text-white/90' : 'text-slate-400'}`}>
+                        {l.first} → {l.last}
+                      </p>
                     </button>
                   );
                 })}
@@ -2499,9 +3126,21 @@ void main(){
             )}
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm overflow-hidden">
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50">
-                <h3 className="font-black text-base">{deck.name} › {scopeLabel}{onlyWrong ? ' › Từ sai' : ''} <span className="text-slate-400 font-bold">({pool.length} từ)</span></h3>
-                <p className="text-xs text-slate-400 mt-0.5">Bước 3: Chọn phương thức học tập (trong mỗi bài đều có nút "Ôn từ sai" để học nhanh các từ làm sai)</p>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="font-black text-base">
+                    {deck.name} › {scopeLabel}{onlyWrong ? ' › Từ sai' : ''}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Bước 3: Chọn phương thức học tập (trong mỗi bài đều có nút "Ôn từ sai" để học nhanh các từ làm sai)</p>
+                </div>
+                {scope === 'custom_goal' && (
+                  <button
+                    onClick={() => { setScope('lists'); setCustomGoalPool(null); }}
+                    className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold hover:bg-rose-100"
+                  >
+                    ✕ Thoát mục tiêu hôm nay
+                  </button>
+                )}
               </div>
               {MODES.map(m => (
                 <PracticeRow key={m[0]} icon={m[1]} prefix={m[2]} title={m[3]} sub={m[4]} onClick={() => startMode(m[0])} disabled={pool.length === 0} />
@@ -2512,9 +3151,7 @@ void main(){
       );
     }
 
-    // ==========================================
-    // NỘP BÀI: THANH CỐ ĐỊNH Ở CUỐI + MÀN HÌNH KẾT QUẢ (BIỂU ĐỒ TRÒN)
-    // ==========================================
+
     function SubmitBar({ done, total, onSubmit }) {
       const pct = total ? Math.min(100, Math.round(done / total * 100)) : 0;
       return (
