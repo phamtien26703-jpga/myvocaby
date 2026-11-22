@@ -5381,7 +5381,7 @@ void main(){
 // Bộ nhớ đệm (lưu cả vào localStorage) cho bản dịch câu và thông tin từ
     const lsLoad = (k) => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
     const TRANS_CACHE = lsLoad('mv_trans_cache');
-    const WORD_CACHE = lsLoad('mv_word_cache');
+    const WORD_CACHE = lsLoad('mv_word_cache2');
     const lsSave = (k, o) => { try { const ks = Object.keys(o); if (ks.length > 4000) ks.slice(0, 1000).forEach(x => delete o[x]); localStorage.setItem(k, JSON.stringify(o)); } catch (e) {} };
 
     // Dịch cả câu Anh -> Việt (Google Translate công khai, miễn phí)
@@ -5408,26 +5408,88 @@ void main(){
       exclamation: ['excl', 'thán từ'], abbreviation: ['abbr', 'viết tắt'], numeral: ['num', 'số từ'],
       particle: ['part', 'tiểu từ'], auxiliary: ['aux', 'trợ động từ'], 'auxiliary verb': ['aux', 'trợ động từ'],
     };
+    // Google trả từ loại bằng tiếng Việt (vì dịch sang vi) -> thêm cả khóa tiếng Việt
+    Object.assign(POS_VI, {
+      'danh từ': ['n', 'danh từ'], 'động từ': ['v', 'động từ'], 'tính từ': ['adj', 'tính từ'], 'trạng từ': ['adv', 'trạng từ'],
+      'giới từ': ['prep', 'giới từ'], 'đại từ': ['pron', 'đại từ'], 'liên từ': ['conj', 'liên từ'], 'thán từ': ['interj', 'thán từ'],
+      'mạo từ': ['art', 'mạo từ'], 'từ hạn định': ['det', 'từ hạn định'], 'số từ': ['num', 'số từ'], 'viết tắt': ['abbr', 'viết tắt'],
+      'tiểu từ': ['part', 'tiểu từ'], 'trợ động từ': ['aux', 'trợ động từ'], 'cụm động từ': ['phr v', 'cụm động từ'],
+    });
+    const POS_RULES = [[/^(cụm động|phrasal)/, 'PHR V'], [/^(trợ động|aux)/, 'AUX'], [/^(danh|noun)/, 'N'], [/^(động|verb)/, 'V'], [/^(tính|adjective)/, 'ADJ'], [/^(trạng|adverb)/, 'ADV'],
+      [/^(giới|prep)/, 'PREP'], [/^(đại|pronoun)/, 'PRON'], [/^(liên|conj)/, 'CONJ'], [/^(thán|interj|exclam)/, 'INTERJ'], [/^(mạo|article)/, 'ART'], [/^(hạn định|từ hạn|determiner)/, 'DET'], [/^(số từ|numeral)/, 'NUM'], [/^(viết tắt|abbrev)/, 'ABBR']];
+    const posAbbr = (x) => {
+      const k = (x.vi || x.ab || '').normalize('NFC').toLowerCase().trim();
+      const r = POS_RULES.find(([re]) => re.test(k));
+      return r ? r[1] : (x.ab || x.vi || '').normalize('NFC').toUpperCase();
+    };
     const VOCAB_SKIP = new Set(['a', 'an', 'the', 'is', 'am', 'are', 'was', 'were', 'be', 'to', 'of', 'in', 'on', 'at', 'and', 'or', 'it', 'i', 'my', 'me', 'we', 'you', 'he', 'she', 'his', 'her', 'they', 'them', 'their', 'our', 'us', 'this', 'that', 'do', 'does', 'did', 's', 't']);
 
-    // Lấy nghĩa + từ loại của 1 từ (Google Translate, dt=bd trả về từ điển kèm từ loại)
+    // Từ loại -> viết tắt chuẩn (nhận cả tiếng Anh lẫn tiếng Việt)
+    const posKeyOf = (str) => { const k = String(str || '').normalize('NFC').toLowerCase().trim(); const r = POS_RULES.find(([re]) => re.test(k)); return r ? r[1] : k.toUpperCase().slice(0, 4); };
+    const stripTags = (t) => String(t || '').replace(/<b>(.*?)<\/b>/gi, '[$1]').replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, '&').trim();
+
+    // Lấy nghĩa + từ loại + phiên âm + định nghĩa Anh + ví dụ của 1 từ
     async function fetchWordInfo(word) {
       const key = word.toLowerCase();
       if (WORD_CACHE[key]) return WORD_CACHE[key];
+      const g = fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&dt=bd&dt=md&dt=ex&q=${encodeURIComponent(key)}`).then(r => r.json()).catch(() => null);
+      const d = fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(key)}`).then(r => (r.ok ? r.json() : null)).catch(() => null);
+      const [data, dict] = await Promise.all([g, d]);
+      if (!data && !dict) return { p: [], m: '', ipa: '', defs: {}, exs: [], err: true };
+      const info = { p: [], m: '', ipa: '', defs: {}, exs: [] };
       try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&dt=bd&q=${encodeURIComponent(key)}`;
-        const data = await (await fetch(url)).json();
-        const main = data && data[0] && data[0][0] ? data[0][0][0] : '';
-        const entries = Array.isArray(data && data[1]) ? data[1] : [];
-        const info = { p: [], m: main || '' };
-        entries.slice(0, 3).forEach(e => {
-          const pv = POS_VI[(e[0] || '').toLowerCase()] || [e[0] || '', e[0] || ''];
-          info.p.push({ ab: pv[0], vi: pv[1], m: (e[1] || []).slice(0, 3).join(', ') });
-        });
-        if (!info.p.length && info.m) info.p.push({ ab: '', vi: 'từ / tên riêng', m: info.m });
-        if (info.p.length) { WORD_CACHE[key] = info; lsSave('mv_word_cache', WORD_CACHE); }
-        return info;
-      } catch (e) { return { p: [], m: '', err: true }; }
+        if (data) {
+          info.m = data[0] && data[0][0] ? data[0][0][0] || '' : '';
+          (Array.isArray(data[1]) ? data[1] : []).slice(0, 3).forEach(e => {
+            const pv = POS_VI[String(e[0] || '').normalize('NFC').toLowerCase()] || [posKeyOf(e[0]), e[0] || ''];
+            info.p.push({ ab: pv[0], vi: pv[1], m: (e[1] || []).slice(0, 3).join(', ') });
+          });
+          (Array.isArray(data[12]) ? data[12] : []).forEach(e => {
+            const ab = posKeyOf(e[0]), first = e[1] && e[1][0];
+            if (first && first[0] && !info.defs[ab]) info.defs[ab] = first[0];
+          });
+          const ex = data[13] && data[13][0];
+          if (Array.isArray(ex)) ex.forEach(x => { const t = stripTags(x && x[0]); if (t) info.exs.push(t); });
+        }
+        if (Array.isArray(dict) && dict[0]) {
+          const ent = dict[0];
+          info.ipa = ent.phonetic || ((ent.phonetics || []).find(x => x.text) || {}).text || '';
+          (ent.meanings || []).forEach(mn => {
+            const ab = posKeyOf(mn.partOfSpeech);
+            (mn.definitions || []).forEach(df => {
+              if (df.definition && !info.defs[ab]) info.defs[ab] = df.definition;
+              if (df.example) info.exs.push(df.example);
+            });
+          });
+        }
+      } catch (e) {}
+      if (info.ipa && !/^\//.test(info.ipa)) info.ipa = '/' + info.ipa.replace(/^\[|\]$/g, '') + '/';
+      info.exs = [...new Set(info.exs)].slice(0, 6);
+      if (!info.p.length && info.m) info.p.push({ ab: '', vi: '', m: info.m });
+      if (info.p.length || info.ipa) { WORD_CACHE[key] = info; lsSave('mv_word_cache2', WORD_CACHE); }
+      return info;
+    }
+
+    // Sắp xếp từ loại theo ngữ cảnh câu (đoán từ loại hợp lý nhất đứng đầu)
+    function ctxOrder(sent, w, entries) {
+      if (!entries || entries.length < 2) return entries || [];
+      const lw = w.toLowerCase();
+      const toks = (sent.match(/[A-Za-z]+(?:'[A-Za-z]+)*/g) || []).map(t => t.toLowerCase());
+      const i = toks.findIndex(t => t.replace(/'s$/, '') === lw);
+      if (i < 0) return entries;
+      const prev = toks[i - 1] || '', prev2 = toks[i - 2] || '';
+      const DET = ['the', 'a', 'an', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those', 'some', 'any', 'many', 'much', 'every', 'each', 'no'];
+      const BE = ['is', 'are', 'was', 'were', 'be', 'am', 'been', 'very', 'so', 'too', 'more', 'most', 'really', 'quite'];
+      const VERBPRE = ['will', 'would', 'can', 'could', 'should', 'must', 'may', 'might', 'shall', "don't", "doesn't", "didn't", 'not', 'i', 'we', 'you', 'they', 'people', 'children', 'men', 'women', "let's"];
+      let want = null;
+      if (/ly$/.test(lw)) want = 'ADV';
+      else if (prev === 'to') want = ['go', 'goes', 'went', 'going', 'come', 'came', 'back', 'walk', 'walks', 'walked'].includes(prev2) ? 'N' : 'V';
+      else if (VERBPRE.includes(prev)) want = 'V';
+      else if (DET.includes(prev)) want = 'N';
+      else if (BE.includes(prev)) want = 'ADJ';
+      if (!want) return entries;
+      const hit = entries.filter(e => posKeyOf(e.vi || e.ab) === want);
+      return hit.length ? [...hit, ...entries.filter(e => !hit.includes(e))] : entries;
     }
     // Tách các từ khác nhau trong câu
     function sentenceWords(sent, all) {
@@ -5456,7 +5518,109 @@ void main(){
       }, [sent, enabled, all]);
       return list;
     }
-    function DictationPlayer({ lesson, sentences, done, onDone, onAttempt, onTimes, onSaveWord, onBack, tColor }) {
+    // Thẻ từ vựng lật được (mặt trước: từ + phiên âm; mặt sau: nghĩa, định nghĩa, ví dụ)
+    function VocabFlipCard({ item, sent, trans, acc, num, checked, onCheck, onPick }) {
+      const [flipped, setFlipped] = useState(false);
+      const [exTr, setExTr] = useState({});
+      const order = useMemo(() => ctxOrder(sent, item.w, item.p), [sent, item.w, item.p]);
+      const main = order[0];
+      const ab = main ? posAbbr(main) : '';
+      const defs = item.defs || {};
+      const def = defs[ab] || Object.values(defs)[0] || '';
+      const others = order.slice(1);
+      const examples = useMemo(() => {
+        const list = [{ en: sent, vi: null, own: true }];
+        (item.exs || []).filter(e => e.replace(/[\[\]]/g, '').trim().toLowerCase() !== sent.trim().toLowerCase()).slice(0, 2).forEach(e => list.push({ en: e, vi: null }));
+        return list;
+      }, [sent, item.exs]);
+      useEffect(() => {
+        if (!flipped) return;
+        let dead = false;
+        examples.forEach(ex => {
+          if (ex.own) return;
+          const clean = ex.en.replace(/[\[\]]/g, '');
+          fetchTranslation(clean).then(r => { if (!dead) setExTr(o => ({ ...o, [clean]: r })); });
+        });
+        return () => { dead = true; };
+      }, [flipped, examples]);
+      const hi = (str) => {
+        const hasMark = /\[[^\]]+\]/.test(str);
+        const cls = 'text-indigo-600 dark:text-indigo-400 underline font-extrabold';
+        if (hasMark) return str.split(/(\[[^\]]+\])/g).map((part, i) => (part.startsWith('[') && part.endsWith(']') ? <strong key={i} className={cls}>{part.slice(1, -1)}</strong> : part));
+        const re = new RegExp('\\b(' + item.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*)', 'gi');
+        return str.split(re).map((part, i) => (i % 2 ? <strong key={i} className={cls}>{part}</strong> : part));
+      };
+      const toggle = () => { setFlipped(f => !f); if (!flipped) onPick(item.w, main ? main.m.split(', ')[0] : item.m); };
+      const stop = (e) => e.stopPropagation();
+      const chk = <input type="checkbox" checked={!!checked} onClick={stop} onChange={onCheck} title="Chọn từ này để lưu vào deck" className="w-4 h-4 accent-pink-500 cursor-pointer shrink-0" />;
+      const spk = (lang) => (e) => { e.stopPropagation(); speak(item.w, lang); };
+      const meaning = main ? main.m : (item.m || (item.loading ? '' : item.err ? 'Lỗi mạng, thử lại sau' : 'Chưa có nghĩa'));
+      const box = 'rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm cursor-pointer hover:border-indigo-400 transition ';
+      const uk = 'px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 text-xs font-bold hover:bg-indigo-100';
+      const us = 'px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 text-xs font-bold hover:bg-rose-100';
+
+      if (!flipped) return (
+        <div onClick={toggle} className={box + 'p-3.5 min-h-[130px] flex flex-col justify-between'} title="Bấm để lật thẻ">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">{chk}<span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">[#{num}]{ab ? ` (${ab})` : ''}</span></div>
+            <div className="flex gap-1.5">
+              <button onClick={spk('en-GB')} className={uk}>🔊 UK</button>
+              <button onClick={spk('en-US')} className={us}>🔊 US</button>
+            </div>
+          </div>
+          <div className="text-center py-2">
+            <h4 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{item.w}{ab && <span className="ml-1.5 text-sm font-normal text-slate-400">({ab.toLowerCase()})</span>}</h4>
+            {item.ipa ? <p className="text-sm font-mono text-indigo-500 font-bold mt-1">{item.ipa}</p> : (item.loading && <p className="text-xs text-slate-400 animate-pulse mt-1">Đang tra...</p>)}
+          </div>
+          <p className="text-center text-[11px] font-semibold text-slate-400">↻ Nhấn vào thẻ để xem Định nghĩa & Ví dụ</p>
+        </div>
+      );
+      return (
+        <div onClick={toggle} className={box + 'p-4 space-y-3 sm:col-span-2 text-left'}>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              {chk}<span className="text-xs font-mono font-bold text-slate-400">[#{num}]</span>
+              <h4 className="text-2xl font-black text-slate-900 dark:text-white">{item.w}</h4>
+              {ab && <span className="text-sm font-mono text-slate-500">({ab.toLowerCase()})</span>}
+              {item.ipa && <span className="text-sm font-mono text-indigo-500 font-bold">{item.ipa}</span>}
+            </div>
+            <div className="flex gap-1.5">
+              <button onClick={spk('en-GB')} className={uk}>🔊 UK</button>
+              <button onClick={spk('en-US')} className={us}>🔊 US</button>
+            </div>
+          </div>
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Định nghĩa:</span>
+            <p className="text-lg md:text-xl font-black text-indigo-600 dark:text-indigo-400 leading-snug">{meaning}</p>
+            {def && <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 italic">={def}</p>}
+            {others.length > 0 && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 pt-1">
+                {others.map((x, j) => <span key={j} className="mr-3"><span className="font-bold text-slate-400">{posAbbr(x)}:</span> {x.m}</span>)}
+              </p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Ví dụ (bấm 🔊 để nghe câu):</span>
+            {examples.map((ex, i) => {
+              const clean = ex.en.replace(/[\[\]]/g, '');
+              const vi = ex.own ? trans : exTr[clean];
+              return (
+                <div key={i} className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 text-xs md:text-sm leading-snug flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <p className="text-slate-900 dark:text-slate-100 font-medium">• {hi(ex.en)}{ex.own && <span className="ml-1.5 text-[10px] font-bold text-slate-400">(câu trong bài)</span>}</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-xs">(=Dịch: {vi || <span className="animate-pulse">đang dịch...</span>})</p>
+                  </div>
+                  <button onClick={(e) => { stop(e); speak(clean, acc); }} title="Nghe câu ví dụ này" className="px-2 py-1 rounded-lg bg-indigo-100/80 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 text-[11px] font-bold flex items-center gap-1 shrink-0"><Icon name="volume" className="w-3.5 h-3.5" /><span>Nghe</span></button>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-center text-[11px] font-semibold text-slate-400">↻ Nhấn vào thẻ để lật lại</p>
+        </div>
+      );
+    }
+
+    function DictationPlayer({ lesson, sentences, done, onDone, onAttempt, onTimes, onSaveWords, decks = [], onBack, tColor }) {
       const [rawIdx, setIdx] = useNavState('dict_idx_' + lesson.id, () => { const f = sentences.findIndex((_, i) => !done[i]); return f < 0 ? 0 : f; });
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, sentences.length - 1));
       const [val, setVal] = useNavState('dict_val_' + lesson.id, '');
@@ -5485,6 +5649,32 @@ void main(){
       const [showText, setShowText] = useState(false);
       const jump = (i) => { setVal(''); setRes(null); setHint(false); setPw(''); setPm(''); setIdx(i); };
       const vocab = useSentenceVocab(sent, !!res, showAllVocab);
+      // Chọn từ + lưu vào deck (có sẵn hoặc tạo mới)
+      const [sel, setSel] = useState({});
+      const [deckSel, setDeckSel] = useNavState('dict_deck_sel', 'dlisten');
+      const [newDeck, setNewDeck] = useState('');
+      const [saving, setSaving] = useState(false);
+      useEffect(() => { setSel({}); }, [sent]);
+      const deckOpts = decks.some(d => d.id === 'dlisten') ? decks : [{ id: 'dlisten', name: 'Từ mới khi nghe' }, ...decks];
+      const saveTarget = () => (deckSel === '__new' ? { newName: newDeck } : { id: deckSel });
+      const selCount = vocab.filter(v => sel[v.w.toLowerCase()]).length;
+      const allSel = vocab.length > 0 && selCount === vocab.length;
+      const buildItem = (it) => {
+        const main = ctxOrder(sent, it.w, it.p)[0];
+        const ab = main ? posAbbr(main) : '';
+        const defs = it.defs || {};
+        const clean = (t) => t.replace(/[\[\]]/g, '').trim().toLowerCase();
+        return { w: it.w, p: ab.toLowerCase(), i: it.ipa || '', s: main ? main.m : (it.m || ''), e: defs[ab] || Object.values(defs)[0] || '', extra: (it.exs || []).find(e => clean(e) !== sent.trim().toLowerCase()) || '' };
+      };
+      const saveBatch = async (list) => {
+        const ready = list.filter(v => !v.loading);
+        if (!ready.length || saving) return;
+        setSaving(true);
+        try {
+          const did = await onSaveWords(saveTarget(), ready.map(buildItem), sent, trans);
+          if (did && deckSel === '__new') { setDeckSel(did); setNewDeck(''); }
+        } finally { setSaving(false); }
+      };
       useEffect(() => {
         if (!(res && sent)) { setTrans(''); return; }
         if (lesson.translations && lesson.translations[idx]) { setTrans(lesson.translations[idx]); return; }
@@ -5651,36 +5841,29 @@ void main(){
                 {/* 2. TỪ VỰNG TRONG CÂU: PHÂN LOẠI TỪ & NGHĨA */}
                 <div className="space-y-2 pt-2 border-t border-slate-200/70 dark:border-slate-700">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">📖 Từ vựng trong câu ({vocab.length})</span>
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">📖 Từ vựng trong câu ({vocab.length}) · bấm thẻ để lật</span>
                     <label className="text-[11px] font-bold text-slate-400 flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={showAllVocab} onChange={e => setShowAllVocab(e.target.checked)} />Hiện cả từ cơ bản</label>
                   </div>
+                  <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+                    <span className="text-[11px] font-bold text-slate-400">💾 Lưu vào deck:</span>
+                    <select value={deckSel} onChange={e => setDeckSel(e.target.value)} className="px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold max-w-[190px]">
+                      {deckOpts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      <option value="__new">➕ Tạo deck mới...</option>
+                    </select>
+                    {deckSel === '__new' && <input value={newDeck} onChange={e => setNewDeck(e.target.value)} placeholder="Tên deck mới" className="w-36 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold outline-none focus:border-indigo-500" />}
+                    <button onClick={() => { const o = {}; if (!allSel) vocab.forEach(v => { o[v.w.toLowerCase()] = true; }); setSel(o); }} className={`${pill} border border-slate-200 dark:border-slate-700 text-slate-500`}>{allSel ? '☐ Bỏ chọn' : '☑ Chọn tất cả'}</button>
+                    <button onClick={() => saveBatch(vocab.filter(v => sel[v.w.toLowerCase()]))} disabled={!selCount || saving} className={`${pill} ${tColor.bg} text-white disabled:opacity-40`}>Lưu {selCount} từ đã chọn</button>
+                    <button onClick={() => saveBatch(vocab)} disabled={!vocab.length || saving || vocab.some(v => v.loading)} className={`${pill} border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40`}>{vocab.some(v => v.loading) ? 'Đang tra từ...' : `Lưu toàn bộ (${vocab.length})`}</button>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {vocab.map(item => {
-                      const first = item.p[0];
-                      return (
-                        <div key={item.w} onClick={() => { setPw(item.w); setPm(first ? first.m.split(', ')[0] : item.m); }}
-                          className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-2 cursor-pointer hover:border-indigo-400 transition shadow-sm" title="Bấm để chọn lưu vào Deck">
-                          <div className="min-w-0 space-y-1">
-                            <span className="font-black text-slate-900 dark:text-white text-sm">{item.w}</span>
-                            {item.loading && <p className="text-xs text-slate-400 animate-pulse">Đang tra...</p>}
-                            {!item.loading && !item.p.length && <p className="text-xs text-slate-400">{item.m || (item.err ? 'Lỗi mạng' : 'Chưa có nghĩa')}</p>}
-                            {item.p.map((x, j) => (
-                              <p key={j} className="text-xs text-slate-600 dark:text-slate-300 leading-snug">
-                                {x.vi && <span className="text-[10px] font-bold px-1.5 py-0.5 mr-1.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600">{x.ab ? x.ab + ' · ' : ''}{x.vi}</span>}{x.m}
-                              </p>
-                            ))}
-                          </div>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); speak(item.w, acc); }} className="text-indigo-500 p-1 hover:scale-110 transition shrink-0"><Icon name="volume" className="w-4 h-4" /></button>
-                        </div>
-                      );
-                    })}
+                    {vocab.map((item, i) => <VocabFlipCard key={item.w} item={item} sent={sent} trans={trans} acc={acc} num={i + 1} checked={!!sel[item.w.toLowerCase()]} onCheck={() => setSel(o => ({ ...o, [item.w.toLowerCase()]: !o[item.w.toLowerCase()] }))} onPick={(w, m) => { setPw(w); setPm(m); }} />)}
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/70 dark:border-slate-700">
                   <span className="text-[11px] font-bold text-slate-400">📌 Lưu từ mới (bấm từ trong đáp án để chọn):</span>
                   <input value={pw} onChange={e => setPw(e.target.value)} placeholder="Từ tiếng Anh" className="w-32 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-sm font-bold outline-none focus:border-indigo-500" />
                   <input value={pm} onChange={e => setPm(e.target.value)} placeholder="Nghĩa tiếng Việt" className="flex-1 min-w-[120px] px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-sm outline-none focus:border-indigo-500" />
-                  <button onClick={() => { if (pw.trim()) { onSaveWord(pw, pm, sent); setPw(''); setPm(''); } }} disabled={!pw.trim()} className={`${pill} ${tColor.bg} text-white disabled:opacity-40`}>Lưu vào Deck</button>
+                  <button onClick={async () => { if (pw.trim()) { const did = await onSaveWords(saveTarget(), [{ w: pw, s: pm, p: '', i: '', e: '', extra: '' }], sent, trans); if (did) { if (deckSel === '__new') { setDeckSel(did); setNewDeck(''); } setPw(''); setPm(''); } } }} disabled={!pw.trim()} className={`${pill} ${tColor.bg} text-white disabled:opacity-40`}>Lưu vào deck đã chọn</button>
                 </div>
               </div>
             )}
@@ -5793,19 +5976,51 @@ void main(){
         setSt(s => { const p = { ...(s.prog || {}) }; delete p[l.id]; return { ...s, lessons: (s.lessons || []).filter(x => x.id !== l.id), prog: p }; });
       };
 
-      const saveWord = (w, s, sentence) => {
-        const word = w.trim(); if (!word) return;
-        const did = 'dlisten';
+      // Lưu 1 hoặc nhiều từ vào deck có sẵn hoặc deck mới (target: {id} | {newName})
+      const saveWords = async (target, items, sentence, trans) => {
+        if (!items || !items.length) return null;
+        let did, dname;
+        if (target && target.newName !== undefined) {
+          const name = (target.newName || '').trim();
+          if (!name) { showToast('Hãy đặt tên cho deck mới.'); return null; }
+          const same = decks.find(d => (d.name || '').toLowerCase() === name.toLowerCase());
+          did = same ? same.id : 'dl_' + uid(); dname = same ? same.name : name;
+          if (!same) setDecks(ds => [...ds, { id: did, name }]);
+        } else {
+          did = (target && target.id) || 'dlisten';
+          const dk0 = decks.find(d => d.id === did);
+          dname = dk0 ? dk0.name : 'Từ mới khi nghe';
+          if (!dk0) setDecks(ds => [...ds, { id: did, name: dname }]);
+        }
         const exist = cards.filter(c => c.d === did);
-        if (exist.some(c => c.w.toLowerCase() === word.toLowerCase())) { showToast('Từ "' + word + '" đã có trong Deck "Từ mới khi nghe".'); return; }
-        if (!decks.find(d => d.id === did)) setDecks(ds => [...ds, { id: did, name: 'Từ mới khi nghe' }]);
-        const n = Math.max(0, ...cards.map(c => c.n)) + 1;
-        const num = exist.length ? Math.max(...exist.map(numOf)) + 1 : 1;
-        const re = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-        const ex = sentence.replace(re, m => '[' + m + ']');
-        const mean = s.trim();
-        setCards(cs => [...cs, { n, num, l: Math.floor((num - 1) / 55) + 1, d: did, w: word, p: '', i: '', s: mean, v: mean, e: '', x: [ex] }]);
-        showToast('Đã lưu "' + word + '" vào Deck "Từ mới khi nghe".');
+        const have = new Set(exist.map(c => c.w.toLowerCase()));
+        let n = Math.max(0, ...cards.map(c => c.n)) + 1;
+        let num = exist.length ? Math.max(...exist.map(numOf)) + 1 : 1;
+        const fresh = [];
+        let skipped = 0;
+        for (const it of items) {
+          const word = (it.w || '').trim();
+          if (!word) continue;
+          if (have.has(word.toLowerCase())) { skipped++; continue; }
+          have.add(word.toLowerCase());
+          const re = new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+          const x = [];
+          if (sentence) x.push(sentence.replace(re, m => '[' + m + ']') + (trans ? ` (=Dịch: ${trans})` : ''));
+          if (it.extra) {
+            const clean = it.extra.replace(/[\[\]]/g, '');
+            const vi = await fetchTranslation(clean);
+            const marked = /\[[^\]]+\]/.test(it.extra) ? it.extra : it.extra.replace(re, m => '[' + m + ']');
+            x.push(marked + (vi && !/^Không thể/.test(vi) ? ` (=Dịch: ${vi})` : ''));
+          }
+          const mean = (it.s || '').trim();
+          fresh.push({ n: n++, num, l: Math.floor((num - 1) / 55) + 1, d: did, w: word, p: it.p || '', i: it.i || '', s: mean, v: mean, e: it.e || '', x });
+          num++;
+        }
+        if (fresh.length) setCards(cs => [...cs, ...fresh]);
+        showToast(fresh.length
+          ? `Đã lưu ${fresh.length} từ vào Deck "${dname}"${skipped ? ` (bỏ qua ${skipped} từ đã có)` : ''}.`
+          : `Các từ này đã có trong Deck "${dname}".`);
+        return did;
       };
 
       const deckListInfo = listMeta(cards.filter(c => c.d === (dk || (decks[0] || {}).id)));
@@ -5820,7 +6035,7 @@ void main(){
 
       if (lesson) {
         return <DictationPlayer key={lesson.id} lesson={lesson} sentences={sentsOf(lesson)} done={prog[lesson.id] || {}}
-          onDone={(i) => markDone(lesson.id, i)} onAttempt={onAttempt} onTimes={(i, seg) => setTimes(lesson.id, i, seg)} onSaveWord={saveWord}
+          onDone={(i) => markDone(lesson.id, i)} onAttempt={onAttempt} onTimes={(i, seg) => setTimes(lesson.id, i, seg)} onSaveWords={saveWords} decks={decks}
           onBack={() => setOpenId(null)} tColor={tColor} />;
       }
 
