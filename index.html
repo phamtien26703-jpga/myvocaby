@@ -5378,7 +5378,84 @@ void main(){
       }
       return { dur, times, auto: true };
     }
+// Bộ nhớ đệm (lưu cả vào localStorage) cho bản dịch câu và thông tin từ
+    const lsLoad = (k) => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
+    const TRANS_CACHE = lsLoad('mv_trans_cache');
+    const WORD_CACHE = lsLoad('mv_word_cache');
+    const lsSave = (k, o) => { try { const ks = Object.keys(o); if (ks.length > 4000) ks.slice(0, 1000).forEach(x => delete o[x]); localStorage.setItem(k, JSON.stringify(o)); } catch (e) {} };
 
+    // Dịch cả câu Anh -> Việt (Google Translate công khai, miễn phí)
+    async function fetchTranslation(text) {
+      const clean = text.trim();
+      if (!clean) return '';
+      if (TRANS_CACHE[clean]) return TRANS_CACHE[clean];
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=${encodeURIComponent(clean)}`;
+        const data = await (await fetch(url)).json();
+        const translated = data && data[0] ? data[0].map(i => i[0]).join('') : '';
+        if (translated) { TRANS_CACHE[clean] = translated; lsSave('mv_trans_cache', TRANS_CACHE); }
+        return translated || 'Chưa có bản dịch';
+      } catch (err) {
+        return 'Không thể tải bản dịch tự động (kiểm tra kết nối mạng).';
+      }
+    }
+
+    // Từ loại: tiếng Anh -> viết tắt + tiếng Việt
+    const POS_VI = {
+      noun: ['n', 'danh từ'], verb: ['v', 'động từ'], adjective: ['adj', 'tính từ'], adverb: ['adv', 'trạng từ'],
+      preposition: ['prep', 'giới từ'], pronoun: ['pron', 'đại từ'], conjunction: ['conj', 'liên từ'],
+      interjection: ['interj', 'thán từ'], determiner: ['det', 'từ hạn định'], article: ['art', 'mạo từ'],
+      exclamation: ['excl', 'thán từ'], abbreviation: ['abbr', 'viết tắt'], numeral: ['num', 'số từ'],
+      particle: ['part', 'tiểu từ'], auxiliary: ['aux', 'trợ động từ'], 'auxiliary verb': ['aux', 'trợ động từ'],
+    };
+    const VOCAB_SKIP = new Set(['a', 'an', 'the', 'is', 'am', 'are', 'was', 'were', 'be', 'to', 'of', 'in', 'on', 'at', 'and', 'or', 'it', 'i', 'my', 'me', 'we', 'you', 'he', 'she', 'his', 'her', 'they', 'them', 'their', 'our', 'us', 'this', 'that', 'do', 'does', 'did', 's', 't']);
+
+    // Lấy nghĩa + từ loại của 1 từ (Google Translate, dt=bd trả về từ điển kèm từ loại)
+    async function fetchWordInfo(word) {
+      const key = word.toLowerCase();
+      if (WORD_CACHE[key]) return WORD_CACHE[key];
+      try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&dt=bd&q=${encodeURIComponent(key)}`;
+        const data = await (await fetch(url)).json();
+        const main = data && data[0] && data[0][0] ? data[0][0][0] : '';
+        const entries = Array.isArray(data && data[1]) ? data[1] : [];
+        const info = { p: [], m: main || '' };
+        entries.slice(0, 3).forEach(e => {
+          const pv = POS_VI[(e[0] || '').toLowerCase()] || [e[0] || '', e[0] || ''];
+          info.p.push({ ab: pv[0], vi: pv[1], m: (e[1] || []).slice(0, 3).join(', ') });
+        });
+        if (!info.p.length && info.m) info.p.push({ ab: '', vi: 'từ / tên riêng', m: info.m });
+        if (info.p.length) { WORD_CACHE[key] = info; lsSave('mv_word_cache', WORD_CACHE); }
+        return info;
+      } catch (e) { return { p: [], m: '', err: true }; }
+    }
+    // Tách các từ khác nhau trong câu
+    function sentenceWords(sent, all) {
+      const seen = new Set(), out = [];
+      (sent.match(/[A-Za-z]+(?:'[A-Za-z]+)*/g) || []).forEach(raw => {
+        const w = raw.replace(/'s$/i, '');
+        const k = w.toLowerCase();
+        if (!k || seen.has(k) || (!all && VOCAB_SKIP.has(k))) return;
+        seen.add(k); out.push(w);
+      });
+      return out;
+    }
+    // Hook: danh sách từ vựng của câu (tải dần từng từ)
+    function useSentenceVocab(sent, enabled, all) {
+      const [list, setList] = useState([]);
+      useEffect(() => {
+        if (!enabled || !sent) { setList([]); return; }
+        let dead = false;
+        const words = sentenceWords(sent, all);
+        setList(words.map(w => ({ w, loading: !WORD_CACHE[w.toLowerCase()], ...(WORD_CACHE[w.toLowerCase()] || { p: [], m: '' }) })));
+        words.forEach(w => fetchWordInfo(w).then(info => {
+          if (dead) return;
+          setList(l => l.map(x => x.w === w ? { w, loading: false, ...info } : x));
+        }));
+        return () => { dead = true; };
+      }, [sent, enabled, all]);
+      return list;
+    }
     function DictationPlayer({ lesson, sentences, done, onDone, onAttempt, onTimes, onSaveWord, onBack, tColor }) {
       const [rawIdx, setIdx] = useNavState('dict_idx_' + lesson.id, () => { const f = sentences.findIndex((_, i) => !done[i]); return f < 0 ? 0 : f; });
       const idx = Math.min(Math.max(0, rawIdx), Math.max(0, sentences.length - 1));
@@ -5391,6 +5468,7 @@ void main(){
       const [edit, setEdit] = useState(false);
       const [pw, setPw] = useState('');
       const [pm, setPm] = useState('');
+
       const inputRef = useRef(null);
       const audioRef = useRef(null);
       const stopRef = useRef(null);
@@ -5398,6 +5476,23 @@ void main(){
       const target = useMemo(() => wordsOf(sent), [sent]);
       const times = lesson.times || [];
       const seg = times[idx];
+
+      // Nghĩa tiếng Việt của câu + từ vựng (chỉ hiện sau khi kiểm tra / hiện đáp án)
+      const [trans, setTrans] = useState('');
+      const [loadingTrans, setLoadingTrans] = useState(false);
+      const [showAllVocab, setShowAllVocab] = useState(false);
+      const [showList, setShowList] = useNavState('dict_list_' + lesson.id, false);
+      const [showText, setShowText] = useState(false);
+      const jump = (i) => { setVal(''); setRes(null); setHint(false); setPw(''); setPm(''); setIdx(i); };
+      const vocab = useSentenceVocab(sent, !!res, showAllVocab);
+      useEffect(() => {
+        if (!(res && sent)) { setTrans(''); return; }
+        if (lesson.translations && lesson.translations[idx]) { setTrans(lesson.translations[idx]); return; }
+        let dead = false;
+        setLoadingTrans(true);
+        fetchTranslation(sent).then(r => { if (!dead) { setTrans(r); setLoadingTrans(false); } });
+        return () => { dead = true; };
+      }, [!!res, idx, sent]);
 
       useEffect(() => {
         if (!lesson.hasAudio) return;
@@ -5452,9 +5547,35 @@ void main(){
               <button onClick={onBack} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0"><Icon name="arrowLeft" className="w-4 h-4" /><span>Các bài nghe</span></button>
               <h2 className="text-lg font-black truncate">{lesson.title}</h2>
             </div>
-            <span className="text-xs font-bold text-slate-400">Đúng {cnt} / {total} câu</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowList(v => !v)} className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${showList ? tColor.bg + ' text-white border-transparent' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}`}>☰ Chọn câu</button>
+              <span className="text-xs font-bold text-slate-400">Đúng {cnt} / {total} câu</span>
+            </div>
           </div>
           <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div className={`h-full ${tColor.bg} transition-all`} style={{ width: Math.round(cnt * 100 / Math.max(1, total)) + '%' }} /></div>
+
+          {showList && (
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400">Danh sách câu nghe ({total})</span>
+                <label className="text-[11px] font-bold text-slate-400 flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={showText} onChange={e => setShowText(e.target.checked)} />Hiện nội dung câu</label>
+              </div>
+              <div className={showText ? 'space-y-1.5 max-h-80 overflow-y-auto pr-1' : 'grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2 max-h-80 overflow-y-auto pr-1'}>
+                {sentences.map((st, i) => {
+                  const cur = i === idx, ok = !!done[i];
+                  const cls = cur ? `${tColor.bg} text-white border-transparent shadow` : ok ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 border-emerald-200 dark:border-emerald-900' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400';
+                  return showText ? (
+                    <button key={i} onClick={() => { jump(i); setShowList(false); }} className={`w-full text-left px-3 py-2 rounded-xl border text-sm font-semibold flex gap-2 ${cls}`}>
+                      <span className="font-black shrink-0">{i + 1}.{ok && !cur ? ' ✓' : ''}</span><span className="truncate">{st}</span>
+                    </button>
+                  ) : (
+                    <button key={i} onClick={() => { jump(i); setShowList(false); }} title={'Nghe câu ' + (i + 1)} className={`py-2 rounded-xl border text-sm font-black ${cls}`}>{i + 1}{ok && !cur ? ' ✓' : ''}</button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400">Bấm vào số câu để nghe ngay. Xanh lá = đã làm đúng, màu đậm = câu đang nghe.</p>
+            </div>
+          )}
 
           <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-400">
@@ -5519,6 +5640,42 @@ void main(){
                   {sent.split(/\s+/).map((w, i) => (
                     <button key={i} type="button" onClick={() => setPw(w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, ''))} title="Bấm để chọn từ này lưu vào từ vựng" className="mr-1.5 text-slate-900 dark:text-white hover:text-indigo-600 hover:underline">{w}</button>
                   ))}</p>
+{/* 1. NGHĨA TIẾNG VIỆT CỦA CÂU */}
+                <div className="p-3.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400"><span>🇻🇳</span><span>Nghĩa tiếng Việt của câu:</span></div>
+                  <p className="text-base font-bold text-slate-800 dark:text-slate-100">
+                    {loadingTrans ? <span className="text-xs text-slate-400 animate-pulse font-normal">Đang dịch...</span> : (trans || 'Chưa có bản dịch')}
+                  </p>
+                </div>
+
+                {/* 2. TỪ VỰNG TRONG CÂU: PHÂN LOẠI TỪ & NGHĨA */}
+                <div className="space-y-2 pt-2 border-t border-slate-200/70 dark:border-slate-700">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">📖 Từ vựng trong câu ({vocab.length})</span>
+                    <label className="text-[11px] font-bold text-slate-400 flex items-center gap-1 cursor-pointer"><input type="checkbox" checked={showAllVocab} onChange={e => setShowAllVocab(e.target.checked)} />Hiện cả từ cơ bản</label>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {vocab.map(item => {
+                      const first = item.p[0];
+                      return (
+                        <div key={item.w} onClick={() => { setPw(item.w); setPm(first ? first.m.split(', ')[0] : item.m); }}
+                          className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-2 cursor-pointer hover:border-indigo-400 transition shadow-sm" title="Bấm để chọn lưu vào Deck">
+                          <div className="min-w-0 space-y-1">
+                            <span className="font-black text-slate-900 dark:text-white text-sm">{item.w}</span>
+                            {item.loading && <p className="text-xs text-slate-400 animate-pulse">Đang tra...</p>}
+                            {!item.loading && !item.p.length && <p className="text-xs text-slate-400">{item.m || (item.err ? 'Lỗi mạng' : 'Chưa có nghĩa')}</p>}
+                            {item.p.map((x, j) => (
+                              <p key={j} className="text-xs text-slate-600 dark:text-slate-300 leading-snug">
+                                {x.vi && <span className="text-[10px] font-bold px-1.5 py-0.5 mr-1.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-600">{x.ab ? x.ab + ' · ' : ''}{x.vi}</span>}{x.m}
+                              </p>
+                            ))}
+                          </div>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); speak(item.w, acc); }} className="text-indigo-500 p-1 hover:scale-110 transition shrink-0"><Icon name="volume" className="w-4 h-4" /></button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/70 dark:border-slate-700">
                   <span className="text-[11px] font-bold text-slate-400">📌 Lưu từ mới (bấm từ trong đáp án để chọn):</span>
                   <input value={pw} onChange={e => setPw(e.target.value)} placeholder="Từ tiếng Anh" className="w-32 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent text-sm font-bold outline-none focus:border-indigo-500" />
