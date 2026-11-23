@@ -3,6 +3,31 @@
  * - Chủ đề nào có mảng quiz không rỗng sẽ tự động thay thế câu hỏi mặc định.
  * - Khi cào thêm chủ đề mới, chỉ cần dán mảng câu hỏi vào mục quiz: [...] tương ứng.
  * ============================================================================ */
+/* ============================================================================
+ * Danh sách Video bài giảng YouTube theo ID bài học Study4
+ * - Đã gắn sẵn video 9618 (Danh từ - phần 2).
+ * - Các bài khác: khi xem trên Study4, chỉ cần thay mã 11 ký tự tương ứng.
+ * ============================================================================ */
+window.GRAMMAR_VIDEOS = {
+  6473: "",            // 1. Từ loại và cụm từ - Lý thuyết
+  6474: "",            // 2. Mệnh đề và câu - Lý thuyết
+  6475: "",            // 3. Danh từ - Lý thuyết (phần 1)
+  9618: "5h5q1cByCdI", // 3. Danh từ - Lý thuyết (phần 2)
+  6477: "",            // 4. Đại từ - Lý thuyết
+  6479: "",            // 5. Tính từ - Lý thuyết
+  6480: "",            // 6. Thì - Lý thuyết
+  6481: "",            // 7. Thể (bị động) - Lý thuyết
+  7400: "",            // 8. Động từ nguyên mẫu - Lý thuyết
+  6485: "",            // 9. Động từ nguyên mẫu có 'to' - Lý thuyết
+  6486: "",            // 10. Danh động từ - Lý thuyết
+  6487: "",            // 11. Phân từ và cấu trúc phân từ - Lý thuyết
+  6488: "",            // 12. Trạng từ - Lý thuyết
+  6489: "",            // 13. Giới từ - Lý thuyết
+  6492: "",            // 14. Liên từ - Lý thuyết
+  6494: "",            // 15. Mệnh đề quan hệ - Lý thuyết
+  6495: "",            // 16. Câu điều kiện - Lý thuyết
+  6497: ""             // 18. Cấu trúc so sánh - Lý thuyết
+};
 window.GRAMMAR_DATA = [
   {
     "id": "g1",
