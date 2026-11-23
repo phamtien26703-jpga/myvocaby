@@ -149,6 +149,7 @@
 <script src="listening-data.js"></script>
 <script src="grammar-data.js"></script>
   <script src="vocab.js"></script>
+<script src="reading-data.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
@@ -1370,7 +1371,7 @@ void main(){
         try { return JSON.parse(Store.get('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
       const [studyDeckId, setStudyDeckId] = useNavState('study_deckId', null);
-      const VALID_TABS = ['study', 'grammar', 'listen', 'summary', 'library', 'import'];
+      const VALID_TABS = ['study', 'grammar', 'listen', 'reading', 'summary', 'library', 'import'];
       const [rawTab, setTab] = useNavState('tab', 'study');
       const tab = VALID_TABS.includes(rawTab) ? rawTab : 'study';
       const tabRef = useRef(tab); tabRef.current = tab;
@@ -1483,6 +1484,7 @@ void main(){
         { id: 'study', icon: 'practice', label: 'Học & Luyện tập' },
         { id: 'grammar', icon: 'book', label: 'Ngữ pháp TOEIC', short: 'Ngữ pháp' },
         { id: 'listen', icon: 'volume', label: 'Luyện nghe', short: 'Nghe' },
+        { id: 'reading', icon: 'book', label: 'Luyện đọc Reading', short: 'Reading' },
         { id: 'summary', icon: 'chart', label: 'Tổng kết', short: 'Tổng kết' },
         { id: 'library', icon: 'folder', label: 'Thư viện (Tra cứu)' },
         { id: 'import', icon: 'upload', label: 'Nạp từ vựng' }
@@ -1553,6 +1555,9 @@ void main(){
             </div>
             <div className={tab === 'listen' ? '' : 'hidden'}>
               <ListeningSection tColor={tColor} decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} showToast={showToast} />
+            </div>
+            <div className={tab === 'reading' ? '' : 'hidden'}>
+              <ReadingSection tColor={tColor} />
             </div>
             <div className={tab === 'summary' ? '' : 'hidden'}>
               <SummarySection active={tab === 'summary'} decks={decks} cards={cards} wrongIds={wrongIds} tColor={tColor} userName={userName}
@@ -6425,7 +6430,114 @@ function GrammarSection({ tColor }) {
         onLogin={() => { Auth.setGuest(false); Store.setUser(null); setAuth({ user: null, guest: false }); }} />;
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
+    function ReadingSection({ tColor }) {
+  const data = window.READING_DATA || [];
+  const [activeId, setActiveId] = useState(null);
+  const currentTest = data.find(item => item.id === activeId);
+
+  // Màn hình 1: Hiển thị danh sách các bài test Reading
+  if (!currentTest) {
+    return (
+      <Shell>
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black">Kho IELTS Reading</h2>
+          <p className="text-sm text-slate-400">Chọn bài đọc để bắt đầu luyện tập:</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          {data.length === 0 ? (
+            <p className="p-6 text-sm text-slate-400 col-span-3 text-center">
+              Chưa có dữ liệu bài đọc. Hãy kiểm tra lại file reading-data.js.
+            </p>
+          ) : (
+            data.map(item => (
+              <div 
+                key={item.id} 
+                onClick={() => setActiveId(item.id)} 
+                className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 cursor-pointer shadow-sm transition hover:shadow-md"
+              >
+                <h3 className="font-bold text-base text-slate-900 dark:text-white leading-snug">{item.title}</h3>
+                <div className="mt-3 flex items-center justify-between text-xs text-slate-400 font-semibold">
+                  <span>{item.total_questions || (item.questions ? item.questions.length : 0)} câu hỏi</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">Làm bài →</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Shell>
+    );
+  }
+
+  // Màn hình 2: Giao diện làm bài (chia đôi: Bài đọc bên trái, Câu hỏi bên phải)
+  return (
+    <Shell className="max-w-6xl">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <button 
+          onClick={() => setActiveId(null)} 
+          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+        >
+          ← Quay lại danh sách bài đọc
+        </button>
+        <a 
+          href={currentTest.source_url} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+        >
+          Mở trang gốc DOL ↗
+        </a>
+      </div>
+
+      <h2 className="text-2xl font-black mb-4 text-slate-900 dark:text-white">{currentTest.title}</h2>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Cột trái: Đoạn văn (Passage) */}
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[72vh] overflow-y-auto leading-relaxed whitespace-pre-line text-sm text-slate-700 dark:text-slate-200 shadow-sm">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Reading Passage</h3>
+          {currentTest.passage}
+        </div>
+
+        {/* Cột phải: Câu hỏi & Đáp án */}
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[72vh] overflow-y-auto space-y-4 shadow-sm">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Questions</h3>
+          
+          {(!currentTest.questions || currentTest.questions.length === 0) ? (
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs text-slate-500">
+              Bài này chưa có câu hỏi được đồng bộ nội bộ. Bạn có thể xem đề & đáp án tại:{" "}
+              <a href={currentTest.source_url} target="_blank" rel="noreferrer" className="text-indigo-500 underline font-bold">
+                Link nguồn bài thi
+              </a>
+            </div>
+          ) : (
+            currentTest.questions.map((q, idx) => (
+              <div key={idx} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-xs space-y-2">
+                <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                  Câu {idx + 1}: {q.question}
+                </p>
+                {q.options && q.options.length > 0 && (
+                  <div className="space-y-1 pl-2">
+                    {q.options.map((opt, i) => (
+                      <p key={i} className="text-slate-600 dark:text-slate-300">• {opt}</p>
+                    ))}
+                  </div>
+                )}
+                {q.answer && (
+                  <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-700">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Đáp án: {q.answer}</span>
+                    {q.explanation && (
+                      <p className="text-slate-400 mt-1 italic leading-normal">Giải thích: {q.explanation}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </Shell>
+  );
+}
+const root = ReactDOM.createRoot(document.getElementById('root'));
    root.render(<Root />);
     // Bật lại hiệu ứng chuyển màu sau khi khung hình đầu tiên đã vẽ xong
     requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('app-ready')));
