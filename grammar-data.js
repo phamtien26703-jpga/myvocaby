@@ -1,34 +1,3 @@
-/* ============================================================================
- * Dữ liệu bài tập Ngữ pháp TOEIC cho MyVocab (đặt cùng thư mục với index.html)
- * - Chủ đề nào có mảng quiz không rỗng sẽ tự động thay thế câu hỏi mặc định.
- * - Khi cào thêm chủ đề mới, chỉ cần dán mảng câu hỏi vào mục quiz: [...] tương ứng.
- * ============================================================================ */
-/* ============================================================================
- * Danh sách Video bài giảng YouTube theo ID bài học Study4
- * - Đã gắn sẵn video 9618 (Danh từ - phần 2).
- * - Các bài khác: khi xem trên Study4, chỉ cần thay mã 11 ký tự tương ứng.
- * ============================================================================ */
-window.GRAMMAR_VIDEOS = {
-  6473: "",            // 1. Từ loại và cụm từ - Lý thuyết
-  6474: "",            // 2. Mệnh đề và câu - Lý thuyết
-  6475: "",            // 3. Danh từ - Lý thuyết (phần 1)
-  9618: "5h5q1cByCdI", // 3. Danh từ - Lý thuyết (phần 2)
-  6477: "",            // 4. Đại từ - Lý thuyết
-  6479: "",            // 5. Tính từ - Lý thuyết
-  6480: "",            // 6. Thì - Lý thuyết
-  6481: "",            // 7. Thể (bị động) - Lý thuyết
-  7400: "",            // 8. Động từ nguyên mẫu - Lý thuyết
-  6485: "",            // 9. Động từ nguyên mẫu có 'to' - Lý thuyết
-  6486: "",            // 10. Danh động từ - Lý thuyết
-  6487: "",            // 11. Phân từ và cấu trúc phân từ - Lý thuyết
-  6488: "",            // 12. Trạng từ - Lý thuyết
-  6489: "",            // 13. Giới từ - Lý thuyết
-  6492: "",            // 14. Liên từ - Lý thuyết
-  6494: "",            // 15. Mệnh đề quan hệ - Lý thuyết
-  6495: "",            // 16. Câu điều kiện - Lý thuyết
-  6497: ""             // 18. Cấu trúc so sánh - Lý thuyết
-};
-
 window.NOUNS_DATA = {
   "metadata": {
     "id": "chuong-1-danh-tu",
@@ -4050,6 +4019,2470 @@ window.NOUNS_DATA = {
           "prompt": "[The paper yesterday] reported the assassination of the Prime Minister.",
           "isExample": false,
           "answer": "Yesterday's paper reported the assassination of the Prime Minister."
+        }
+      ]
+    }
+  ]
+};
+
+window.PRONOUNS_DATA = {
+  "metadata": {
+    "id": "chuong-2-dai-tu",
+    "chapter": 2,
+    "topicEn": "THE PARTS OF SPEECH",
+    "topicVi": "TỪ LOẠI",
+    "titleEn": "PRONOUNS",
+    "titleVi": "ĐẠI TỪ",
+    "sourceFile": "đại từ.pdf",
+    "totalTheorySections": 2,
+    "totalExercises": 15
+  },
+  "theory": [
+    {
+      "id": "pron-sec-1",
+      "code": "I",
+      "titleVi": "Định nghĩa",
+      "titleEn": "Definition",
+      "descriptionVi": "Đại từ (pronouns) là từ dùng để thay thế cho danh từ.",
+      "categories": [
+        {
+          "labelVi": "1. Đại từ nhân xưng",
+          "examples": [
+            "I / me",
+            "you",
+            "he / him",
+            "she / her",
+            "it",
+            "we / us",
+            "they / them"
+          ]
+        },
+        {
+          "labelVi": "2. Đại từ sở hữu",
+          "examples": [
+            "mine",
+            "yours",
+            "his",
+            "hers",
+            "ours",
+            "theirs"
+          ]
+        },
+        {
+          "labelVi": "3. Đại từ phản thân & nhấn mạnh",
+          "examples": [
+            "myself",
+            "yourself",
+            "himself",
+            "herself",
+            "itself",
+            "ourselves",
+            "yourselves",
+            "themselves"
+          ]
+        },
+        {
+          "labelVi": "4. Đại từ chỉ định",
+          "examples": [
+            "this",
+            "that",
+            "these",
+            "those"
+          ]
+        },
+        {
+          "labelVi": "5. Đại từ nghi vấn",
+          "examples": [
+            "who",
+            "whom",
+            "whose",
+            "what",
+            "which"
+          ]
+        },
+        {
+          "labelVi": "6. Đại từ quan hệ (liên hệ)",
+          "examples": [
+            "who",
+            "whom",
+            "whose",
+            "which",
+            "that"
+          ]
+        },
+        {
+          "labelVi": "7. Đại từ phân bổ",
+          "examples": [
+            "all",
+            "most",
+            "each",
+            "both",
+            "either",
+            "neither"
+          ]
+        },
+        {
+          "labelVi": "8. Đại từ bất định",
+          "examples": [
+            "some",
+            "any",
+            "none",
+            "something",
+            "anything",
+            "nothing",
+            "everything",
+            "someone",
+            "anyone",
+            "no one",
+            "everyone"
+          ]
+        },
+        {
+          "labelVi": "9. Đại từ hỗ tương",
+          "examples": [
+            "each other",
+            "one another"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pron-sec-2",
+      "code": "II",
+      "titleVi": "Các loại đại từ",
+      "titleEn": "Kinds of pronouns",
+      "descriptionVi": "Trong tiếng Anh, đại từ được chia thành 9 loại chính dưới đây:",
+      "subsections": [
+        {
+          "id": "pron-sub-1",
+          "code": "1",
+          "titleVi": "Đại từ nhân xưng",
+          "titleEn": "Personal pronouns",
+          "descriptionVi": "Đại từ nhân xưng là các đại từ được dùng để chỉ người, vật, nhóm người hoặc vật cụ thể.",
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "Hình thức",
+              "titleEn": "Form",
+              "descriptionVi": "Đại từ nhân xưng có hình thức chủ ngữ (subject) và tân ngữ (object) hoàn toàn khác nhau (trừ you và it).",
+              "table": {
+                "headers": [
+                  "Ngôi (Person)",
+                  "Số ít — Chủ ngữ",
+                  "Số ít — Tân ngữ",
+                  "Nghĩa (Số ít)",
+                  "Số nhiều — Chủ ngữ",
+                  "Số nhiều — Tân ngữ",
+                  "Nghĩa (Số nhiều)"
+                ],
+                "rows": [
+                  [
+                    "Ngôi 1",
+                    "I",
+                    "me",
+                    "tôi",
+                    "We",
+                    "us",
+                    "chúng tôi / chúng ta"
+                  ],
+                  [
+                    "Ngôi 2",
+                    "You",
+                    "you",
+                    "anh, chị, bạn",
+                    "You",
+                    "you",
+                    "các anh, chị, các bạn"
+                  ],
+                  [
+                    "Ngôi 3",
+                    "He / She / It",
+                    "him / her / it",
+                    "anh ấy / chị ấy / nó",
+                    "They",
+                    "them",
+                    "họ / chúng"
+                  ]
+                ]
+              }
+            },
+            {
+              "code": "b",
+              "titleVi": "Cách dùng",
+              "titleEn": "Use",
+              "descriptionVi": "Đại từ nhân xưng được dùng để thay thế cho danh từ khi không cần thiết sử dụng hoặc lặp lại chính xác danh từ hoặc cụm danh từ đó.",
+              "examples": [
+                {
+                  "en": "John's broken his leg. He'll be in hospital for a few days. [NOT John will be in hospital ...]",
+                  "vi": "John bị gãy chân. Anh ấy sẽ phải nằm viện vài ngày."
+                },
+                {
+                  "en": "Tell Mary I miss her. [NOT Tell Mary I miss Mary.]",
+                  "vi": "Hãy nói với Mary rằng tôi nhớ cô ấy."
+                }
+              ],
+              "subRules": [
+                {
+                  "ruleVi": "I, he, she, we, they được dùng làm chủ ngữ của động từ (subjects of a verb) hoặc bổ ngữ của động từ to be (complements of the verb to be):",
+                  "examples": [
+                    {
+                      "en": "I like you.",
+                      "vi": "Tôi thích anh."
+                    },
+                    {
+                      "en": "He wants to leave now.",
+                      "vi": "Anh ấy muốn đi ngay bây giờ."
+                    },
+                    {
+                      "en": "They have lived here for twenty years.",
+                      "vi": "Họ đã sống ở đây 20 năm rồi."
+                    },
+                    {
+                      "en": "It was I who chose this colour.",
+                      "vi": "Chính tôi là người chọn màu này."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "me, him, her, us, them được dùng làm tân ngữ trực tiếp/gián tiếp của động từ (direct/indirect objects of a verb) hoặc tân ngữ của giới từ (objects of a preposition):",
+                  "examples": [
+                    {
+                      "en": "They called us on the telephone.",
+                      "vi": "Họ đã gọi điện cho chúng tôi."
+                    },
+                    {
+                      "en": "Bill's uncle sent him a birthday present.",
+                      "vi": "Chú của Bill gửi cho anh ấy một món quà sinh nhật."
+                    },
+                    {
+                      "en": "He said he couldn't live without her.",
+                      "vi": "Anh ấy nói anh ấy không thể sống thiếu cô ta."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "you và it có thể được dùng làm chủ ngữ hoặc tân ngữ vì chúng có hình thức chủ ngữ và tân ngữ giống nhau:",
+                  "examples": [
+                    {
+                      "en": "Did you see the snake? ~ Yes, I saw it and it saw me, too.",
+                      "vi": "Anh có nhìn thấy con rắn không? ~ Có, tôi thấy nó và nó cũng thấy tôi."
+                    },
+                    {
+                      "en": "Did it frighten you?",
+                      "vi": "Nó có làm anh sợ không?"
+                    }
+                  ]
+                }
+              ],
+              "notes": [
+                {
+                  "ruleVi": "Hình thức tân ngữ thường được dùng khi đại từ đứng một mình hoặc sau be.",
+                  "examples": [
+                    {
+                      "en": "Who spilt coffee all over the table? ~ Me. / Sorry, it was me.",
+                      "vi": "Ai làm đổ cà phê ra khắp bàn vậy? ~ Tôi. / Xin lỗi, chính tôi."
+                    },
+                    {
+                      "en": "But: Who spilt coffee all over the table? ~ I did.",
+                      "vi": "Nhưng: Ai làm đổ cà phê ra khắp bàn vậy? ~ Tôi đã làm."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Một số cách dùng đặc biệt của đại từ IT:",
+                  "examples": [
+                    {
+                      "en": "I've bought a new watch. It's very modern. / The baby next door kept me awake. It cried all night.",
+                      "vi": "1. Thay cho vật, động vật, trẻ sơ sinh/trẻ nhỏ khi giới tính chưa rõ hoặc không quan trọng."
+                    },
+                    {
+                      "en": "Who was it on the telephone? It was Vicky. She just called to say she's arrived home safely.",
+                      "vi": "2. Chỉ người khi muốn nhận diện đó là ai; sau khi xác định thì dùng he hoặc she."
+                    },
+                    {
+                      "en": "When the factory closes, it will mean 500 people losing their jobs. [it = the closing of the factory]",
+                      "vi": "3. Chỉ một hành động, tình huống hoặc ý tưởng đã được nói đến trước đó."
+                    },
+                    {
+                      "en": "It is raining heavily. / It is half past three now. / It is six miles to the nearest hospital from here.",
+                      "vi": "4. Làm chủ ngữ giả (formal subject) nói về thời tiết, thời gian, nhiệt độ, khoảng cách, số đo."
+                    },
+                    {
+                      "en": "It was impossible to get a taxi at that time. / It's a pity that you can't come with us.",
+                      "vi": "5. Làm chủ ngữ giả khi chủ ngữ thật là động từ nguyên mẫu (to V), danh động từ (V-ing) hoặc mệnh đề that ở cuối câu."
+                    },
+                    {
+                      "en": "I found it difficult to explain this to him. / I find it strange that she doesn't want to travel.",
+                      "vi": "6. Làm tân ngữ giả (formal object) theo sau bởi tính từ/danh từ + to V / V-ing / mệnh đề that."
+                    },
+                    {
+                      "en": "It was Jim who lent us the money. / It was three weeks later that he heard the news.",
+                      "vi": "7. Dùng trong câu chẻ (It is/was ... who/that ...) để nhấn mạnh một thành phần trong câu."
+                    },
+                    {
+                      "en": "Hang it all, we can't wait all day for him. / If the teacher sees you doing that, you'll catch it.",
+                      "vi": "8. Dùng trong một số thành ngữ thân mật."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-2",
+          "code": "2",
+          "titleVi": "Đại từ sở hữu",
+          "titleEn": "Possessive pronouns",
+          "descriptionVi": "Đại từ sở hữu (possessive pronouns) là hình thức sở hữu của đại từ nhân xưng, được dùng để chỉ vật gì thuộc về người nào đó.",
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "Hình thức",
+              "titleEn": "Form",
+              "descriptionVi": "Lưu ý: It không có dạng đại từ sở hữu (its là tính từ sở hữu của it).",
+              "table": {
+                "headers": [
+                  "Đại từ nhân xưng (Personal Pronouns)",
+                  "Đại từ sở hữu (Possessive Pronouns)",
+                  "Nghĩa"
+                ],
+                "rows": [
+                  [
+                    "I (tôi)",
+                    "mine",
+                    "cái của tôi"
+                  ],
+                  [
+                    "You (anh, chị, bạn)",
+                    "yours",
+                    "cái của anh / bạn"
+                  ],
+                  [
+                    "He (anh ấy)",
+                    "his",
+                    "cái của anh ấy"
+                  ],
+                  [
+                    "She (chị ấy)",
+                    "hers",
+                    "cái của chị ấy"
+                  ],
+                  [
+                    "We (chúng tôi)",
+                    "ours",
+                    "cái của chúng tôi"
+                  ],
+                  [
+                    "They (họ, chúng nó)",
+                    "theirs",
+                    "cái của họ / chúng"
+                  ]
+                ]
+              }
+            },
+            {
+              "code": "b",
+              "titleVi": "Cách dùng",
+              "titleEn": "Use",
+              "subRules": [
+                {
+                  "ruleVi": "Đại từ sở hữu được dùng không có danh từ theo sau. Nó thay thế cho tính từ sở hữu + danh từ (possessive adjective + noun):",
+                  "examples": [
+                    {
+                      "en": "Can I borrow your keys? I can't find mine. [mine = my keys]",
+                      "vi": "Tôi có thể mượn chìa khóa của bạn được không? Tôi không tìm thấy chìa khóa của tôi."
+                    },
+                    {
+                      "en": "You are using my pen. Where's yours? [yours = your pen]",
+                      "vi": "Bạn đang dùng viết của tôi đấy. Viết của bạn đâu?"
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Đại từ sở hữu cũng có thể đứng đầu câu làm chủ ngữ trước danh từ mà nó thay thế:",
+                  "examples": [
+                    {
+                      "en": "Ours is the third house on the left. [ours = our house]",
+                      "vi": "Nhà của chúng tôi là ngôi nhà thứ ba bên tay trái."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Không dùng mạo từ (a, an, the) trước đại từ sở hữu:",
+                  "examples": [
+                    {
+                      "en": "That coat is mine. [NOT That coat is the mine.]",
+                      "vi": "Áo khoác đó của tôi."
+                    }
+                  ]
+                }
+              ],
+              "notes": [
+                {
+                  "ruleVi": "Sở hữu kép (double possessive): Đại từ sở hữu đứng sau giới từ of.",
+                  "examples": [
+                    {
+                      "en": "Tom is a friend of mine. [= one of my friends]",
+                      "vi": "Tom là một người bạn của tôi."
+                    },
+                    {
+                      "en": "I borrowed some magazines of yours. [= some of your magazines]",
+                      "vi": "Tôi đã mượn một số tạp chí của bạn."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-3",
+          "code": "3",
+          "titleVi": "Đại từ phản thân & đại từ nhấn mạnh",
+          "titleEn": "Reflexive and Emphatic Pronouns",
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "Hình thức",
+              "titleEn": "Form",
+              "descriptionVi": "Đại từ phản thân và đại từ nhấn mạnh có chung hình thức:",
+              "table": {
+                "headers": [
+                  "Đại từ nhân xưng",
+                  "Đại từ phản thân / nhấn mạnh",
+                  "Nghĩa"
+                ],
+                "rows": [
+                  [
+                    "I",
+                    "myself",
+                    "tự / chính tôi"
+                  ],
+                  [
+                    "You (số ít)",
+                    "yourself",
+                    "tự / chính bạn"
+                  ],
+                  [
+                    "He",
+                    "himself",
+                    "tự / chính anh ấy"
+                  ],
+                  [
+                    "She",
+                    "herself",
+                    "tự / chính chị ấy"
+                  ],
+                  [
+                    "It",
+                    "itself",
+                    "tự / chính nó"
+                  ],
+                  [
+                    "We",
+                    "ourselves",
+                    "tự / chính chúng tôi"
+                  ],
+                  [
+                    "You (số nhiều)",
+                    "yourselves",
+                    "tự / chính các bạn"
+                  ],
+                  [
+                    "They",
+                    "themselves",
+                    "tự / chính họ"
+                  ]
+                ]
+              }
+            },
+            {
+              "code": "b",
+              "titleVi": "Cách dùng",
+              "titleEn": "Use",
+              "subRules": [
+                {
+                  "ruleVi": "Đại từ phản thân (Reflexive pronouns): Dùng làm tân ngữ (object) của động từ khi chủ ngữ và tân ngữ của động từ là cùng một đối tượng (hoặc chỉ thành phần khác trong câu):",
+                  "examples": [
+                    {
+                      "en": "When the policeman came in, the gunman shot him. [him = the policeman]",
+                      "vi": "Khi viên cảnh sát xông vào, tên cướp đã bắn anh ta."
+                    },
+                    {
+                      "en": "When the policeman came in, the gunman shot himself. [himself = the gunman]",
+                      "vi": "Khi viên cảnh sát xông vào, tên cướp đã dùng súng tự sát."
+                    },
+                    {
+                      "en": "Jane looks at herself in the mirror.",
+                      "vi": "Jane soi mình trong gương."
+                    },
+                    {
+                      "en": "We've locked ourselves out.",
+                      "vi": "Chúng tôi tự khóa cửa nhốt mình bên ngoài."
+                    },
+                    {
+                      "en": "This refrigerator defrosts itself.",
+                      "vi": "Tủ lạnh này tự rã đông."
+                    },
+                    {
+                      "en": "His letters are all about himself.",
+                      "vi": "Thư của anh ta toàn viết về bản thân anh ta."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Đại từ nhấn mạnh (Emphatic pronouns): Đứng ngay sau danh từ hoặc đại từ được nhấn mạnh với nghĩa 'chính người đó / vật đó' (hoặc đứng cuối câu khi nhấn mạnh chủ ngữ):",
+                  "examples": [
+                    {
+                      "en": "My sister herself designed all these clothes.",
+                      "vi": "Chính chị tôi đã thiết kế những bộ quần áo này."
+                    },
+                    {
+                      "en": "I spoke to the president himself.",
+                      "vi": "Tôi đã nói chuyện với chính ngài chủ tịch."
+                    },
+                    {
+                      "en": "The film itself wasn't very good but I like the music.",
+                      "vi": "Bản thân bộ phim thì không hay lắm, nhưng tôi thích phần nhạc trong phim."
+                    },
+                    {
+                      "en": "I saw him do it myself. [= I myself saw him do it.]",
+                      "vi": "Chính mắt tôi thấy anh ta làm điều đó."
+                    }
+                  ]
+                }
+              ],
+              "notes": [
+                {
+                  "ruleVi": "Đại từ phản thân có thể được dùng sau giới từ, nhưng sau giới từ chỉ vị trí (preposition of place) chúng ta thường dùng đại từ nhân xưng (me, you, him, her,...).",
+                  "examples": [
+                    {
+                      "en": "I'm annoyed with myself.",
+                      "vi": "Tôi giận chính bản thân mình."
+                    },
+                    {
+                      "en": "But: Mike didn't have any money with him.",
+                      "vi": "Mike không đem theo tiền."
+                    },
+                    {
+                      "en": "In the mirror I saw a lorry behind me.",
+                      "vi": "Nhìn vào gương tôi thấy một chiếc xe tải phía sau."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "code": "c",
+              "titleVi": "Cấu trúc By + oneself = alone, without help",
+              "titleEn": "By + oneself",
+              "descriptionVi": "By myself / yourself / himself ... có nghĩa là 'một mình' (alone) hoặc 'không có ai giúp đỡ' (without help).",
+              "examples": [
+                {
+                  "en": "He likes living by himself. [= He likes living alone.]",
+                  "vi": "Ông ta thích sống một mình."
+                },
+                {
+                  "en": "Do you need help? ~ No, thanks. I can do it by myself. [= I can do it without help.]",
+                  "vi": "Bạn có cần giúp không? ~ Không, cám ơn. Tôi có thể làm một mình."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-4",
+          "code": "4",
+          "titleVi": "Đại từ chỉ định",
+          "titleEn": "Demonstrative pronouns",
+          "descriptionVi": "Đại từ chỉ định gồm các từ: this, that, these, those. Được dùng để chỉ định vật, sự vật hoặc để giới thiệu hay nhận dạng người nào đó.",
+          "examples": [
+            {
+              "en": "These are my candies. Those are yours.",
+              "vi": "Đây là kẹo của tôi. Kia là kẹo của bạn."
+            },
+            {
+              "en": "This costs more than that.",
+              "vi": "Cái này đắt hơn cái kia."
+            }
+          ],
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "This / These (cái này, người này / những cái này, những người này)",
+              "titleEn": "This / These",
+              "descriptionVi": "Được dùng để chỉ vật ở khoảng cách gần (với người nói), giới thiệu người nào đó, hoặc chỉ tình huống/sự việc đang hoặc sắp xảy ra.",
+              "examples": [
+                {
+                  "en": "In all your paintings I like this best. / These are my shoes.",
+                  "vi": "Chỉ vật ở khoảng cách gần."
+                },
+                {
+                  "en": "This is my brother. / These are the Smiths.",
+                  "vi": "Giới thiệu người nào đó."
+                },
+                {
+                  "en": "Listen to this. You'll like it.",
+                  "vi": "Chỉ sự việc sắp được nói tới."
+                }
+              ]
+            },
+            {
+              "code": "b",
+              "titleVi": "That / Those (cái kia, người kia / những cái kia, những người kia)",
+              "titleEn": "That / Those",
+              "descriptionVi": "Được dùng để chỉ vật ở khoảng cách xa, xác định/nhận dạng người nào đó, hoặc nói về điều gì đó trong quá khứ / vừa mới được đề cập.",
+              "examples": [
+                {
+                  "en": "That's Jerry's car, over there. / Put those down — they're dirty.",
+                  "vi": "Chỉ vật ở khoảng cách xa."
+                },
+                {
+                  "en": "Is that Ruth? ~ No, that's Rita.",
+                  "vi": "Xác định hoặc nhận dạng người nào đó."
+                },
+                {
+                  "en": "That was nice. What was it? [NOT This was nice...]",
+                  "vi": "Nói về điều gì đó trong quá khứ hoặc vừa mới xảy ra."
+                }
+              ],
+              "notes": [
+                {
+                  "ruleVi": "Các lưu ý mở rộng khi dùng This / That / These / Those:",
+                  "examples": [
+                    {
+                      "en": "Hello. This is Elisabeth. Is that Ruth?",
+                      "vi": "Trên điện thoại: dùng 'this' để xưng tên mình và 'that' (hoặc 'this') để hỏi người đầu dây bên kia."
+                    },
+                    {
+                      "en": "He hung his daughter's portrait beside that of his wife's. [that = portrait]",
+                      "vi": "Thay cho danh từ, cụm từ hoặc mệnh đề đã được nói đến trước đó."
+                    },
+                    {
+                      "en": "Those who couldn't walk were carried on stretchers. / Those injured in the accident were taken to hospital.",
+                      "vi": "'Those' có thể theo sau bởi mệnh đề quan hệ xác định hoặc ngữ phân từ để chỉ người (= The people who...)."
+                    },
+                    {
+                      "en": "I don't like these sweaters. I prefer those (ones) over there.",
+                      "vi": "Có thể đứng một mình hoặc có 'one / ones' theo sau khi có sự so sánh hoặc lựa chọn."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-5",
+          "code": "5",
+          "titleVi": "Đại từ nghi vấn",
+          "titleEn": "Interrogative pronouns",
+          "descriptionVi": "Đại từ nghi vấn là các đại từ dùng để hỏi như: who, whom, whose, what, which. Thường đứng đầu câu và đi trước động từ.",
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "Who (ai)",
+              "titleEn": "Who",
+              "descriptionVi": "Dùng cho người, làm chủ ngữ hoặc tân ngữ của động từ/giới từ. Khi who làm tân ngữ của giới từ, giới từ luôn đặt cuối câu.",
+              "examples": [
+                {
+                  "en": "Who keeps the keys? / Who is the man in grey coat?",
+                  "vi": "Làm chủ ngữ của động từ."
+                },
+                {
+                  "en": "Who did you see at church?",
+                  "vi": "Làm tân ngữ của động từ see."
+                },
+                {
+                  "en": "Who did you go with? [NOT With who did you go?]",
+                  "vi": "Làm tân ngữ của giới từ (giới từ đặt cuối câu)."
+                }
+              ]
+            },
+            {
+              "code": "b",
+              "titleVi": "Whom (ai)",
+              "titleEn": "Whom",
+              "descriptionVi": "Dùng cho người, làm tân ngữ cho động từ hoặc giới từ (thường dùng trong văn viết hoặc lối nói trịnh trọng). Giới từ có thể đặt trước whom hoặc cuối câu.",
+              "examples": [
+                {
+                  "en": "Whom did they invite?",
+                  "vi": "Họ đã mời những ai?"
+                },
+                {
+                  "en": "To whom were you speaking at that time? / Whom were you speaking to at that time?",
+                  "vi": "Lúc đó bạn đang nói chuyện với ai vậy?"
+                }
+              ]
+            },
+            {
+              "code": "c",
+              "titleVi": "Whose (của ai)",
+              "titleEn": "Whose",
+              "descriptionVi": "Dùng để hỏi về sự sở hữu, làm chủ ngữ của động từ.",
+              "examples": [
+                {
+                  "en": "Whose is that dog?",
+                  "vi": "Con chó kia của ai?"
+                },
+                {
+                  "en": "What about these jackets? Whose are they?",
+                  "vi": "Còn những chiếc áo vét này thì sao? Chúng của ai vậy?"
+                }
+              ]
+            },
+            {
+              "code": "d",
+              "titleVi": "What (cái gì)",
+              "titleEn": "What",
+              "descriptionVi": "Dùng để hỏi về sự vật hoặc sự việc (làm chủ ngữ hoặc tân ngữ), và dùng trong nhiều cấu trúc hỏi thông dụng:",
+              "examples": [
+                {
+                  "en": "What caused the explosion? / What did you say?",
+                  "vi": "Hỏi thông tin / sự việc."
+                },
+                {
+                  "en": "What is he? / What does he do? [= What is his profession?]",
+                  "vi": "Hỏi nghề nghiệp."
+                },
+                {
+                  "en": "What is this tool for? [= Why / for what purpose?]",
+                  "vi": "What ... for?: hỏi mục đích hoặc lý do."
+                },
+                {
+                  "en": "What was the exam like? ~ It was very difficult. / What is David like? ~ He's very sociable.",
+                  "vi": "What + be ... like?: hỏi về tính cách, tính chất hoặc nét đặc trưng."
+                },
+                {
+                  "en": "What does she look like? ~ She's tall and glamorous.",
+                  "vi": "What ... look like?: hỏi về ngoại hình, vẻ bề ngoài."
+                },
+                {
+                  "en": "What about going for a walk? [= How about going for a walk?]",
+                  "vi": "What about + V-ing?: đưa ra gợi ý hoặc đề nghị."
+                }
+              ]
+            },
+            {
+              "code": "e",
+              "titleVi": "Which (nào, cái nào, người nào)",
+              "titleEn": "Which",
+              "descriptionVi": "Dùng cho cả người và vật để chỉ sự lựa chọn trong một số lượng có giới hạn đã được biết.",
+              "formula": "Which of + determiner (the, my, these, those...) + plural noun | Which of + pronoun",
+              "examples": [
+                {
+                  "en": "Which is quicker, the bus or the train?",
+                  "vi": "Xe nào nhanh hơn, xe buýt hay xe lửa?"
+                },
+                {
+                  "en": "Which of these photos would you like?",
+                  "vi": "Bạn thích tấm nào trong số ảnh này?"
+                },
+                {
+                  "en": "Which of us is going to do the washing-up?",
+                  "vi": "Ai trong chúng ta sẽ rửa bát?"
+                }
+              ],
+              "notes": [
+                {
+                  "ruleVi": "Phân biệt Which và What khi hỏi về sự lựa chọn:",
+                  "examples": [
+                    {
+                      "en": "There's gin, whisky and sherry. Which will you have?",
+                      "vi": "Which: lựa chọn trong một số lượng có giới hạn."
+                    },
+                    {
+                      "en": "What would you like to drink? [NOT Which would you like to drink?]",
+                      "vi": "What: lựa chọn rộng rãi, không bị giới hạn trong một số lượng nhất định."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-6",
+          "code": "6",
+          "titleVi": "Đại từ quan hệ",
+          "titleEn": "Relative pronouns",
+          "descriptionVi": "Các đại từ who, whom, whose, which, that là các đại từ quan hệ được dùng để thay cho danh từ đi trước và đồng thời có chức năng nối mệnh đề chính với mệnh đề phụ trong mệnh đề quan hệ (relative clauses). Who/whom chỉ người, which chỉ vật, that chỉ cả người lẫn vật, và whose chỉ sự sở hữu."
+        },
+        {
+          "id": "pron-sub-7",
+          "code": "7",
+          "titleVi": "Đại từ phân bổ",
+          "titleEn": "Distributive pronouns",
+          "descriptionVi": "Đại từ phân bổ gồm các từ: all, most, each, both, either, neither.",
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "All (tất cả)",
+              "titleEn": "All",
+              "descriptionVi": "Chỉ toàn bộ số lượng người hoặc vật của một nhóm từ ba trở lên.",
+              "formula": "All (of) + determiner + plural/uncountable noun | All of us / you / them (+ plural verb)",
+              "examples": [
+                {
+                  "en": "All were unanimous to vote him.",
+                  "vi": "Tất cả đều nhất trí bầu ông ta."
+                },
+                {
+                  "en": "All (of) my friends like riding. / All (of) the money has been spent.",
+                  "vi": "Có thể bỏ 'of' trước danh từ, nhưng KHÔNG được bỏ 'of' trước đại từ (All of us)."
+                },
+                {
+                  "en": "I've eaten all (of) the cake. [= the whole cake]",
+                  "vi": "All (of) + danh từ đếm được số ít mang nghĩa 'toàn bộ' (whole)."
+                },
+                {
+                  "en": "These cups are all dirty. / He said goodbye to us all.",
+                  "vi": "All đứng sau trợ động từ, động từ to be hoặc đại từ tân ngữ."
+                },
+                {
+                  "en": "All (that) I have is yours. [All = Everything]",
+                  "vi": "All + mệnh đề quan hệ mang nghĩa 'everything' hoặc 'the only thing'."
+                }
+              ],
+              "noteVi": "Không dùng 'all' đứng một mình với nghĩa 'everything' hoặc 'everybody': dùng 'Everything is yours' [NOT All is yours] và 'Everybody enjoyed the party' [NOT All enjoyed...]."
+            },
+            {
+              "code": "b",
+              "titleVi": "Most (phần lớn; hầu hết)",
+              "titleEn": "Most",
+              "descriptionVi": "Chỉ phần lớn nhất của cái gì hoặc đa số người hoặc vật.",
+              "formula": "Most of + determiner + noun (+ singular/plural verb) | Most of us / you / them (+ plural verb)",
+              "examples": [
+                {
+                  "en": "There are hundreds of verbs in English, and most are regular.",
+                  "vi": "Tiếng Anh có hàng trăm động từ, và đa số là động từ có quy tắc."
+                },
+                {
+                  "en": "Most of the people here know each other.",
+                  "vi": "Hầu hết mọi người ở đây đều quen nhau."
+                },
+                {
+                  "en": "John spends most of his free time in the library.",
+                  "vi": "Phần lớn thời gian rảnh rỗi, John ở trong thư viện."
+                }
+              ]
+            },
+            {
+              "code": "c",
+              "titleVi": "Each (mỗi)",
+              "titleEn": "Each",
+              "descriptionVi": "Chỉ từng cá nhân hoặc từng đơn vị trong một số lượng người hoặc vật từ hai trở lên.",
+              "formula": "Each of + determiner + plural noun / us / you / them (+ singular verb)",
+              "examples": [
+                {
+                  "en": "There are six flats. Each has its own entrance.",
+                  "vi": "Có 6 căn hộ. Mỗi căn có lối đi riêng."
+                },
+                {
+                  "en": "Each of us sees the world differently.",
+                  "vi": "Mỗi người trong chúng ta nhìn nhận thế giới một cách khác nhau."
+                },
+                {
+                  "en": "She gave the students each a copy of the script. / He gave us £5 each.",
+                  "vi": "Each đứng sau tân ngữ hoặc sau một số tiền/con số."
+                },
+                {
+                  "en": "We've each got our own cabinets. / The students each have different points of view.",
+                  "vi": "Khi đứng sau trợ động từ/to be hoặc trước động từ thường, động từ chia theo chủ ngữ số nhiều."
+                }
+              ]
+            },
+            {
+              "code": "d",
+              "titleVi": "Both (cả hai)",
+              "titleEn": "Both",
+              "descriptionVi": "Chỉ cả hai người hoặc hai vật; luôn đi với động từ số nhiều.",
+              "formula": "Both (of) + determiner + plural noun | Both of us / you / them (+ plural verb)",
+              "examples": [
+                {
+                  "en": "He has two brothers; both live in London.",
+                  "vi": "Anh ta có hai anh trai; cả hai đều sống ở London."
+                },
+                {
+                  "en": "Both (of) her children are boys. / Marta sends both of you her regards.",
+                  "vi": "Có thể bỏ 'of' trước danh từ, nhưng bắt buộc dùng 'of' trước đại từ."
+                },
+                {
+                  "en": "We can both swim. / They're both doctors. / She invited us both.",
+                  "vi": "Vị trí của both sau trợ động từ, sau to be, hoặc sau tân ngữ số nhiều."
+                }
+              ],
+              "noteVi": "Không dùng mạo từ 'the' trước both: Both the children are naughty. [NOT The both children...]"
+            },
+            {
+              "code": "e",
+              "titleVi": "Either (mỗi, một trong hai)",
+              "titleEn": "Either",
+              "descriptionVi": "Chỉ cái này hoặc cái kia trong hai cái.",
+              "formula": "Either of + determiner + plural noun / us / you / them (+ singular verb)",
+              "examples": [
+                {
+                  "en": "Do you want tea or coffee? ~ Either. I don't mind.",
+                  "vi": "Anh muốn dùng trà hay cà phê? ~ Gì cũng được."
+                },
+                {
+                  "en": "Does either of you speak French?",
+                  "vi": "Trong hai người có người nào biết nói tiếng Pháp không?"
+                },
+                {
+                  "en": "I don't like either of my math teachers.",
+                  "vi": "Tôi không thích người nào trong hai giáo viên dạy toán cả."
+                }
+              ]
+            },
+            {
+              "code": "f",
+              "titleVi": "Neither (cả hai ... không)",
+              "titleEn": "Neither",
+              "descriptionVi": "Chỉ không phải cái này mà cũng không phải cái kia trong hai cái.",
+              "formula": "Neither of + determiner + plural noun / us / you / them (+ singular verb)",
+              "examples": [
+                {
+                  "en": "There were two witnesses, but neither would make a statement.",
+                  "vi": "Có hai nhân chứng, nhưng cả hai đều không cho lời khai."
+                },
+                {
+                  "en": "Neither of the books was published in this country.",
+                  "vi": "Cả hai cuốn sách đều không được xuất bản ở nước này."
+                }
+              ],
+              "noteVi": "Động từ số ít thường được dùng sau either of và neither of, nhưng trong lối văn thân mật động từ số nhiều cũng có thể được dùng: Neither of my sisters is/are married."
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-8",
+          "code": "8",
+          "titleVi": "Đại từ bất định",
+          "titleEn": "Indefinite pronouns",
+          "descriptionVi": "Bảng tổng hợp các đại từ bất định trong tiếng Anh:",
+          "table": {
+            "headers": [
+              "Nhóm từ",
+              "Vật / Sự việc",
+              "Người (-one)",
+              "Người (-body)",
+              "Nơi chốn"
+            ],
+            "rows": [
+              [
+                "some",
+                "something",
+                "someone",
+                "somebody",
+                "somewhere"
+              ],
+              [
+                "any",
+                "anything",
+                "anyone",
+                "anybody",
+                "anywhere"
+              ],
+              [
+                "every",
+                "everything",
+                "everyone",
+                "everybody",
+                "everywhere"
+              ],
+              [
+                "none / no",
+                "nothing",
+                "no one",
+                "nobody",
+                "nowhere"
+              ]
+            ]
+          },
+          "items": [
+            {
+              "code": "a",
+              "titleVi": "Some, any và none",
+              "titleEn": "Some, any and none",
+              "subRules": [
+                {
+                  "ruleVi": "Some (một vài, một số): dùng trong câu khẳng định, hoặc trong câu hỏi mang tính lời mời / yêu cầu / chờ đợi câu trả lời 'yes'.",
+                  "examples": [
+                    {
+                      "en": "I'd like some milk. There is some in the fridge.",
+                      "vi": "Tôi muốn uống sữa. Có một ít trong tủ lạnh."
+                    },
+                    {
+                      "en": "Would you like some? / Do you want some help with your homework?",
+                      "vi": "Dùng trong lời mời hoặc câu đề nghị giúp đỡ."
+                    },
+                    {
+                      "en": "Some of the chairs are broken. / Some of the money was stolen.",
+                      "vi": "Some of + determiner + danh từ/đại từ (động từ chia theo danh từ phía sau)."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Any (nào, bất cứ): dùng trong câu phủ định, câu nghi vấn, sau if/whether và sau các từ mang nghĩa phủ định/giới hạn (never, hardly, barely, scarcely, without).",
+                  "examples": [
+                    {
+                      "en": "Jane looked around for her friends, but there weren't any.",
+                      "vi": "Jane nhìn quanh tìm bạn bè, nhưng chẳng có người bạn nào cả."
+                    },
+                    {
+                      "en": "Does/Do any of these books belong to you?",
+                      "vi": "Có cuốn nào trong số sách này là của bạn không?"
+                    },
+                    {
+                      "en": "She spent hardly any of the money.",
+                      "vi": "Cô ấy hầu như không tiêu một đồng nào."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "None (không ai, không cái gì/điều gì): dùng thay cho danh từ đã được nói đến trước đó.",
+                  "examples": [
+                    {
+                      "en": "How much money have you got? ~ None.",
+                      "vi": "Anh có bao nhiêu tiền? ~ Chẳng có đồng nào cả."
+                    },
+                    {
+                      "en": "None of the tourists want/wants to climb the mountain.",
+                      "vi": "Không một du khách nào muốn trèo lên ngọn núi này."
+                    },
+                    {
+                      "en": "None of this money is mine.",
+                      "vi": "Chẳng có đồng nào trong số tiền này là của tôi cả."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "code": "b",
+              "titleVi": "Các đại từ ghép với some-, any-, no-, every-",
+              "titleEn": "Compound indefinite pronouns",
+              "subRules": [
+                {
+                  "ruleVi": "Somebody, someone, something, somewhere: dùng trong câu khẳng định và lời mời/yêu cầu; luôn đi với động từ số ít.",
+                  "examples": [
+                    {
+                      "en": "Someone wants to speak to you on the phone.",
+                      "vi": "Có người muốn nói chuyện điện thoại với anh."
+                    },
+                    {
+                      "en": "Would you like something to drink?",
+                      "vi": "Anh muốn uống gì không?"
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Anybody, anyone, anything, anywhere: dùng trong câu phủ định, nghi vấn, mệnh đề if và sau các từ phủ định/giới hạn; đi với động từ số ít.",
+                  "examples": [
+                    {
+                      "en": "Has anybody seen my bag? / I don't want anything to eat.",
+                      "vi": "Có ai thấy túi của tôi không? / Tôi chẳng muốn ăn gì cả."
+                    },
+                    {
+                      "en": "If anyone has any questions, I'll be pleased to answer them.",
+                      "vi": "Nếu bất cứ ai có câu hỏi, tôi sẽ sẵn lòng trả lời."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Nobody, no one, nothing: mang nghĩa phủ định (= not anybody / not anything), dùng với động từ khẳng định ở số ít (không dùng hai phủ định trong một mệnh đề).",
+                  "examples": [
+                    {
+                      "en": "Nobody/No one came to visit me when I was in hospital.",
+                      "vi": "Khi tôi nằm viện chẳng có ai đến thăm tôi cả."
+                    },
+                    {
+                      "en": "He said nothing. [NOT He didn't say nothing.]",
+                      "vi": "Anh ta chẳng nói gì cả."
+                    }
+                  ]
+                },
+                {
+                  "ruleVi": "Everything, everyone, everybody: tuy mang nghĩa số nhiều nhưng về ngữ pháp là đại từ số ít nên dùng với động từ số ít.",
+                  "examples": [
+                    {
+                      "en": "Everybody has arrived.",
+                      "vi": "Mọi người đã tới."
+                    }
+                  ]
+                }
+              ],
+              "notes": [
+                {
+                  "ruleVi": "Đại từ thay thế cho các đại từ bất định: Dùng they / them / their / themselves khi thay thế cho đại từ chỉ người (someone, everyone, nobody...), và dùng it khi thay thế cho đại từ chỉ vật (something, anything, nothing).",
+                  "examples": [
+                    {
+                      "en": "Someone left their luggage on the train.",
+                      "vi": "Có người nào đó đã để quên hành lý trên xe lửa."
+                    },
+                    {
+                      "en": "No one saw Tom go out, did they?",
+                      "vi": "Không một ai nhìn thấy Tom ra ngoài, phải không?"
+                    },
+                    {
+                      "en": "Something went wrong, didn't it?",
+                      "vi": "Có điều gì đó trục trặc, phải không?"
+                    },
+                    {
+                      "en": "Someone's passport has been stolen.",
+                      "vi": "Các đại từ chỉ người có thể dùng với sở hữu cách ('s)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "pron-sub-9",
+          "code": "9",
+          "titleVi": "Đại từ hỗ tương",
+          "titleEn": "Reciprocal pronouns",
+          "descriptionVi": "Đại từ hỗ tương là đại từ chỉ mối quan hệ qua lại giữa hai hoặc nhiều người hoặc vật với nhau, gồm each other và one another (cùng nghĩa là 'nhau, lẫn nhau').",
+          "examples": [
+            {
+              "en": "Sue and Ann don't like each other / one another.",
+              "vi": "Sue và Ann không thích nhau."
+            },
+            {
+              "en": "They sat for two hours without talking to each other / one another.",
+              "vi": "Họ ngồi suốt hai tiếng đồng hồ mà không nói gì với nhau."
+            },
+            {
+              "en": "They wrote down each other's / one another's phone number.",
+              "vi": "Đại từ hỗ tương có thể dùng với sở hữu cách."
+            }
+          ],
+          "notes": [
+            {
+              "ruleVi": "Không dùng each other sau các từ meet (gặp), marry (kết hôn), và similar (giống nhau, như nhau).",
+              "examples": [
+                {
+                  "en": "They married in 1998. [NOT They married each other...]",
+                  "vi": "Họ cưới nhau năm 1998."
+                },
+                {
+                  "en": "Their interests are very similar. [NOT ... similar each other]",
+                  "vi": "Sở thích của họ rất giống nhau."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "exercises": [
+    {
+      "id": "pron-ex-1",
+      "roman": "I",
+      "type": "fill_in_blank",
+      "instruction": "Subject or object form? Put in the pronouns (nếu câu có nhiều chỗ trống, ngăn cách bằng dấu / hoặc dấu phẩy).",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "There's no need to shout. I can hear you.",
+          "isExample": true,
+          "answer": "I / you"
+        },
+        {
+          "number": 2,
+          "prompt": "You and I work well together. _______ are a good team.",
+          "isExample": false,
+          "answer": "We"
+        },
+        {
+          "number": 3,
+          "prompt": "We've got a big problem. Could _______ help _______, please?",
+          "isExample": false,
+          "answer": "you / us"
+        },
+        {
+          "number": 4,
+          "prompt": "John's two years younger than Alice, but _______ is nearly as tall as _______.",
+          "isExample": false,
+          "answer": "he / her | he / she"
+        },
+        {
+          "number": 5,
+          "prompt": "This is a good photo, isn't _______? ~ Is Jessica in _______? ~ Yes, that's _______. Look, _______ is next to Andrew.",
+          "isExample": false,
+          "answer": "it / it / her / she"
+        },
+        {
+          "number": 6,
+          "prompt": "Who did this crossword? ~ _______ did. _______ did _______ this morning.",
+          "isExample": false,
+          "answer": "I / I / it"
+        },
+        {
+          "number": 7,
+          "prompt": "Is this Nicky's bag? ~ No, _______ didn't bring one. It can't belong to _______.",
+          "isExample": false,
+          "answer": "she / her | he / him"
+        },
+        {
+          "number": 8,
+          "prompt": "_______ am looking for my shoes. Have _______ seen _______? ~ Yes, _______ are here.",
+          "isExample": false,
+          "answer": "I / you / them / they"
+        },
+        {
+          "number": 9,
+          "prompt": "What about Emily? ~ I expect _______ will be there. And her brother. _______ both came to the party. ~ Do _______ mean Jackson? I don't like _______ very much.",
+          "isExample": false,
+          "answer": "she / They / you / him"
+        },
+        {
+          "number": 10,
+          "prompt": "Are Rita and Richard coming to the party? ~ We've invited _______, but _______ isn't sure _______ can come or not.",
+          "isExample": false,
+          "answer": "them / he / they | them / she / they"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-2",
+      "roman": "II",
+      "type": "transformation",
+      "instruction": "Rewrite these sentences, using pronoun it.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "To keep it somewhere safe is important.",
+          "isExample": true,
+          "answer": "It's important to keep it somewhere safe."
+        },
+        {
+          "number": 2,
+          "prompt": "The journey to Brighton from London takes only one hour by train.",
+          "isExample": false,
+          "answer": "It takes only one hour to travel to Brighton from London by train. / It takes only one hour by train to get to Brighton from London."
+        },
+        {
+          "number": 3,
+          "prompt": "Some parts of King Lear are extremely difficult to understand.",
+          "isExample": false,
+          "answer": "It is extremely difficult to understand some parts of King Lear."
+        },
+        {
+          "number": 4,
+          "prompt": "That he will fail is clear to everyone but himself.",
+          "isExample": false,
+          "answer": "It is clear to everyone but himself that he will fail."
+        },
+        {
+          "number": 5,
+          "prompt": "Finding our way home won't be easy.",
+          "isExample": false,
+          "answer": "It won't be easy to find our way home. / It won't be easy finding our way home."
+        },
+        {
+          "number": 6,
+          "prompt": "My question itself made him angry.",
+          "isExample": false,
+          "answer": "It was my question itself that made him angry."
+        },
+        {
+          "number": 7,
+          "prompt": "Meeting each other on this occasion is a good chance.",
+          "isExample": false,
+          "answer": "It is a good chance to meet each other on this occasion. / It is a good chance meeting each other on this occasion."
+        },
+        {
+          "number": 8,
+          "prompt": "Do you think that to explain to him what happened is difficult?",
+          "isExample": false,
+          "answer": "Do you think that it is difficult to explain to him what happened? / Do you think it is difficult to explain to him what happened?"
+        },
+        {
+          "number": 9,
+          "prompt": "People think that he is the best doctor in this city.",
+          "isExample": false,
+          "answer": "It is thought that he is the best doctor in this city."
+        },
+        {
+          "number": 10,
+          "prompt": "To fall asleep like that is stupid.",
+          "isExample": false,
+          "answer": "It is stupid to fall asleep like that."
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-3",
+      "roman": "III",
+      "type": "fill_in_blank",
+      "instruction": "Put in there or it.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "What's the new restaurant like? Is it good?",
+          "isExample": true,
+          "answer": "it"
+        },
+        {
+          "number": 2,
+          "prompt": "The road is closed. _______ has been an accident.",
+          "isExample": false,
+          "answer": "There"
+        },
+        {
+          "number": 3,
+          "prompt": "Take a taxi. _______ is a long way to the station.",
+          "isExample": false,
+          "answer": "It"
+        },
+        {
+          "number": 4,
+          "prompt": "Did someone ring? ~ _______ was Vicky. She just called to say she's arrived safely.",
+          "isExample": false,
+          "answer": "It"
+        },
+        {
+          "number": 5,
+          "prompt": "_______ was a car outside. _______ looked very expensive.",
+          "isExample": false,
+          "answer": "There / It"
+        },
+        {
+          "number": 6,
+          "prompt": "When we got to the cinema, _______ was a queue outside. _______ was a very long queue, so we decided not to wait.",
+          "isExample": false,
+          "answer": "there / It"
+        },
+        {
+          "number": 7,
+          "prompt": "How far is _______ from Milan to Rome?",
+          "isExample": false,
+          "answer": "it"
+        },
+        {
+          "number": 8,
+          "prompt": "_______ was wet, and _______ was a cold east wind.",
+          "isExample": false,
+          "answer": "It / there"
+        },
+        {
+          "number": 9,
+          "prompt": "_______ was after midnight, and _______ were few people on the street.",
+          "isExample": false,
+          "answer": "It / there"
+        },
+        {
+          "number": 10,
+          "prompt": "I was told that _______ would be somebody to meet me at the airport but _______ wasn't anybody.",
+          "isExample": false,
+          "answer": "there / there"
+        },
+        {
+          "number": 11,
+          "prompt": "_______ is a woman at the door. ~ Oh, _______ is Aunt Le.",
+          "isExample": false,
+          "answer": "There / it"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-4",
+      "roman": "IV",
+      "type": "inline_choice",
+      "instruction": "Choose the right possessives.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "Did you and [your / yours] friends have a nice holiday?",
+          "answer": "your"
+        },
+        {
+          "number": 2,
+          "prompt": "Is this Alice's book or [your / yours]? ~ It's [her / hers].",
+          "answer": "yours / hers"
+        },
+        {
+          "number": 3,
+          "prompt": "[Who / Whose] car is that on the driveway? ~ I don't know, not [our / ours].",
+          "answer": "Whose / ours"
+        },
+        {
+          "number": 4,
+          "prompt": "Take [your / yours] feet off the table. [It / Its] legs aren't very strong.",
+          "answer": "your / Its"
+        },
+        {
+          "number": 5,
+          "prompt": "The Whartons are spending August in [our / ours] flat, and we're borrowing [their / theirs].",
+          "answer": "our / theirs"
+        },
+        {
+          "number": 6,
+          "prompt": "That's [my / mine] coat, and the scarf is [my / mine] too.",
+          "answer": "my / mine"
+        },
+        {
+          "number": 7,
+          "prompt": "[Your / Yours] eyes are blue and [her / hers] are brown.",
+          "answer": "Your / hers"
+        },
+        {
+          "number": 8,
+          "prompt": "They claim the money is all [their / theirs].",
+          "answer": "theirs"
+        },
+        {
+          "number": 9,
+          "prompt": "Unfortunately, the town has lost [it's / its] only cinema.",
+          "answer": "its"
+        },
+        {
+          "number": 10,
+          "prompt": "Rachel has got [her / hers] own calculator. She doesn't borrow [my / mine].",
+          "answer": "her / mine"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-5",
+      "roman": "V",
+      "type": "fill_in_blank",
+      "instruction": "Complete the conversation. Put in my, your, etc or mine, yours, etc.",
+      "passage": "Laura: Did you and (1) ___ friends have a nice holiday?\nEmma: Yes, it was wonderful. We had the best holiday of (2) ___ lives. It didn't start very well, though. Daniel forgot to bring (3) ___ passport.\nLaura: Oh, dear. So what happened?\nEmma: Well, luckily he doesn't live far from the airport. He rang (4) ___ parents, and they brought the passport over in (5) ___ car, just in time.\nLaura: You remembered (6) ___, I hope.\nEmma: Yes, I had (7) ___, even though I'm usually the one who forgets things. Actually Rachel thought for a minute that she'd lost (8) ___. Luckily it was in (9) ___ suitcase. Anyway, in the end we had a marvellous time.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "Did you and (1) _______ friends have a nice holiday?",
+          "answer": "your"
+        },
+        {
+          "number": 2,
+          "prompt": "We had the best holiday of (2) _______ lives.",
+          "answer": "our"
+        },
+        {
+          "number": 3,
+          "prompt": "Daniel forgot to bring (3) _______ passport.",
+          "answer": "his"
+        },
+        {
+          "number": 4,
+          "prompt": "He rang (4) _______ parents,",
+          "answer": "his"
+        },
+        {
+          "number": 5,
+          "prompt": "and they brought the passport over in (5) _______ car, just in time.",
+          "answer": "their"
+        },
+        {
+          "number": 6,
+          "prompt": "You remembered (6) _______, I hope.",
+          "answer": "yours"
+        },
+        {
+          "number": 7,
+          "prompt": "Yes, I had (7) _______, even though I'm usually the one who forgets things.",
+          "answer": "mine"
+        },
+        {
+          "number": 8,
+          "prompt": "Actually Rachel thought for a minute that she'd lost (8) _______.",
+          "answer": "hers"
+        },
+        {
+          "number": 9,
+          "prompt": "Luckily it was in (9) _______ suitcase.",
+          "answer": "her"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-6",
+      "roman": "VI",
+      "type": "fill_in_blank",
+      "instruction": "Complete each sentence, using reflexive pronouns (myself/ yourself ...) with one of these verbs (in the correct form).",
+      "wordBank": [
+        "burn",
+        "cut",
+        "blame",
+        "enjoy",
+        "express",
+        "hurt",
+        "dry",
+        "turn",
+        "look at",
+        "lock"
+      ],
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "I cut myself shaving this morning.",
+          "isExample": true,
+          "answer": "cut myself"
+        },
+        {
+          "number": 2,
+          "prompt": "John fell out of the window, but he didn't _______ badly.",
+          "isExample": false,
+          "answer": "hurt himself"
+        },
+        {
+          "number": 3,
+          "prompt": "The computer will _______ off if you don't use it.",
+          "isExample": false,
+          "answer": "turn itself"
+        },
+        {
+          "number": 4,
+          "prompt": "We _______ out last night.",
+          "isExample": false,
+          "answer": "locked ourselves"
+        },
+        {
+          "number": 5,
+          "prompt": "Be careful! That pan is very hot. Don't _______.",
+          "isExample": false,
+          "answer": "burn yourself"
+        },
+        {
+          "number": 6,
+          "prompt": "Jane _______ in the mirror to check her make-up.",
+          "isExample": false,
+          "answer": "looked at herself"
+        },
+        {
+          "number": 7,
+          "prompt": "They had a great time. They really _______.",
+          "isExample": false,
+          "answer": "enjoyed themselves"
+        },
+        {
+          "number": 8,
+          "prompt": "Sometimes I can't say what I mean. I wish I could _______ better.",
+          "isExample": false,
+          "answer": "express myself"
+        },
+        {
+          "number": 9,
+          "prompt": "It isn't your fault. You really shouldn't _______.",
+          "isExample": false,
+          "answer": "blame yourself"
+        },
+        {
+          "number": 10,
+          "prompt": "Vicky and Emma, you can _______ on these towels.",
+          "isExample": false,
+          "answer": "dry yourselves"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-7",
+      "roman": "VII",
+      "type": "fill_in_blank",
+      "instruction": "Put in reflexive pronouns (myself/ yourself/ herself ...) or personal pronouns (me/ you/ her ...).",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "Julia had a great holiday. She enjoyed herself.",
+          "isExample": true,
+          "answer": "herself"
+        },
+        {
+          "number": 2,
+          "prompt": "It's not my fault. You can't blame _______.",
+          "isExample": false,
+          "answer": "me"
+        },
+        {
+          "number": 3,
+          "prompt": "Don't pay any attention to _______. He always complains.",
+          "isExample": false,
+          "answer": "him"
+        },
+        {
+          "number": 4,
+          "prompt": "What I did was very wrong. I'm ashamed of _______.",
+          "isExample": false,
+          "answer": "myself"
+        },
+        {
+          "number": 5,
+          "prompt": "We've got a problem. I hope you can help _______.",
+          "isExample": false,
+          "answer": "us"
+        },
+        {
+          "number": 6,
+          "prompt": "My mother likes to have all her family near _______.",
+          "isExample": false,
+          "answer": "her"
+        },
+        {
+          "number": 7,
+          "prompt": "The old man is no longer able to look after _______.",
+          "isExample": false,
+          "answer": "himself"
+        },
+        {
+          "number": 8,
+          "prompt": "It's a pity you didn't bring your camera with _______.",
+          "isExample": false,
+          "answer": "you"
+        },
+        {
+          "number": 9,
+          "prompt": "I gave _______ a key so that they could let _______ in.",
+          "isExample": false,
+          "answer": "them / themselves"
+        },
+        {
+          "number": 10,
+          "prompt": "Don't worry about _______, Mom. I can look after _______.",
+          "isExample": false,
+          "answer": "me / myself"
+        },
+        {
+          "number": 11,
+          "prompt": "Don't tell _______ the answer to the puzzle. We can work it out for _______.",
+          "isExample": false,
+          "answer": "us / ourselves"
+        },
+        {
+          "number": 12,
+          "prompt": "\"Can I take another biscuit?\" \"Of course. Help _______!\"",
+          "isExample": false,
+          "answer": "yourself"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-8",
+      "roman": "VIII",
+      "type": "multiple_choice",
+      "instruction": "Choose the right answer.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "I go to school with _______ every day.",
+          "options": {
+            "a": "they",
+            "b": "them",
+            "c": "their",
+            "d": "themselves"
+          },
+          "answer": "b",
+          "answerText": "them"
+        },
+        {
+          "number": 2,
+          "prompt": "We saw _______ at the Union last Friday.",
+          "options": {
+            "a": "her",
+            "b": "she",
+            "c": "hers",
+            "d": "herself"
+          },
+          "answer": "a",
+          "answerText": "her"
+        },
+        {
+          "number": 3,
+          "prompt": "Isn't _______ a nice person?",
+          "options": {
+            "a": "he",
+            "b": "his",
+            "c": "himself",
+            "d": "him"
+          },
+          "answer": "a",
+          "answerText": "he"
+        },
+        {
+          "number": 4,
+          "prompt": "John and _______ gave the money to the boy.",
+          "options": {
+            "a": "her",
+            "b": "herself",
+            "c": "she",
+            "d": "me"
+          },
+          "answer": "c",
+          "answerText": "she"
+        },
+        {
+          "number": 5,
+          "prompt": "Your record is scratched and _______ is, too.",
+          "options": {
+            "a": "my",
+            "b": "mine",
+            "c": "it",
+            "d": "myself"
+          },
+          "answer": "b",
+          "answerText": "mine"
+        },
+        {
+          "number": 6,
+          "prompt": "John's shoes were worn out, so he bought _______ a pair of new shoes.",
+          "options": {
+            "a": "him",
+            "b": "his",
+            "c": "them",
+            "d": "himself"
+          },
+          "answer": "d",
+          "answerText": "himself"
+        },
+        {
+          "number": 7,
+          "prompt": "Who does this CD belong to? ~ _______ I've just bought it.",
+          "options": {
+            "a": "I",
+            "b": "Me",
+            "c": "Mine",
+            "d": "Myself"
+          },
+          "answer": "b",
+          "answerText": "Me"
+        },
+        {
+          "number": 8,
+          "prompt": "The manager _______ welcomed us to the hotel.",
+          "options": {
+            "a": "himself",
+            "b": "he",
+            "c": "his",
+            "d": "him"
+          },
+          "answer": "a",
+          "answerText": "himself"
+        },
+        {
+          "number": 9,
+          "prompt": "Mary and _______ would rather go to the movies.",
+          "options": {
+            "a": "me",
+            "b": "my",
+            "c": "I",
+            "d": "mine"
+          },
+          "answer": "c",
+          "answerText": "I"
+        },
+        {
+          "number": 10,
+          "prompt": "Just help _______ to sandwiches, won't you?",
+          "options": {
+            "a": "you",
+            "b": "your",
+            "c": "yourself",
+            "d": "yours"
+          },
+          "answer": "c",
+          "answerText": "yourself"
+        },
+        {
+          "number": 11,
+          "prompt": "Could you lend Sue your ruler? _______ has just been broken.",
+          "options": {
+            "a": "She",
+            "b": "Her",
+            "c": "Hers",
+            "d": "Herself"
+          },
+          "answer": "c",
+          "answerText": "Hers"
+        },
+        {
+          "number": 12,
+          "prompt": "This parcel is for George and _______.",
+          "options": {
+            "a": "I",
+            "b": "me",
+            "c": "myself",
+            "d": "mine"
+          },
+          "answer": "b",
+          "answerText": "me"
+        },
+        {
+          "number": 13,
+          "prompt": "Is that Mary over there? Yes, that's _______.",
+          "options": {
+            "a": "her",
+            "b": "she",
+            "c": "hers",
+            "d": "herself"
+          },
+          "answer": "a",
+          "answerText": "her"
+        },
+        {
+          "number": 14,
+          "prompt": "John and Tom, you _______ have to do it.",
+          "options": {
+            "a": "yourself",
+            "b": "yours",
+            "c": "your",
+            "d": "yourselves"
+          },
+          "answer": "d",
+          "answerText": "yourselves"
+        },
+        {
+          "number": 15,
+          "prompt": "It was _______ who called you.",
+          "options": {
+            "a": "he",
+            "b": "him",
+            "c": "his",
+            "d": "himself"
+          },
+          "answer": "a",
+          "answerText": "he"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-9",
+      "roman": "IX",
+      "type": "fill_in_blank",
+      "instruction": "Complete the sentences with someone / anything / ...",
+      "wordBank": [
+        "someone",
+        "somebody",
+        "something",
+        "somewhere",
+        "anyone",
+        "anybody",
+        "anything",
+        "anywhere",
+        "everyone",
+        "everybody",
+        "everything",
+        "no one",
+        "nobody",
+        "nothing",
+        "some",
+        "any"
+      ],
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "I was too surprised to say anything.",
+          "isExample": true,
+          "answer": "anything"
+        },
+        {
+          "number": 2,
+          "prompt": "There's _______ at the door. ~ Are you expecting _______?",
+          "isExample": false,
+          "answer": "someone / anyone | someone / anybody | somebody / anyone | somebody / anybody"
+        },
+        {
+          "number": 3,
+          "prompt": "Did you get the oil? ~ No, there wasn't _______ left.",
+          "isExample": false,
+          "answer": "any"
+        },
+        {
+          "number": 4,
+          "prompt": "Why are you looking under the bed? Have you lost _______? ~ Well, I was looking for _______, but now I can't remember what it was.",
+          "isExample": false,
+          "answer": "anything / something | something / something"
+        },
+        {
+          "number": 5,
+          "prompt": "Would you like some cheese and biscuits? ~ Oh no, thank you. I couldn't eat _______ else.",
+          "isExample": false,
+          "answer": "anything"
+        },
+        {
+          "number": 6,
+          "prompt": "You must be hungry. Would you like _______ to eat?",
+          "isExample": false,
+          "answer": "something"
+        },
+        {
+          "number": 7,
+          "prompt": "Quick, let's go! There's _______ coming and I don't want _______ to see us.",
+          "isExample": false,
+          "answer": "someone / anyone | someone / anybody | somebody / anyone | somebody / anybody"
+        },
+        {
+          "number": 8,
+          "prompt": "Sally was upset about _______ and refused to talk to _______.",
+          "isExample": false,
+          "answer": "something / anyone | something / anybody"
+        },
+        {
+          "number": 9,
+          "prompt": "This machine is very easy to use. _______ can learn to use it in a very short time.",
+          "isExample": false,
+          "answer": "Anyone / Anybody / Everyone / Everybody"
+        },
+        {
+          "number": 10,
+          "prompt": "Were there any calls for me? ~ Yes, _______ rang while you were out. He refused to give his name, but he wanted to discuss _______ with you.",
+          "isExample": false,
+          "answer": "someone / something | somebody / something"
+        },
+        {
+          "number": 11,
+          "prompt": "_______ who saw the accident should contact the police.",
+          "isExample": false,
+          "answer": "Anyone / Anybody / Everyone / Everybody"
+        },
+        {
+          "number": 12,
+          "prompt": "I didn't have any money, so I had to borrow _______.",
+          "isExample": false,
+          "answer": "some"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-10",
+      "roman": "X",
+      "type": "inline_choice",
+      "instruction": "Choose the right word.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "She told [nobody / anybody] about her wedding.",
+          "answer": "nobody"
+        },
+        {
+          "number": 2,
+          "prompt": "[Everyone / Someone] knows the man is a thief, but [anyone / no one] dares to say so publicly.",
+          "answer": "Everyone / no one"
+        },
+        {
+          "number": 3,
+          "prompt": "I can't go to the party. I haven't got [nothing / anything] to wear.",
+          "answer": "anything"
+        },
+        {
+          "number": 4,
+          "prompt": "I'd like to go away [somewhere / nowhere] if I can. [Someone / Anyone] I know has invited me to his villa in Portugal, so I may go there.",
+          "answer": "somewhere / Someone"
+        },
+        {
+          "number": 5,
+          "prompt": "What's in that box? ~ [Nothing / Anything]. It's empty.",
+          "answer": "Nothing"
+        },
+        {
+          "number": 6,
+          "prompt": "I don't know [nothing / anything] about economics.",
+          "answer": "anything"
+        },
+        {
+          "number": 7,
+          "prompt": "Has Matthew got a job yet? ~ No, but he's looked [somewhere / everywhere]. He hates the idea of sitting around doing [something / nothing].",
+          "answer": "everywhere / nothing"
+        },
+        {
+          "number": 8,
+          "prompt": "The accident looked serious but fortunately [nobody / anybody] was injured.",
+          "answer": "nobody"
+        },
+        {
+          "number": 9,
+          "prompt": "Could you do [anything / something] for me, please?",
+          "answer": "something"
+        },
+        {
+          "number": 10,
+          "prompt": "There was complete silence in the room. [Somebody / Nobody] said [anything / something].",
+          "answer": "Nobody / anything"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-11",
+      "roman": "XI",
+      "type": "inline_choice",
+      "instruction": "Choose the correct form.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "We had to wait because someone had lost [its / their] ticket.",
+          "answer": "their"
+        },
+        {
+          "number": 2,
+          "prompt": "One of the policemen had injured [his / their] arm.",
+          "answer": "his"
+        },
+        {
+          "number": 3,
+          "prompt": "Most of these shoes [is / are] in fashion now.",
+          "answer": "are"
+        },
+        {
+          "number": 4,
+          "prompt": "No one [likes / like] going to the dentist, do [he / they]?",
+          "answer": "likes / they"
+        },
+        {
+          "number": 5,
+          "prompt": "If anybody [wants / want] to leave early, [she / they] can.",
+          "answer": "wants / they"
+        },
+        {
+          "number": 6,
+          "prompt": "One of the guests had brought something wrapped in brown paper. She put [it / them] on the table.",
+          "answer": "it"
+        },
+        {
+          "number": 7,
+          "prompt": "Some of my friends [has / have] arrived.",
+          "answer": "have"
+        },
+        {
+          "number": 8,
+          "prompt": "No tourists ever [come / comes] to our village.",
+          "answer": "come"
+        },
+        {
+          "number": 9,
+          "prompt": "Everybody [have / has] to leave [his / their] bags outside.",
+          "answer": "has / their"
+        },
+        {
+          "number": 10,
+          "prompt": "No car [is / are] allowed in the city center.",
+          "answer": "is"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-12",
+      "roman": "XII",
+      "type": "fill_in_blank",
+      "instruction": "Put in of or nothing (-).",
+      "passage": "Well, some (1) ___ our luggage has arrived, so things could be worse. I've got the books and papers, but I've lost most (2) ___ my clothes. I haven't got any (3) ___ socks at all, and I'll have to buy some more (4) ___ jeans, but at least I've got enough (5) ___ underwear for the week. I'm going to buy a few (6) ___ those woolen shirts that you like, and one (7) ___ the big coats that we looked at. Unfortunately, they've got no (8) ___ shoes in my size, and none (9) ___ the jackets suit me. Anyway, I'm not alone. Everyone (10) ___ us has lost something. In fact, three (11) ___ people have got no (12) ___ luggage at all. Well, as they say, into each (13) ___ life a little (14) ___ rain must fall.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "some (1) ___ our luggage",
+          "answer": "of"
+        },
+        {
+          "number": 2,
+          "prompt": "most (2) ___ my clothes",
+          "answer": "of"
+        },
+        {
+          "number": 3,
+          "prompt": "any (3) ___ socks",
+          "answer": "-"
+        },
+        {
+          "number": 4,
+          "prompt": "some more (4) ___ jeans",
+          "answer": "-"
+        },
+        {
+          "number": 5,
+          "prompt": "enough (5) ___ underwear",
+          "answer": "-"
+        },
+        {
+          "number": 6,
+          "prompt": "a few (6) ___ those woolen shirts",
+          "answer": "of"
+        },
+        {
+          "number": 7,
+          "prompt": "one (7) ___ the big coats",
+          "answer": "of"
+        },
+        {
+          "number": 8,
+          "prompt": "no (8) ___ shoes",
+          "answer": "-"
+        },
+        {
+          "number": 9,
+          "prompt": "none (9) ___ the jackets",
+          "answer": "of"
+        },
+        {
+          "number": 10,
+          "prompt": "Everyone (10) ___ us",
+          "answer": "of"
+        },
+        {
+          "number": 11,
+          "prompt": "three (11) ___ people",
+          "answer": "-"
+        },
+        {
+          "number": 12,
+          "prompt": "no (12) ___ luggage",
+          "answer": "-"
+        },
+        {
+          "number": 13,
+          "prompt": "into each (13) ___ life",
+          "answer": "-"
+        },
+        {
+          "number": 14,
+          "prompt": "a little (14) ___ rain",
+          "answer": "-"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-13",
+      "roman": "XIII",
+      "type": "fill_in_blank",
+      "instruction": "Complete the sentences using the words in brackets. Sometimes no other words are necessary. Sometimes you need the or of the.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "I wasn't well yesterday. I spent most of the day in bed. (most / day)",
+          "isExample": true,
+          "answer": "most of the day"
+        },
+        {
+          "number": 2,
+          "prompt": "Some cars can go faster than others. (some / cars)",
+          "isExample": true,
+          "answer": "Some cars"
+        },
+        {
+          "number": 3,
+          "prompt": "_______ drive too fast. (many / people)",
+          "isExample": false,
+          "answer": "Many people"
+        },
+        {
+          "number": 4,
+          "prompt": "_______ you took on holiday were very good. (some / photographs)",
+          "isExample": false,
+          "answer": "Some of the photographs"
+        },
+        {
+          "number": 5,
+          "prompt": "_______ learn more quickly than others. (some / people)",
+          "isExample": false,
+          "answer": "Some people"
+        },
+        {
+          "number": 6,
+          "prompt": "We've eaten _______ we bought. There's very little left. (most / food)",
+          "isExample": false,
+          "answer": "most of the food"
+        },
+        {
+          "number": 7,
+          "prompt": "Have you spent _______ you borrowed? (all / money)",
+          "isExample": false,
+          "answer": "all the money / all of the money"
+        },
+        {
+          "number": 8,
+          "prompt": "Peter can't stop talking. He talks _______. (all / time)",
+          "isExample": false,
+          "answer": "all the time"
+        },
+        {
+          "number": 9,
+          "prompt": "We had a lazy holiday. We spent _______ on the beach. (most / time)",
+          "isExample": false,
+          "answer": "most of the time"
+        },
+        {
+          "number": 10,
+          "prompt": "George is easy to get on with. _______ like him. (most / people)",
+          "isExample": false,
+          "answer": "Most people"
+        },
+        {
+          "number": 11,
+          "prompt": "The exam was difficult. I could only answer _______. (half / questions)",
+          "isExample": false,
+          "answer": "half the questions / half of the questions"
+        },
+        {
+          "number": 12,
+          "prompt": "It was a public holiday. _______ were open. (none / shops)",
+          "isExample": false,
+          "answer": "None of the shops"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-14",
+      "roman": "XIV",
+      "type": "fill_in_blank",
+      "instruction": "Complete the sentences with all / both / neither / either / none / each.",
+      "wordBank": [
+        "all",
+        "both",
+        "neither",
+        "either",
+        "none",
+        "each"
+      ],
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "I took two books with me on holiday but I didn't read either of them.",
+          "isExample": true,
+          "answer": "either"
+        },
+        {
+          "number": 2,
+          "prompt": "We tried a lot of hotels but _______ of them had any rooms. _______ of them were full.",
+          "isExample": false,
+          "answer": "none / All"
+        },
+        {
+          "number": 3,
+          "prompt": "I tried twice to phone George but _______ times he was out.",
+          "isExample": false,
+          "answer": "both"
+        },
+        {
+          "number": 4,
+          "prompt": "There are two good hotels in the town, but _______ of them had any rooms. _______ of them were full.",
+          "isExample": false,
+          "answer": "neither / Both"
+        },
+        {
+          "number": 5,
+          "prompt": "There are a few shops at the end of the street but _______ of them sell newspapers.",
+          "isExample": false,
+          "answer": "none"
+        },
+        {
+          "number": 6,
+          "prompt": "The book is divided into five parts and _______ of these has three sections.",
+          "isExample": false,
+          "answer": "each"
+        },
+        {
+          "number": 7,
+          "prompt": "I can meet you on the 6th or 7th. Would _______ of those days be convenient for you?",
+          "isExample": false,
+          "answer": "either"
+        },
+        {
+          "number": 8,
+          "prompt": "John and I couldn't get into the house because _______ of us had a key.",
+          "isExample": false,
+          "answer": "neither"
+        },
+        {
+          "number": 9,
+          "prompt": "There were a few letters this morning but _______ of them were for me. _______ were for my father.",
+          "isExample": false,
+          "answer": "none / All"
+        },
+        {
+          "number": 10,
+          "prompt": "I've got two bicycles. _______ of them are quite old. I don't ride _______ of them any more. _______ of them is in very good condition, I'm afraid.",
+          "isExample": false,
+          "answer": "Both / either / Neither"
+        }
+      ]
+    },
+    {
+      "id": "pron-ex-15",
+      "roman": "XV",
+      "type": "multiple_choice",
+      "instruction": "Choose the right answer.",
+      "questions": [
+        {
+          "number": 1,
+          "prompt": "I can't go to a party. I haven't got _______ to wear.",
+          "options": {
+            "a": "anything",
+            "b": "everything",
+            "c": "something",
+            "d": "nothing"
+          },
+          "answer": "a",
+          "answerText": "anything"
+        },
+        {
+          "number": 2,
+          "prompt": "Take care _______, Ann.",
+          "options": {
+            "a": "you",
+            "b": "your",
+            "c": "yours",
+            "d": "yourself"
+          },
+          "answer": "d",
+          "answerText": "yourself"
+        },
+        {
+          "number": 3,
+          "prompt": "_______ would be lovely to see you again.",
+          "options": {
+            "a": "It",
+            "b": "That",
+            "c": "There",
+            "d": "You"
+          },
+          "answer": "a",
+          "answerText": "It"
+        },
+        {
+          "number": 4,
+          "prompt": "If you want some apples, I'll get you _______ at the shop.",
+          "options": {
+            "a": "any",
+            "b": "it",
+            "c": "one",
+            "d": "some"
+          },
+          "answer": "d",
+          "answerText": "some"
+        },
+        {
+          "number": 5,
+          "prompt": "We've brought some food with _______.",
+          "options": {
+            "a": "me",
+            "b": "we",
+            "c": "us",
+            "d": "ourselves"
+          },
+          "answer": "c",
+          "answerText": "us"
+        },
+        {
+          "number": 6,
+          "prompt": "Who's there? ~ Only _______.",
+          "options": {
+            "a": "I",
+            "b": "me",
+            "c": "mine",
+            "d": "myself"
+          },
+          "answer": "b",
+          "answerText": "me"
+        },
+        {
+          "number": 7,
+          "prompt": "Is _______ a post office near here?",
+          "options": {
+            "a": "here",
+            "b": "it",
+            "c": "there",
+            "d": "this"
+          },
+          "answer": "c",
+          "answerText": "there"
+        },
+        {
+          "number": 8,
+          "prompt": "Everyone has to leave _______ bags outside.",
+          "options": {
+            "a": "his",
+            "b": "their",
+            "c": "its",
+            "d": "her"
+          },
+          "answer": "b",
+          "answerText": "their"
+        },
+        {
+          "number": 9,
+          "prompt": "The two girls often wear _______ clothes.",
+          "options": {
+            "a": "each other",
+            "b": "each other's",
+            "c": "themselves",
+            "d": "themselves'"
+          },
+          "answer": "b",
+          "answerText": "each other's"
+        },
+        {
+          "number": 10,
+          "prompt": "Have you had enough to eat, or would you like _______ else?",
+          "options": {
+            "a": "anything",
+            "b": "nothing",
+            "c": "something",
+            "d": "thing"
+          },
+          "answer": "c",
+          "answerText": "something"
+        },
+        {
+          "number": 11,
+          "prompt": "Have you seen my calculator? I can't find it _______.",
+          "options": {
+            "a": "anywhere",
+            "b": "nowhere",
+            "c": "somewhere",
+            "d": "where"
+          },
+          "answer": "a",
+          "answerText": "anywhere"
+        },
+        {
+          "number": 12,
+          "prompt": "Peter has two brothers, but he doesn't speak to _______ of them.",
+          "options": {
+            "a": "any",
+            "b": "most",
+            "c": "either",
+            "d": "neither"
+          },
+          "answer": "c",
+          "answerText": "either"
+        },
+        {
+          "number": 13,
+          "prompt": "Johnson spent _______ his life in the South.",
+          "options": {
+            "a": "some",
+            "b": "most",
+            "c": "none of",
+            "d": "most of"
+          },
+          "answer": "d",
+          "answerText": "most of"
+        },
+        {
+          "number": 14,
+          "prompt": "We could all do more to keep healthy. We don't look after _______ properly.",
+          "options": {
+            "a": "ourself",
+            "b": "ourselves",
+            "c": "ours",
+            "d": "each other"
+          },
+          "answer": "b",
+          "answerText": "ourselves"
+        },
+        {
+          "number": 15,
+          "prompt": "The two boxers did their best to knock _______ out.",
+          "options": {
+            "a": "them",
+            "b": "themselves",
+            "c": "each other",
+            "d": "each other's"
+          },
+          "answer": "c",
+          "answerText": "each other"
         }
       ]
     }
@@ -8298,7 +10731,2457 @@ window.GRAMMAR_DATA = [
   {
     "id": "g4",
     "name": "Đại từ",
-    "quiz": []
+    "quiz": [],
+    "theory": [
+      {
+        "id": "pron-sec-1",
+        "code": "I",
+        "titleVi": "Định nghĩa",
+        "titleEn": "Definition",
+        "descriptionVi": "Đại từ (pronouns) là từ dùng để thay thế cho danh từ.",
+        "categories": [
+          {
+            "labelVi": "1. Đại từ nhân xưng",
+            "examples": [
+              "I / me",
+              "you",
+              "he / him",
+              "she / her",
+              "it",
+              "we / us",
+              "they / them"
+            ]
+          },
+          {
+            "labelVi": "2. Đại từ sở hữu",
+            "examples": [
+              "mine",
+              "yours",
+              "his",
+              "hers",
+              "ours",
+              "theirs"
+            ]
+          },
+          {
+            "labelVi": "3. Đại từ phản thân & nhấn mạnh",
+            "examples": [
+              "myself",
+              "yourself",
+              "himself",
+              "herself",
+              "itself",
+              "ourselves",
+              "yourselves",
+              "themselves"
+            ]
+          },
+          {
+            "labelVi": "4. Đại từ chỉ định",
+            "examples": [
+              "this",
+              "that",
+              "these",
+              "those"
+            ]
+          },
+          {
+            "labelVi": "5. Đại từ nghi vấn",
+            "examples": [
+              "who",
+              "whom",
+              "whose",
+              "what",
+              "which"
+            ]
+          },
+          {
+            "labelVi": "6. Đại từ quan hệ (liên hệ)",
+            "examples": [
+              "who",
+              "whom",
+              "whose",
+              "which",
+              "that"
+            ]
+          },
+          {
+            "labelVi": "7. Đại từ phân bổ",
+            "examples": [
+              "all",
+              "most",
+              "each",
+              "both",
+              "either",
+              "neither"
+            ]
+          },
+          {
+            "labelVi": "8. Đại từ bất định",
+            "examples": [
+              "some",
+              "any",
+              "none",
+              "something",
+              "anything",
+              "nothing",
+              "everything",
+              "someone",
+              "anyone",
+              "no one",
+              "everyone"
+            ]
+          },
+          {
+            "labelVi": "9. Đại từ hỗ tương",
+            "examples": [
+              "each other",
+              "one another"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "pron-sec-2",
+        "code": "II",
+        "titleVi": "Các loại đại từ",
+        "titleEn": "Kinds of pronouns",
+        "descriptionVi": "Trong tiếng Anh, đại từ được chia thành 9 loại chính dưới đây:",
+        "subsections": [
+          {
+            "id": "pron-sub-1",
+            "code": "1",
+            "titleVi": "Đại từ nhân xưng",
+            "titleEn": "Personal pronouns",
+            "descriptionVi": "Đại từ nhân xưng là các đại từ được dùng để chỉ người, vật, nhóm người hoặc vật cụ thể.",
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "Hình thức",
+                "titleEn": "Form",
+                "descriptionVi": "Đại từ nhân xưng có hình thức chủ ngữ (subject) và tân ngữ (object) hoàn toàn khác nhau (trừ you và it).",
+                "table": {
+                  "headers": [
+                    "Ngôi (Person)",
+                    "Số ít — Chủ ngữ",
+                    "Số ít — Tân ngữ",
+                    "Nghĩa (Số ít)",
+                    "Số nhiều — Chủ ngữ",
+                    "Số nhiều — Tân ngữ",
+                    "Nghĩa (Số nhiều)"
+                  ],
+                  "rows": [
+                    [
+                      "Ngôi 1",
+                      "I",
+                      "me",
+                      "tôi",
+                      "We",
+                      "us",
+                      "chúng tôi / chúng ta"
+                    ],
+                    [
+                      "Ngôi 2",
+                      "You",
+                      "you",
+                      "anh, chị, bạn",
+                      "You",
+                      "you",
+                      "các anh, chị, các bạn"
+                    ],
+                    [
+                      "Ngôi 3",
+                      "He / She / It",
+                      "him / her / it",
+                      "anh ấy / chị ấy / nó",
+                      "They",
+                      "them",
+                      "họ / chúng"
+                    ]
+                  ]
+                }
+              },
+              {
+                "code": "b",
+                "titleVi": "Cách dùng",
+                "titleEn": "Use",
+                "descriptionVi": "Đại từ nhân xưng được dùng để thay thế cho danh từ khi không cần thiết sử dụng hoặc lặp lại chính xác danh từ hoặc cụm danh từ đó.",
+                "examples": [
+                  {
+                    "en": "John's broken his leg. He'll be in hospital for a few days. [NOT John will be in hospital ...]",
+                    "vi": "John bị gãy chân. Anh ấy sẽ phải nằm viện vài ngày."
+                  },
+                  {
+                    "en": "Tell Mary I miss her. [NOT Tell Mary I miss Mary.]",
+                    "vi": "Hãy nói với Mary rằng tôi nhớ cô ấy."
+                  }
+                ],
+                "subRules": [
+                  {
+                    "ruleVi": "I, he, she, we, they được dùng làm chủ ngữ của động từ (subjects of a verb) hoặc bổ ngữ của động từ to be (complements of the verb to be):",
+                    "examples": [
+                      {
+                        "en": "I like you.",
+                        "vi": "Tôi thích anh."
+                      },
+                      {
+                        "en": "He wants to leave now.",
+                        "vi": "Anh ấy muốn đi ngay bây giờ."
+                      },
+                      {
+                        "en": "They have lived here for twenty years.",
+                        "vi": "Họ đã sống ở đây 20 năm rồi."
+                      },
+                      {
+                        "en": "It was I who chose this colour.",
+                        "vi": "Chính tôi là người chọn màu này."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "me, him, her, us, them được dùng làm tân ngữ trực tiếp/gián tiếp của động từ (direct/indirect objects of a verb) hoặc tân ngữ của giới từ (objects of a preposition):",
+                    "examples": [
+                      {
+                        "en": "They called us on the telephone.",
+                        "vi": "Họ đã gọi điện cho chúng tôi."
+                      },
+                      {
+                        "en": "Bill's uncle sent him a birthday present.",
+                        "vi": "Chú của Bill gửi cho anh ấy một món quà sinh nhật."
+                      },
+                      {
+                        "en": "He said he couldn't live without her.",
+                        "vi": "Anh ấy nói anh ấy không thể sống thiếu cô ta."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "you và it có thể được dùng làm chủ ngữ hoặc tân ngữ vì chúng có hình thức chủ ngữ và tân ngữ giống nhau:",
+                    "examples": [
+                      {
+                        "en": "Did you see the snake? ~ Yes, I saw it and it saw me, too.",
+                        "vi": "Anh có nhìn thấy con rắn không? ~ Có, tôi thấy nó và nó cũng thấy tôi."
+                      },
+                      {
+                        "en": "Did it frighten you?",
+                        "vi": "Nó có làm anh sợ không?"
+                      }
+                    ]
+                  }
+                ],
+                "notes": [
+                  {
+                    "ruleVi": "Hình thức tân ngữ thường được dùng khi đại từ đứng một mình hoặc sau be.",
+                    "examples": [
+                      {
+                        "en": "Who spilt coffee all over the table? ~ Me. / Sorry, it was me.",
+                        "vi": "Ai làm đổ cà phê ra khắp bàn vậy? ~ Tôi. / Xin lỗi, chính tôi."
+                      },
+                      {
+                        "en": "But: Who spilt coffee all over the table? ~ I did.",
+                        "vi": "Nhưng: Ai làm đổ cà phê ra khắp bàn vậy? ~ Tôi đã làm."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Một số cách dùng đặc biệt của đại từ IT:",
+                    "examples": [
+                      {
+                        "en": "I've bought a new watch. It's very modern. / The baby next door kept me awake. It cried all night.",
+                        "vi": "1. Thay cho vật, động vật, trẻ sơ sinh/trẻ nhỏ khi giới tính chưa rõ hoặc không quan trọng."
+                      },
+                      {
+                        "en": "Who was it on the telephone? It was Vicky. She just called to say she's arrived home safely.",
+                        "vi": "2. Chỉ người khi muốn nhận diện đó là ai; sau khi xác định thì dùng he hoặc she."
+                      },
+                      {
+                        "en": "When the factory closes, it will mean 500 people losing their jobs. [it = the closing of the factory]",
+                        "vi": "3. Chỉ một hành động, tình huống hoặc ý tưởng đã được nói đến trước đó."
+                      },
+                      {
+                        "en": "It is raining heavily. / It is half past three now. / It is six miles to the nearest hospital from here.",
+                        "vi": "4. Làm chủ ngữ giả (formal subject) nói về thời tiết, thời gian, nhiệt độ, khoảng cách, số đo."
+                      },
+                      {
+                        "en": "It was impossible to get a taxi at that time. / It's a pity that you can't come with us.",
+                        "vi": "5. Làm chủ ngữ giả khi chủ ngữ thật là động từ nguyên mẫu (to V), danh động từ (V-ing) hoặc mệnh đề that ở cuối câu."
+                      },
+                      {
+                        "en": "I found it difficult to explain this to him. / I find it strange that she doesn't want to travel.",
+                        "vi": "6. Làm tân ngữ giả (formal object) theo sau bởi tính từ/danh từ + to V / V-ing / mệnh đề that."
+                      },
+                      {
+                        "en": "It was Jim who lent us the money. / It was three weeks later that he heard the news.",
+                        "vi": "7. Dùng trong câu chẻ (It is/was ... who/that ...) để nhấn mạnh một thành phần trong câu."
+                      },
+                      {
+                        "en": "Hang it all, we can't wait all day for him. / If the teacher sees you doing that, you'll catch it.",
+                        "vi": "8. Dùng trong một số thành ngữ thân mật."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-2",
+            "code": "2",
+            "titleVi": "Đại từ sở hữu",
+            "titleEn": "Possessive pronouns",
+            "descriptionVi": "Đại từ sở hữu (possessive pronouns) là hình thức sở hữu của đại từ nhân xưng, được dùng để chỉ vật gì thuộc về người nào đó.",
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "Hình thức",
+                "titleEn": "Form",
+                "descriptionVi": "Lưu ý: It không có dạng đại từ sở hữu (its là tính từ sở hữu của it).",
+                "table": {
+                  "headers": [
+                    "Đại từ nhân xưng (Personal Pronouns)",
+                    "Đại từ sở hữu (Possessive Pronouns)",
+                    "Nghĩa"
+                  ],
+                  "rows": [
+                    [
+                      "I (tôi)",
+                      "mine",
+                      "cái của tôi"
+                    ],
+                    [
+                      "You (anh, chị, bạn)",
+                      "yours",
+                      "cái của anh / bạn"
+                    ],
+                    [
+                      "He (anh ấy)",
+                      "his",
+                      "cái của anh ấy"
+                    ],
+                    [
+                      "She (chị ấy)",
+                      "hers",
+                      "cái của chị ấy"
+                    ],
+                    [
+                      "We (chúng tôi)",
+                      "ours",
+                      "cái của chúng tôi"
+                    ],
+                    [
+                      "They (họ, chúng nó)",
+                      "theirs",
+                      "cái của họ / chúng"
+                    ]
+                  ]
+                }
+              },
+              {
+                "code": "b",
+                "titleVi": "Cách dùng",
+                "titleEn": "Use",
+                "subRules": [
+                  {
+                    "ruleVi": "Đại từ sở hữu được dùng không có danh từ theo sau. Nó thay thế cho tính từ sở hữu + danh từ (possessive adjective + noun):",
+                    "examples": [
+                      {
+                        "en": "Can I borrow your keys? I can't find mine. [mine = my keys]",
+                        "vi": "Tôi có thể mượn chìa khóa của bạn được không? Tôi không tìm thấy chìa khóa của tôi."
+                      },
+                      {
+                        "en": "You are using my pen. Where's yours? [yours = your pen]",
+                        "vi": "Bạn đang dùng viết của tôi đấy. Viết của bạn đâu?"
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Đại từ sở hữu cũng có thể đứng đầu câu làm chủ ngữ trước danh từ mà nó thay thế:",
+                    "examples": [
+                      {
+                        "en": "Ours is the third house on the left. [ours = our house]",
+                        "vi": "Nhà của chúng tôi là ngôi nhà thứ ba bên tay trái."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Không dùng mạo từ (a, an, the) trước đại từ sở hữu:",
+                    "examples": [
+                      {
+                        "en": "That coat is mine. [NOT That coat is the mine.]",
+                        "vi": "Áo khoác đó của tôi."
+                      }
+                    ]
+                  }
+                ],
+                "notes": [
+                  {
+                    "ruleVi": "Sở hữu kép (double possessive): Đại từ sở hữu đứng sau giới từ of.",
+                    "examples": [
+                      {
+                        "en": "Tom is a friend of mine. [= one of my friends]",
+                        "vi": "Tom là một người bạn của tôi."
+                      },
+                      {
+                        "en": "I borrowed some magazines of yours. [= some of your magazines]",
+                        "vi": "Tôi đã mượn một số tạp chí của bạn."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-3",
+            "code": "3",
+            "titleVi": "Đại từ phản thân & đại từ nhấn mạnh",
+            "titleEn": "Reflexive and Emphatic Pronouns",
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "Hình thức",
+                "titleEn": "Form",
+                "descriptionVi": "Đại từ phản thân và đại từ nhấn mạnh có chung hình thức:",
+                "table": {
+                  "headers": [
+                    "Đại từ nhân xưng",
+                    "Đại từ phản thân / nhấn mạnh",
+                    "Nghĩa"
+                  ],
+                  "rows": [
+                    [
+                      "I",
+                      "myself",
+                      "tự / chính tôi"
+                    ],
+                    [
+                      "You (số ít)",
+                      "yourself",
+                      "tự / chính bạn"
+                    ],
+                    [
+                      "He",
+                      "himself",
+                      "tự / chính anh ấy"
+                    ],
+                    [
+                      "She",
+                      "herself",
+                      "tự / chính chị ấy"
+                    ],
+                    [
+                      "It",
+                      "itself",
+                      "tự / chính nó"
+                    ],
+                    [
+                      "We",
+                      "ourselves",
+                      "tự / chính chúng tôi"
+                    ],
+                    [
+                      "You (số nhiều)",
+                      "yourselves",
+                      "tự / chính các bạn"
+                    ],
+                    [
+                      "They",
+                      "themselves",
+                      "tự / chính họ"
+                    ]
+                  ]
+                }
+              },
+              {
+                "code": "b",
+                "titleVi": "Cách dùng",
+                "titleEn": "Use",
+                "subRules": [
+                  {
+                    "ruleVi": "Đại từ phản thân (Reflexive pronouns): Dùng làm tân ngữ (object) của động từ khi chủ ngữ và tân ngữ của động từ là cùng một đối tượng (hoặc chỉ thành phần khác trong câu):",
+                    "examples": [
+                      {
+                        "en": "When the policeman came in, the gunman shot him. [him = the policeman]",
+                        "vi": "Khi viên cảnh sát xông vào, tên cướp đã bắn anh ta."
+                      },
+                      {
+                        "en": "When the policeman came in, the gunman shot himself. [himself = the gunman]",
+                        "vi": "Khi viên cảnh sát xông vào, tên cướp đã dùng súng tự sát."
+                      },
+                      {
+                        "en": "Jane looks at herself in the mirror.",
+                        "vi": "Jane soi mình trong gương."
+                      },
+                      {
+                        "en": "We've locked ourselves out.",
+                        "vi": "Chúng tôi tự khóa cửa nhốt mình bên ngoài."
+                      },
+                      {
+                        "en": "This refrigerator defrosts itself.",
+                        "vi": "Tủ lạnh này tự rã đông."
+                      },
+                      {
+                        "en": "His letters are all about himself.",
+                        "vi": "Thư của anh ta toàn viết về bản thân anh ta."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Đại từ nhấn mạnh (Emphatic pronouns): Đứng ngay sau danh từ hoặc đại từ được nhấn mạnh với nghĩa 'chính người đó / vật đó' (hoặc đứng cuối câu khi nhấn mạnh chủ ngữ):",
+                    "examples": [
+                      {
+                        "en": "My sister herself designed all these clothes.",
+                        "vi": "Chính chị tôi đã thiết kế những bộ quần áo này."
+                      },
+                      {
+                        "en": "I spoke to the president himself.",
+                        "vi": "Tôi đã nói chuyện với chính ngài chủ tịch."
+                      },
+                      {
+                        "en": "The film itself wasn't very good but I like the music.",
+                        "vi": "Bản thân bộ phim thì không hay lắm, nhưng tôi thích phần nhạc trong phim."
+                      },
+                      {
+                        "en": "I saw him do it myself. [= I myself saw him do it.]",
+                        "vi": "Chính mắt tôi thấy anh ta làm điều đó."
+                      }
+                    ]
+                  }
+                ],
+                "notes": [
+                  {
+                    "ruleVi": "Đại từ phản thân có thể được dùng sau giới từ, nhưng sau giới từ chỉ vị trí (preposition of place) chúng ta thường dùng đại từ nhân xưng (me, you, him, her,...).",
+                    "examples": [
+                      {
+                        "en": "I'm annoyed with myself.",
+                        "vi": "Tôi giận chính bản thân mình."
+                      },
+                      {
+                        "en": "But: Mike didn't have any money with him.",
+                        "vi": "Mike không đem theo tiền."
+                      },
+                      {
+                        "en": "In the mirror I saw a lorry behind me.",
+                        "vi": "Nhìn vào gương tôi thấy một chiếc xe tải phía sau."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "code": "c",
+                "titleVi": "Cấu trúc By + oneself = alone, without help",
+                "titleEn": "By + oneself",
+                "descriptionVi": "By myself / yourself / himself ... có nghĩa là 'một mình' (alone) hoặc 'không có ai giúp đỡ' (without help).",
+                "examples": [
+                  {
+                    "en": "He likes living by himself. [= He likes living alone.]",
+                    "vi": "Ông ta thích sống một mình."
+                  },
+                  {
+                    "en": "Do you need help? ~ No, thanks. I can do it by myself. [= I can do it without help.]",
+                    "vi": "Bạn có cần giúp không? ~ Không, cám ơn. Tôi có thể làm một mình."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-4",
+            "code": "4",
+            "titleVi": "Đại từ chỉ định",
+            "titleEn": "Demonstrative pronouns",
+            "descriptionVi": "Đại từ chỉ định gồm các từ: this, that, these, those. Được dùng để chỉ định vật, sự vật hoặc để giới thiệu hay nhận dạng người nào đó.",
+            "examples": [
+              {
+                "en": "These are my candies. Those are yours.",
+                "vi": "Đây là kẹo của tôi. Kia là kẹo của bạn."
+              },
+              {
+                "en": "This costs more than that.",
+                "vi": "Cái này đắt hơn cái kia."
+              }
+            ],
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "This / These (cái này, người này / những cái này, những người này)",
+                "titleEn": "This / These",
+                "descriptionVi": "Được dùng để chỉ vật ở khoảng cách gần (với người nói), giới thiệu người nào đó, hoặc chỉ tình huống/sự việc đang hoặc sắp xảy ra.",
+                "examples": [
+                  {
+                    "en": "In all your paintings I like this best. / These are my shoes.",
+                    "vi": "Chỉ vật ở khoảng cách gần."
+                  },
+                  {
+                    "en": "This is my brother. / These are the Smiths.",
+                    "vi": "Giới thiệu người nào đó."
+                  },
+                  {
+                    "en": "Listen to this. You'll like it.",
+                    "vi": "Chỉ sự việc sắp được nói tới."
+                  }
+                ]
+              },
+              {
+                "code": "b",
+                "titleVi": "That / Those (cái kia, người kia / những cái kia, những người kia)",
+                "titleEn": "That / Those",
+                "descriptionVi": "Được dùng để chỉ vật ở khoảng cách xa, xác định/nhận dạng người nào đó, hoặc nói về điều gì đó trong quá khứ / vừa mới được đề cập.",
+                "examples": [
+                  {
+                    "en": "That's Jerry's car, over there. / Put those down — they're dirty.",
+                    "vi": "Chỉ vật ở khoảng cách xa."
+                  },
+                  {
+                    "en": "Is that Ruth? ~ No, that's Rita.",
+                    "vi": "Xác định hoặc nhận dạng người nào đó."
+                  },
+                  {
+                    "en": "That was nice. What was it? [NOT This was nice...]",
+                    "vi": "Nói về điều gì đó trong quá khứ hoặc vừa mới xảy ra."
+                  }
+                ],
+                "notes": [
+                  {
+                    "ruleVi": "Các lưu ý mở rộng khi dùng This / That / These / Those:",
+                    "examples": [
+                      {
+                        "en": "Hello. This is Elisabeth. Is that Ruth?",
+                        "vi": "Trên điện thoại: dùng 'this' để xưng tên mình và 'that' (hoặc 'this') để hỏi người đầu dây bên kia."
+                      },
+                      {
+                        "en": "He hung his daughter's portrait beside that of his wife's. [that = portrait]",
+                        "vi": "Thay cho danh từ, cụm từ hoặc mệnh đề đã được nói đến trước đó."
+                      },
+                      {
+                        "en": "Those who couldn't walk were carried on stretchers. / Those injured in the accident were taken to hospital.",
+                        "vi": "'Those' có thể theo sau bởi mệnh đề quan hệ xác định hoặc ngữ phân từ để chỉ người (= The people who...)."
+                      },
+                      {
+                        "en": "I don't like these sweaters. I prefer those (ones) over there.",
+                        "vi": "Có thể đứng một mình hoặc có 'one / ones' theo sau khi có sự so sánh hoặc lựa chọn."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-5",
+            "code": "5",
+            "titleVi": "Đại từ nghi vấn",
+            "titleEn": "Interrogative pronouns",
+            "descriptionVi": "Đại từ nghi vấn là các đại từ dùng để hỏi như: who, whom, whose, what, which. Thường đứng đầu câu và đi trước động từ.",
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "Who (ai)",
+                "titleEn": "Who",
+                "descriptionVi": "Dùng cho người, làm chủ ngữ hoặc tân ngữ của động từ/giới từ. Khi who làm tân ngữ của giới từ, giới từ luôn đặt cuối câu.",
+                "examples": [
+                  {
+                    "en": "Who keeps the keys? / Who is the man in grey coat?",
+                    "vi": "Làm chủ ngữ của động từ."
+                  },
+                  {
+                    "en": "Who did you see at church?",
+                    "vi": "Làm tân ngữ của động từ see."
+                  },
+                  {
+                    "en": "Who did you go with? [NOT With who did you go?]",
+                    "vi": "Làm tân ngữ của giới từ (giới từ đặt cuối câu)."
+                  }
+                ]
+              },
+              {
+                "code": "b",
+                "titleVi": "Whom (ai)",
+                "titleEn": "Whom",
+                "descriptionVi": "Dùng cho người, làm tân ngữ cho động từ hoặc giới từ (thường dùng trong văn viết hoặc lối nói trịnh trọng). Giới từ có thể đặt trước whom hoặc cuối câu.",
+                "examples": [
+                  {
+                    "en": "Whom did they invite?",
+                    "vi": "Họ đã mời những ai?"
+                  },
+                  {
+                    "en": "To whom were you speaking at that time? / Whom were you speaking to at that time?",
+                    "vi": "Lúc đó bạn đang nói chuyện với ai vậy?"
+                  }
+                ]
+              },
+              {
+                "code": "c",
+                "titleVi": "Whose (của ai)",
+                "titleEn": "Whose",
+                "descriptionVi": "Dùng để hỏi về sự sở hữu, làm chủ ngữ của động từ.",
+                "examples": [
+                  {
+                    "en": "Whose is that dog?",
+                    "vi": "Con chó kia của ai?"
+                  },
+                  {
+                    "en": "What about these jackets? Whose are they?",
+                    "vi": "Còn những chiếc áo vét này thì sao? Chúng của ai vậy?"
+                  }
+                ]
+              },
+              {
+                "code": "d",
+                "titleVi": "What (cái gì)",
+                "titleEn": "What",
+                "descriptionVi": "Dùng để hỏi về sự vật hoặc sự việc (làm chủ ngữ hoặc tân ngữ), và dùng trong nhiều cấu trúc hỏi thông dụng:",
+                "examples": [
+                  {
+                    "en": "What caused the explosion? / What did you say?",
+                    "vi": "Hỏi thông tin / sự việc."
+                  },
+                  {
+                    "en": "What is he? / What does he do? [= What is his profession?]",
+                    "vi": "Hỏi nghề nghiệp."
+                  },
+                  {
+                    "en": "What is this tool for? [= Why / for what purpose?]",
+                    "vi": "What ... for?: hỏi mục đích hoặc lý do."
+                  },
+                  {
+                    "en": "What was the exam like? ~ It was very difficult. / What is David like? ~ He's very sociable.",
+                    "vi": "What + be ... like?: hỏi về tính cách, tính chất hoặc nét đặc trưng."
+                  },
+                  {
+                    "en": "What does she look like? ~ She's tall and glamorous.",
+                    "vi": "What ... look like?: hỏi về ngoại hình, vẻ bề ngoài."
+                  },
+                  {
+                    "en": "What about going for a walk? [= How about going for a walk?]",
+                    "vi": "What about + V-ing?: đưa ra gợi ý hoặc đề nghị."
+                  }
+                ]
+              },
+              {
+                "code": "e",
+                "titleVi": "Which (nào, cái nào, người nào)",
+                "titleEn": "Which",
+                "descriptionVi": "Dùng cho cả người và vật để chỉ sự lựa chọn trong một số lượng có giới hạn đã được biết.",
+                "formula": "Which of + determiner (the, my, these, those...) + plural noun | Which of + pronoun",
+                "examples": [
+                  {
+                    "en": "Which is quicker, the bus or the train?",
+                    "vi": "Xe nào nhanh hơn, xe buýt hay xe lửa?"
+                  },
+                  {
+                    "en": "Which of these photos would you like?",
+                    "vi": "Bạn thích tấm nào trong số ảnh này?"
+                  },
+                  {
+                    "en": "Which of us is going to do the washing-up?",
+                    "vi": "Ai trong chúng ta sẽ rửa bát?"
+                  }
+                ],
+                "notes": [
+                  {
+                    "ruleVi": "Phân biệt Which và What khi hỏi về sự lựa chọn:",
+                    "examples": [
+                      {
+                        "en": "There's gin, whisky and sherry. Which will you have?",
+                        "vi": "Which: lựa chọn trong một số lượng có giới hạn."
+                      },
+                      {
+                        "en": "What would you like to drink? [NOT Which would you like to drink?]",
+                        "vi": "What: lựa chọn rộng rãi, không bị giới hạn trong một số lượng nhất định."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-6",
+            "code": "6",
+            "titleVi": "Đại từ quan hệ",
+            "titleEn": "Relative pronouns",
+            "descriptionVi": "Các đại từ who, whom, whose, which, that là các đại từ quan hệ được dùng để thay cho danh từ đi trước và đồng thời có chức năng nối mệnh đề chính với mệnh đề phụ trong mệnh đề quan hệ (relative clauses). Who/whom chỉ người, which chỉ vật, that chỉ cả người lẫn vật, và whose chỉ sự sở hữu."
+          },
+          {
+            "id": "pron-sub-7",
+            "code": "7",
+            "titleVi": "Đại từ phân bổ",
+            "titleEn": "Distributive pronouns",
+            "descriptionVi": "Đại từ phân bổ gồm các từ: all, most, each, both, either, neither.",
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "All (tất cả)",
+                "titleEn": "All",
+                "descriptionVi": "Chỉ toàn bộ số lượng người hoặc vật của một nhóm từ ba trở lên.",
+                "formula": "All (of) + determiner + plural/uncountable noun | All of us / you / them (+ plural verb)",
+                "examples": [
+                  {
+                    "en": "All were unanimous to vote him.",
+                    "vi": "Tất cả đều nhất trí bầu ông ta."
+                  },
+                  {
+                    "en": "All (of) my friends like riding. / All (of) the money has been spent.",
+                    "vi": "Có thể bỏ 'of' trước danh từ, nhưng KHÔNG được bỏ 'of' trước đại từ (All of us)."
+                  },
+                  {
+                    "en": "I've eaten all (of) the cake. [= the whole cake]",
+                    "vi": "All (of) + danh từ đếm được số ít mang nghĩa 'toàn bộ' (whole)."
+                  },
+                  {
+                    "en": "These cups are all dirty. / He said goodbye to us all.",
+                    "vi": "All đứng sau trợ động từ, động từ to be hoặc đại từ tân ngữ."
+                  },
+                  {
+                    "en": "All (that) I have is yours. [All = Everything]",
+                    "vi": "All + mệnh đề quan hệ mang nghĩa 'everything' hoặc 'the only thing'."
+                  }
+                ],
+                "noteVi": "Không dùng 'all' đứng một mình với nghĩa 'everything' hoặc 'everybody': dùng 'Everything is yours' [NOT All is yours] và 'Everybody enjoyed the party' [NOT All enjoyed...]."
+              },
+              {
+                "code": "b",
+                "titleVi": "Most (phần lớn; hầu hết)",
+                "titleEn": "Most",
+                "descriptionVi": "Chỉ phần lớn nhất của cái gì hoặc đa số người hoặc vật.",
+                "formula": "Most of + determiner + noun (+ singular/plural verb) | Most of us / you / them (+ plural verb)",
+                "examples": [
+                  {
+                    "en": "There are hundreds of verbs in English, and most are regular.",
+                    "vi": "Tiếng Anh có hàng trăm động từ, và đa số là động từ có quy tắc."
+                  },
+                  {
+                    "en": "Most of the people here know each other.",
+                    "vi": "Hầu hết mọi người ở đây đều quen nhau."
+                  },
+                  {
+                    "en": "John spends most of his free time in the library.",
+                    "vi": "Phần lớn thời gian rảnh rỗi, John ở trong thư viện."
+                  }
+                ]
+              },
+              {
+                "code": "c",
+                "titleVi": "Each (mỗi)",
+                "titleEn": "Each",
+                "descriptionVi": "Chỉ từng cá nhân hoặc từng đơn vị trong một số lượng người hoặc vật từ hai trở lên.",
+                "formula": "Each of + determiner + plural noun / us / you / them (+ singular verb)",
+                "examples": [
+                  {
+                    "en": "There are six flats. Each has its own entrance.",
+                    "vi": "Có 6 căn hộ. Mỗi căn có lối đi riêng."
+                  },
+                  {
+                    "en": "Each of us sees the world differently.",
+                    "vi": "Mỗi người trong chúng ta nhìn nhận thế giới một cách khác nhau."
+                  },
+                  {
+                    "en": "She gave the students each a copy of the script. / He gave us £5 each.",
+                    "vi": "Each đứng sau tân ngữ hoặc sau một số tiền/con số."
+                  },
+                  {
+                    "en": "We've each got our own cabinets. / The students each have different points of view.",
+                    "vi": "Khi đứng sau trợ động từ/to be hoặc trước động từ thường, động từ chia theo chủ ngữ số nhiều."
+                  }
+                ]
+              },
+              {
+                "code": "d",
+                "titleVi": "Both (cả hai)",
+                "titleEn": "Both",
+                "descriptionVi": "Chỉ cả hai người hoặc hai vật; luôn đi với động từ số nhiều.",
+                "formula": "Both (of) + determiner + plural noun | Both of us / you / them (+ plural verb)",
+                "examples": [
+                  {
+                    "en": "He has two brothers; both live in London.",
+                    "vi": "Anh ta có hai anh trai; cả hai đều sống ở London."
+                  },
+                  {
+                    "en": "Both (of) her children are boys. / Marta sends both of you her regards.",
+                    "vi": "Có thể bỏ 'of' trước danh từ, nhưng bắt buộc dùng 'of' trước đại từ."
+                  },
+                  {
+                    "en": "We can both swim. / They're both doctors. / She invited us both.",
+                    "vi": "Vị trí của both sau trợ động từ, sau to be, hoặc sau tân ngữ số nhiều."
+                  }
+                ],
+                "noteVi": "Không dùng mạo từ 'the' trước both: Both the children are naughty. [NOT The both children...]"
+              },
+              {
+                "code": "e",
+                "titleVi": "Either (mỗi, một trong hai)",
+                "titleEn": "Either",
+                "descriptionVi": "Chỉ cái này hoặc cái kia trong hai cái.",
+                "formula": "Either of + determiner + plural noun / us / you / them (+ singular verb)",
+                "examples": [
+                  {
+                    "en": "Do you want tea or coffee? ~ Either. I don't mind.",
+                    "vi": "Anh muốn dùng trà hay cà phê? ~ Gì cũng được."
+                  },
+                  {
+                    "en": "Does either of you speak French?",
+                    "vi": "Trong hai người có người nào biết nói tiếng Pháp không?"
+                  },
+                  {
+                    "en": "I don't like either of my math teachers.",
+                    "vi": "Tôi không thích người nào trong hai giáo viên dạy toán cả."
+                  }
+                ]
+              },
+              {
+                "code": "f",
+                "titleVi": "Neither (cả hai ... không)",
+                "titleEn": "Neither",
+                "descriptionVi": "Chỉ không phải cái này mà cũng không phải cái kia trong hai cái.",
+                "formula": "Neither of + determiner + plural noun / us / you / them (+ singular verb)",
+                "examples": [
+                  {
+                    "en": "There were two witnesses, but neither would make a statement.",
+                    "vi": "Có hai nhân chứng, nhưng cả hai đều không cho lời khai."
+                  },
+                  {
+                    "en": "Neither of the books was published in this country.",
+                    "vi": "Cả hai cuốn sách đều không được xuất bản ở nước này."
+                  }
+                ],
+                "noteVi": "Động từ số ít thường được dùng sau either of và neither of, nhưng trong lối văn thân mật động từ số nhiều cũng có thể được dùng: Neither of my sisters is/are married."
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-8",
+            "code": "8",
+            "titleVi": "Đại từ bất định",
+            "titleEn": "Indefinite pronouns",
+            "descriptionVi": "Bảng tổng hợp các đại từ bất định trong tiếng Anh:",
+            "table": {
+              "headers": [
+                "Nhóm từ",
+                "Vật / Sự việc",
+                "Người (-one)",
+                "Người (-body)",
+                "Nơi chốn"
+              ],
+              "rows": [
+                [
+                  "some",
+                  "something",
+                  "someone",
+                  "somebody",
+                  "somewhere"
+                ],
+                [
+                  "any",
+                  "anything",
+                  "anyone",
+                  "anybody",
+                  "anywhere"
+                ],
+                [
+                  "every",
+                  "everything",
+                  "everyone",
+                  "everybody",
+                  "everywhere"
+                ],
+                [
+                  "none / no",
+                  "nothing",
+                  "no one",
+                  "nobody",
+                  "nowhere"
+                ]
+              ]
+            },
+            "items": [
+              {
+                "code": "a",
+                "titleVi": "Some, any và none",
+                "titleEn": "Some, any and none",
+                "subRules": [
+                  {
+                    "ruleVi": "Some (một vài, một số): dùng trong câu khẳng định, hoặc trong câu hỏi mang tính lời mời / yêu cầu / chờ đợi câu trả lời 'yes'.",
+                    "examples": [
+                      {
+                        "en": "I'd like some milk. There is some in the fridge.",
+                        "vi": "Tôi muốn uống sữa. Có một ít trong tủ lạnh."
+                      },
+                      {
+                        "en": "Would you like some? / Do you want some help with your homework?",
+                        "vi": "Dùng trong lời mời hoặc câu đề nghị giúp đỡ."
+                      },
+                      {
+                        "en": "Some of the chairs are broken. / Some of the money was stolen.",
+                        "vi": "Some of + determiner + danh từ/đại từ (động từ chia theo danh từ phía sau)."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Any (nào, bất cứ): dùng trong câu phủ định, câu nghi vấn, sau if/whether và sau các từ mang nghĩa phủ định/giới hạn (never, hardly, barely, scarcely, without).",
+                    "examples": [
+                      {
+                        "en": "Jane looked around for her friends, but there weren't any.",
+                        "vi": "Jane nhìn quanh tìm bạn bè, nhưng chẳng có người bạn nào cả."
+                      },
+                      {
+                        "en": "Does/Do any of these books belong to you?",
+                        "vi": "Có cuốn nào trong số sách này là của bạn không?"
+                      },
+                      {
+                        "en": "She spent hardly any of the money.",
+                        "vi": "Cô ấy hầu như không tiêu một đồng nào."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "None (không ai, không cái gì/điều gì): dùng thay cho danh từ đã được nói đến trước đó.",
+                    "examples": [
+                      {
+                        "en": "How much money have you got? ~ None.",
+                        "vi": "Anh có bao nhiêu tiền? ~ Chẳng có đồng nào cả."
+                      },
+                      {
+                        "en": "None of the tourists want/wants to climb the mountain.",
+                        "vi": "Không một du khách nào muốn trèo lên ngọn núi này."
+                      },
+                      {
+                        "en": "None of this money is mine.",
+                        "vi": "Chẳng có đồng nào trong số tiền này là của tôi cả."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "code": "b",
+                "titleVi": "Các đại từ ghép với some-, any-, no-, every-",
+                "titleEn": "Compound indefinite pronouns",
+                "subRules": [
+                  {
+                    "ruleVi": "Somebody, someone, something, somewhere: dùng trong câu khẳng định và lời mời/yêu cầu; luôn đi với động từ số ít.",
+                    "examples": [
+                      {
+                        "en": "Someone wants to speak to you on the phone.",
+                        "vi": "Có người muốn nói chuyện điện thoại với anh."
+                      },
+                      {
+                        "en": "Would you like something to drink?",
+                        "vi": "Anh muốn uống gì không?"
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Anybody, anyone, anything, anywhere: dùng trong câu phủ định, nghi vấn, mệnh đề if và sau các từ phủ định/giới hạn; đi với động từ số ít.",
+                    "examples": [
+                      {
+                        "en": "Has anybody seen my bag? / I don't want anything to eat.",
+                        "vi": "Có ai thấy túi của tôi không? / Tôi chẳng muốn ăn gì cả."
+                      },
+                      {
+                        "en": "If anyone has any questions, I'll be pleased to answer them.",
+                        "vi": "Nếu bất cứ ai có câu hỏi, tôi sẽ sẵn lòng trả lời."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Nobody, no one, nothing: mang nghĩa phủ định (= not anybody / not anything), dùng với động từ khẳng định ở số ít (không dùng hai phủ định trong một mệnh đề).",
+                    "examples": [
+                      {
+                        "en": "Nobody/No one came to visit me when I was in hospital.",
+                        "vi": "Khi tôi nằm viện chẳng có ai đến thăm tôi cả."
+                      },
+                      {
+                        "en": "He said nothing. [NOT He didn't say nothing.]",
+                        "vi": "Anh ta chẳng nói gì cả."
+                      }
+                    ]
+                  },
+                  {
+                    "ruleVi": "Everything, everyone, everybody: tuy mang nghĩa số nhiều nhưng về ngữ pháp là đại từ số ít nên dùng với động từ số ít.",
+                    "examples": [
+                      {
+                        "en": "Everybody has arrived.",
+                        "vi": "Mọi người đã tới."
+                      }
+                    ]
+                  }
+                ],
+                "notes": [
+                  {
+                    "ruleVi": "Đại từ thay thế cho các đại từ bất định: Dùng they / them / their / themselves khi thay thế cho đại từ chỉ người (someone, everyone, nobody...), và dùng it khi thay thế cho đại từ chỉ vật (something, anything, nothing).",
+                    "examples": [
+                      {
+                        "en": "Someone left their luggage on the train.",
+                        "vi": "Có người nào đó đã để quên hành lý trên xe lửa."
+                      },
+                      {
+                        "en": "No one saw Tom go out, did they?",
+                        "vi": "Không một ai nhìn thấy Tom ra ngoài, phải không?"
+                      },
+                      {
+                        "en": "Something went wrong, didn't it?",
+                        "vi": "Có điều gì đó trục trặc, phải không?"
+                      },
+                      {
+                        "en": "Someone's passport has been stolen.",
+                        "vi": "Các đại từ chỉ người có thể dùng với sở hữu cách ('s)."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "pron-sub-9",
+            "code": "9",
+            "titleVi": "Đại từ hỗ tương",
+            "titleEn": "Reciprocal pronouns",
+            "descriptionVi": "Đại từ hỗ tương là đại từ chỉ mối quan hệ qua lại giữa hai hoặc nhiều người hoặc vật với nhau, gồm each other và one another (cùng nghĩa là 'nhau, lẫn nhau').",
+            "examples": [
+              {
+                "en": "Sue and Ann don't like each other / one another.",
+                "vi": "Sue và Ann không thích nhau."
+              },
+              {
+                "en": "They sat for two hours without talking to each other / one another.",
+                "vi": "Họ ngồi suốt hai tiếng đồng hồ mà không nói gì với nhau."
+              },
+              {
+                "en": "They wrote down each other's / one another's phone number.",
+                "vi": "Đại từ hỗ tương có thể dùng với sở hữu cách."
+              }
+            ],
+            "notes": [
+              {
+                "ruleVi": "Không dùng each other sau các từ meet (gặp), marry (kết hôn), và similar (giống nhau, như nhau).",
+                "examples": [
+                  {
+                    "en": "They married in 1998. [NOT They married each other...]",
+                    "vi": "Họ cưới nhau năm 1998."
+                  },
+                  {
+                    "en": "Their interests are very similar. [NOT ... similar each other]",
+                    "vi": "Sở thích của họ rất giống nhau."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "id": "pron-ex-1",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Subject or object form? Put in the pronouns (nếu câu có nhiều chỗ trống, ngăn cách bằng dấu / hoặc dấu phẩy).",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "There's no need to shout. I can hear you.",
+            "isExample": true,
+            "answer": "I / you"
+          },
+          {
+            "number": 2,
+            "prompt": "You and I work well together. _______ are a good team.",
+            "isExample": false,
+            "answer": "We"
+          },
+          {
+            "number": 3,
+            "prompt": "We've got a big problem. Could _______ help _______, please?",
+            "isExample": false,
+            "answer": "you / us"
+          },
+          {
+            "number": 4,
+            "prompt": "John's two years younger than Alice, but _______ is nearly as tall as _______.",
+            "isExample": false,
+            "answer": "he / her | he / she"
+          },
+          {
+            "number": 5,
+            "prompt": "This is a good photo, isn't _______? ~ Is Jessica in _______? ~ Yes, that's _______. Look, _______ is next to Andrew.",
+            "isExample": false,
+            "answer": "it / it / her / she"
+          },
+          {
+            "number": 6,
+            "prompt": "Who did this crossword? ~ _______ did. _______ did _______ this morning.",
+            "isExample": false,
+            "answer": "I / I / it"
+          },
+          {
+            "number": 7,
+            "prompt": "Is this Nicky's bag? ~ No, _______ didn't bring one. It can't belong to _______.",
+            "isExample": false,
+            "answer": "she / her | he / him"
+          },
+          {
+            "number": 8,
+            "prompt": "_______ am looking for my shoes. Have _______ seen _______? ~ Yes, _______ are here.",
+            "isExample": false,
+            "answer": "I / you / them / they"
+          },
+          {
+            "number": 9,
+            "prompt": "What about Emily? ~ I expect _______ will be there. And her brother. _______ both came to the party. ~ Do _______ mean Jackson? I don't like _______ very much.",
+            "isExample": false,
+            "answer": "she / They / you / him"
+          },
+          {
+            "number": 10,
+            "prompt": "Are Rita and Richard coming to the party? ~ We've invited _______, but _______ isn't sure _______ can come or not.",
+            "isExample": false,
+            "answer": "them / he / they | them / she / they"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-2",
+        "roman": "II",
+        "type": "transformation",
+        "instruction": "Rewrite these sentences, using pronoun it.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "To keep it somewhere safe is important.",
+            "isExample": true,
+            "answer": "It's important to keep it somewhere safe."
+          },
+          {
+            "number": 2,
+            "prompt": "The journey to Brighton from London takes only one hour by train.",
+            "isExample": false,
+            "answer": "It takes only one hour to travel to Brighton from London by train. / It takes only one hour by train to get to Brighton from London."
+          },
+          {
+            "number": 3,
+            "prompt": "Some parts of King Lear are extremely difficult to understand.",
+            "isExample": false,
+            "answer": "It is extremely difficult to understand some parts of King Lear."
+          },
+          {
+            "number": 4,
+            "prompt": "That he will fail is clear to everyone but himself.",
+            "isExample": false,
+            "answer": "It is clear to everyone but himself that he will fail."
+          },
+          {
+            "number": 5,
+            "prompt": "Finding our way home won't be easy.",
+            "isExample": false,
+            "answer": "It won't be easy to find our way home. / It won't be easy finding our way home."
+          },
+          {
+            "number": 6,
+            "prompt": "My question itself made him angry.",
+            "isExample": false,
+            "answer": "It was my question itself that made him angry."
+          },
+          {
+            "number": 7,
+            "prompt": "Meeting each other on this occasion is a good chance.",
+            "isExample": false,
+            "answer": "It is a good chance to meet each other on this occasion. / It is a good chance meeting each other on this occasion."
+          },
+          {
+            "number": 8,
+            "prompt": "Do you think that to explain to him what happened is difficult?",
+            "isExample": false,
+            "answer": "Do you think that it is difficult to explain to him what happened? / Do you think it is difficult to explain to him what happened?"
+          },
+          {
+            "number": 9,
+            "prompt": "People think that he is the best doctor in this city.",
+            "isExample": false,
+            "answer": "It is thought that he is the best doctor in this city."
+          },
+          {
+            "number": 10,
+            "prompt": "To fall asleep like that is stupid.",
+            "isExample": false,
+            "answer": "It is stupid to fall asleep like that."
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-3",
+        "roman": "III",
+        "type": "fill_in_blank",
+        "instruction": "Put in there or it.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "What's the new restaurant like? Is it good?",
+            "isExample": true,
+            "answer": "it"
+          },
+          {
+            "number": 2,
+            "prompt": "The road is closed. _______ has been an accident.",
+            "isExample": false,
+            "answer": "There"
+          },
+          {
+            "number": 3,
+            "prompt": "Take a taxi. _______ is a long way to the station.",
+            "isExample": false,
+            "answer": "It"
+          },
+          {
+            "number": 4,
+            "prompt": "Did someone ring? ~ _______ was Vicky. She just called to say she's arrived safely.",
+            "isExample": false,
+            "answer": "It"
+          },
+          {
+            "number": 5,
+            "prompt": "_______ was a car outside. _______ looked very expensive.",
+            "isExample": false,
+            "answer": "There / It"
+          },
+          {
+            "number": 6,
+            "prompt": "When we got to the cinema, _______ was a queue outside. _______ was a very long queue, so we decided not to wait.",
+            "isExample": false,
+            "answer": "there / It"
+          },
+          {
+            "number": 7,
+            "prompt": "How far is _______ from Milan to Rome?",
+            "isExample": false,
+            "answer": "it"
+          },
+          {
+            "number": 8,
+            "prompt": "_______ was wet, and _______ was a cold east wind.",
+            "isExample": false,
+            "answer": "It / there"
+          },
+          {
+            "number": 9,
+            "prompt": "_______ was after midnight, and _______ were few people on the street.",
+            "isExample": false,
+            "answer": "It / there"
+          },
+          {
+            "number": 10,
+            "prompt": "I was told that _______ would be somebody to meet me at the airport but _______ wasn't anybody.",
+            "isExample": false,
+            "answer": "there / there"
+          },
+          {
+            "number": 11,
+            "prompt": "_______ is a woman at the door. ~ Oh, _______ is Aunt Le.",
+            "isExample": false,
+            "answer": "There / it"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-4",
+        "roman": "IV",
+        "type": "inline_choice",
+        "instruction": "Choose the right possessives.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "Did you and [your / yours] friends have a nice holiday?",
+            "answer": "your"
+          },
+          {
+            "number": 2,
+            "prompt": "Is this Alice's book or [your / yours]? ~ It's [her / hers].",
+            "answer": "yours / hers"
+          },
+          {
+            "number": 3,
+            "prompt": "[Who / Whose] car is that on the driveway? ~ I don't know, not [our / ours].",
+            "answer": "Whose / ours"
+          },
+          {
+            "number": 4,
+            "prompt": "Take [your / yours] feet off the table. [It / Its] legs aren't very strong.",
+            "answer": "your / Its"
+          },
+          {
+            "number": 5,
+            "prompt": "The Whartons are spending August in [our / ours] flat, and we're borrowing [their / theirs].",
+            "answer": "our / theirs"
+          },
+          {
+            "number": 6,
+            "prompt": "That's [my / mine] coat, and the scarf is [my / mine] too.",
+            "answer": "my / mine"
+          },
+          {
+            "number": 7,
+            "prompt": "[Your / Yours] eyes are blue and [her / hers] are brown.",
+            "answer": "Your / hers"
+          },
+          {
+            "number": 8,
+            "prompt": "They claim the money is all [their / theirs].",
+            "answer": "theirs"
+          },
+          {
+            "number": 9,
+            "prompt": "Unfortunately, the town has lost [it's / its] only cinema.",
+            "answer": "its"
+          },
+          {
+            "number": 10,
+            "prompt": "Rachel has got [her / hers] own calculator. She doesn't borrow [my / mine].",
+            "answer": "her / mine"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-5",
+        "roman": "V",
+        "type": "fill_in_blank",
+        "instruction": "Complete the conversation. Put in my, your, etc or mine, yours, etc.",
+        "passage": "Laura: Did you and (1) ___ friends have a nice holiday?\nEmma: Yes, it was wonderful. We had the best holiday of (2) ___ lives. It didn't start very well, though. Daniel forgot to bring (3) ___ passport.\nLaura: Oh, dear. So what happened?\nEmma: Well, luckily he doesn't live far from the airport. He rang (4) ___ parents, and they brought the passport over in (5) ___ car, just in time.\nLaura: You remembered (6) ___, I hope.\nEmma: Yes, I had (7) ___, even though I'm usually the one who forgets things. Actually Rachel thought for a minute that she'd lost (8) ___. Luckily it was in (9) ___ suitcase. Anyway, in the end we had a marvellous time.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "Did you and (1) _______ friends have a nice holiday?",
+            "answer": "your"
+          },
+          {
+            "number": 2,
+            "prompt": "We had the best holiday of (2) _______ lives.",
+            "answer": "our"
+          },
+          {
+            "number": 3,
+            "prompt": "Daniel forgot to bring (3) _______ passport.",
+            "answer": "his"
+          },
+          {
+            "number": 4,
+            "prompt": "He rang (4) _______ parents,",
+            "answer": "his"
+          },
+          {
+            "number": 5,
+            "prompt": "and they brought the passport over in (5) _______ car, just in time.",
+            "answer": "their"
+          },
+          {
+            "number": 6,
+            "prompt": "You remembered (6) _______, I hope.",
+            "answer": "yours"
+          },
+          {
+            "number": 7,
+            "prompt": "Yes, I had (7) _______, even though I'm usually the one who forgets things.",
+            "answer": "mine"
+          },
+          {
+            "number": 8,
+            "prompt": "Actually Rachel thought for a minute that she'd lost (8) _______.",
+            "answer": "hers"
+          },
+          {
+            "number": 9,
+            "prompt": "Luckily it was in (9) _______ suitcase.",
+            "answer": "her"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-6",
+        "roman": "VI",
+        "type": "fill_in_blank",
+        "instruction": "Complete each sentence, using reflexive pronouns (myself/ yourself ...) with one of these verbs (in the correct form).",
+        "wordBank": [
+          "burn",
+          "cut",
+          "blame",
+          "enjoy",
+          "express",
+          "hurt",
+          "dry",
+          "turn",
+          "look at",
+          "lock"
+        ],
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I cut myself shaving this morning.",
+            "isExample": true,
+            "answer": "cut myself"
+          },
+          {
+            "number": 2,
+            "prompt": "John fell out of the window, but he didn't _______ badly.",
+            "isExample": false,
+            "answer": "hurt himself"
+          },
+          {
+            "number": 3,
+            "prompt": "The computer will _______ off if you don't use it.",
+            "isExample": false,
+            "answer": "turn itself"
+          },
+          {
+            "number": 4,
+            "prompt": "We _______ out last night.",
+            "isExample": false,
+            "answer": "locked ourselves"
+          },
+          {
+            "number": 5,
+            "prompt": "Be careful! That pan is very hot. Don't _______.",
+            "isExample": false,
+            "answer": "burn yourself"
+          },
+          {
+            "number": 6,
+            "prompt": "Jane _______ in the mirror to check her make-up.",
+            "isExample": false,
+            "answer": "looked at herself"
+          },
+          {
+            "number": 7,
+            "prompt": "They had a great time. They really _______.",
+            "isExample": false,
+            "answer": "enjoyed themselves"
+          },
+          {
+            "number": 8,
+            "prompt": "Sometimes I can't say what I mean. I wish I could _______ better.",
+            "isExample": false,
+            "answer": "express myself"
+          },
+          {
+            "number": 9,
+            "prompt": "It isn't your fault. You really shouldn't _______.",
+            "isExample": false,
+            "answer": "blame yourself"
+          },
+          {
+            "number": 10,
+            "prompt": "Vicky and Emma, you can _______ on these towels.",
+            "isExample": false,
+            "answer": "dry yourselves"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-7",
+        "roman": "VII",
+        "type": "fill_in_blank",
+        "instruction": "Put in reflexive pronouns (myself/ yourself/ herself ...) or personal pronouns (me/ you/ her ...).",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "Julia had a great holiday. She enjoyed herself.",
+            "isExample": true,
+            "answer": "herself"
+          },
+          {
+            "number": 2,
+            "prompt": "It's not my fault. You can't blame _______.",
+            "isExample": false,
+            "answer": "me"
+          },
+          {
+            "number": 3,
+            "prompt": "Don't pay any attention to _______. He always complains.",
+            "isExample": false,
+            "answer": "him"
+          },
+          {
+            "number": 4,
+            "prompt": "What I did was very wrong. I'm ashamed of _______.",
+            "isExample": false,
+            "answer": "myself"
+          },
+          {
+            "number": 5,
+            "prompt": "We've got a problem. I hope you can help _______.",
+            "isExample": false,
+            "answer": "us"
+          },
+          {
+            "number": 6,
+            "prompt": "My mother likes to have all her family near _______.",
+            "isExample": false,
+            "answer": "her"
+          },
+          {
+            "number": 7,
+            "prompt": "The old man is no longer able to look after _______.",
+            "isExample": false,
+            "answer": "himself"
+          },
+          {
+            "number": 8,
+            "prompt": "It's a pity you didn't bring your camera with _______.",
+            "isExample": false,
+            "answer": "you"
+          },
+          {
+            "number": 9,
+            "prompt": "I gave _______ a key so that they could let _______ in.",
+            "isExample": false,
+            "answer": "them / themselves"
+          },
+          {
+            "number": 10,
+            "prompt": "Don't worry about _______, Mom. I can look after _______.",
+            "isExample": false,
+            "answer": "me / myself"
+          },
+          {
+            "number": 11,
+            "prompt": "Don't tell _______ the answer to the puzzle. We can work it out for _______.",
+            "isExample": false,
+            "answer": "us / ourselves"
+          },
+          {
+            "number": 12,
+            "prompt": "\"Can I take another biscuit?\" \"Of course. Help _______!\"",
+            "isExample": false,
+            "answer": "yourself"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-8",
+        "roman": "VIII",
+        "type": "multiple_choice",
+        "instruction": "Choose the right answer.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I go to school with _______ every day.",
+            "options": {
+              "a": "they",
+              "b": "them",
+              "c": "their",
+              "d": "themselves"
+            },
+            "answer": "b",
+            "answerText": "them"
+          },
+          {
+            "number": 2,
+            "prompt": "We saw _______ at the Union last Friday.",
+            "options": {
+              "a": "her",
+              "b": "she",
+              "c": "hers",
+              "d": "herself"
+            },
+            "answer": "a",
+            "answerText": "her"
+          },
+          {
+            "number": 3,
+            "prompt": "Isn't _______ a nice person?",
+            "options": {
+              "a": "he",
+              "b": "his",
+              "c": "himself",
+              "d": "him"
+            },
+            "answer": "a",
+            "answerText": "he"
+          },
+          {
+            "number": 4,
+            "prompt": "John and _______ gave the money to the boy.",
+            "options": {
+              "a": "her",
+              "b": "herself",
+              "c": "she",
+              "d": "me"
+            },
+            "answer": "c",
+            "answerText": "she"
+          },
+          {
+            "number": 5,
+            "prompt": "Your record is scratched and _______ is, too.",
+            "options": {
+              "a": "my",
+              "b": "mine",
+              "c": "it",
+              "d": "myself"
+            },
+            "answer": "b",
+            "answerText": "mine"
+          },
+          {
+            "number": 6,
+            "prompt": "John's shoes were worn out, so he bought _______ a pair of new shoes.",
+            "options": {
+              "a": "him",
+              "b": "his",
+              "c": "them",
+              "d": "himself"
+            },
+            "answer": "d",
+            "answerText": "himself"
+          },
+          {
+            "number": 7,
+            "prompt": "Who does this CD belong to? ~ _______ I've just bought it.",
+            "options": {
+              "a": "I",
+              "b": "Me",
+              "c": "Mine",
+              "d": "Myself"
+            },
+            "answer": "b",
+            "answerText": "Me"
+          },
+          {
+            "number": 8,
+            "prompt": "The manager _______ welcomed us to the hotel.",
+            "options": {
+              "a": "himself",
+              "b": "he",
+              "c": "his",
+              "d": "him"
+            },
+            "answer": "a",
+            "answerText": "himself"
+          },
+          {
+            "number": 9,
+            "prompt": "Mary and _______ would rather go to the movies.",
+            "options": {
+              "a": "me",
+              "b": "my",
+              "c": "I",
+              "d": "mine"
+            },
+            "answer": "c",
+            "answerText": "I"
+          },
+          {
+            "number": 10,
+            "prompt": "Just help _______ to sandwiches, won't you?",
+            "options": {
+              "a": "you",
+              "b": "your",
+              "c": "yourself",
+              "d": "yours"
+            },
+            "answer": "c",
+            "answerText": "yourself"
+          },
+          {
+            "number": 11,
+            "prompt": "Could you lend Sue your ruler? _______ has just been broken.",
+            "options": {
+              "a": "She",
+              "b": "Her",
+              "c": "Hers",
+              "d": "Herself"
+            },
+            "answer": "c",
+            "answerText": "Hers"
+          },
+          {
+            "number": 12,
+            "prompt": "This parcel is for George and _______.",
+            "options": {
+              "a": "I",
+              "b": "me",
+              "c": "myself",
+              "d": "mine"
+            },
+            "answer": "b",
+            "answerText": "me"
+          },
+          {
+            "number": 13,
+            "prompt": "Is that Mary over there? Yes, that's _______.",
+            "options": {
+              "a": "her",
+              "b": "she",
+              "c": "hers",
+              "d": "herself"
+            },
+            "answer": "a",
+            "answerText": "her"
+          },
+          {
+            "number": 14,
+            "prompt": "John and Tom, you _______ have to do it.",
+            "options": {
+              "a": "yourself",
+              "b": "yours",
+              "c": "your",
+              "d": "yourselves"
+            },
+            "answer": "d",
+            "answerText": "yourselves"
+          },
+          {
+            "number": 15,
+            "prompt": "It was _______ who called you.",
+            "options": {
+              "a": "he",
+              "b": "him",
+              "c": "his",
+              "d": "himself"
+            },
+            "answer": "a",
+            "answerText": "he"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-9",
+        "roman": "IX",
+        "type": "fill_in_blank",
+        "instruction": "Complete the sentences with someone / anything / ...",
+        "wordBank": [
+          "someone",
+          "somebody",
+          "something",
+          "somewhere",
+          "anyone",
+          "anybody",
+          "anything",
+          "anywhere",
+          "everyone",
+          "everybody",
+          "everything",
+          "no one",
+          "nobody",
+          "nothing",
+          "some",
+          "any"
+        ],
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I was too surprised to say anything.",
+            "isExample": true,
+            "answer": "anything"
+          },
+          {
+            "number": 2,
+            "prompt": "There's _______ at the door. ~ Are you expecting _______?",
+            "isExample": false,
+            "answer": "someone / anyone | someone / anybody | somebody / anyone | somebody / anybody"
+          },
+          {
+            "number": 3,
+            "prompt": "Did you get the oil? ~ No, there wasn't _______ left.",
+            "isExample": false,
+            "answer": "any"
+          },
+          {
+            "number": 4,
+            "prompt": "Why are you looking under the bed? Have you lost _______? ~ Well, I was looking for _______, but now I can't remember what it was.",
+            "isExample": false,
+            "answer": "anything / something | something / something"
+          },
+          {
+            "number": 5,
+            "prompt": "Would you like some cheese and biscuits? ~ Oh no, thank you. I couldn't eat _______ else.",
+            "isExample": false,
+            "answer": "anything"
+          },
+          {
+            "number": 6,
+            "prompt": "You must be hungry. Would you like _______ to eat?",
+            "isExample": false,
+            "answer": "something"
+          },
+          {
+            "number": 7,
+            "prompt": "Quick, let's go! There's _______ coming and I don't want _______ to see us.",
+            "isExample": false,
+            "answer": "someone / anyone | someone / anybody | somebody / anyone | somebody / anybody"
+          },
+          {
+            "number": 8,
+            "prompt": "Sally was upset about _______ and refused to talk to _______.",
+            "isExample": false,
+            "answer": "something / anyone | something / anybody"
+          },
+          {
+            "number": 9,
+            "prompt": "This machine is very easy to use. _______ can learn to use it in a very short time.",
+            "isExample": false,
+            "answer": "Anyone / Anybody / Everyone / Everybody"
+          },
+          {
+            "number": 10,
+            "prompt": "Were there any calls for me? ~ Yes, _______ rang while you were out. He refused to give his name, but he wanted to discuss _______ with you.",
+            "isExample": false,
+            "answer": "someone / something | somebody / something"
+          },
+          {
+            "number": 11,
+            "prompt": "_______ who saw the accident should contact the police.",
+            "isExample": false,
+            "answer": "Anyone / Anybody / Everyone / Everybody"
+          },
+          {
+            "number": 12,
+            "prompt": "I didn't have any money, so I had to borrow _______.",
+            "isExample": false,
+            "answer": "some"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-10",
+        "roman": "X",
+        "type": "inline_choice",
+        "instruction": "Choose the right word.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "She told [nobody / anybody] about her wedding.",
+            "answer": "nobody"
+          },
+          {
+            "number": 2,
+            "prompt": "[Everyone / Someone] knows the man is a thief, but [anyone / no one] dares to say so publicly.",
+            "answer": "Everyone / no one"
+          },
+          {
+            "number": 3,
+            "prompt": "I can't go to the party. I haven't got [nothing / anything] to wear.",
+            "answer": "anything"
+          },
+          {
+            "number": 4,
+            "prompt": "I'd like to go away [somewhere / nowhere] if I can. [Someone / Anyone] I know has invited me to his villa in Portugal, so I may go there.",
+            "answer": "somewhere / Someone"
+          },
+          {
+            "number": 5,
+            "prompt": "What's in that box? ~ [Nothing / Anything]. It's empty.",
+            "answer": "Nothing"
+          },
+          {
+            "number": 6,
+            "prompt": "I don't know [nothing / anything] about economics.",
+            "answer": "anything"
+          },
+          {
+            "number": 7,
+            "prompt": "Has Matthew got a job yet? ~ No, but he's looked [somewhere / everywhere]. He hates the idea of sitting around doing [something / nothing].",
+            "answer": "everywhere / nothing"
+          },
+          {
+            "number": 8,
+            "prompt": "The accident looked serious but fortunately [nobody / anybody] was injured.",
+            "answer": "nobody"
+          },
+          {
+            "number": 9,
+            "prompt": "Could you do [anything / something] for me, please?",
+            "answer": "something"
+          },
+          {
+            "number": 10,
+            "prompt": "There was complete silence in the room. [Somebody / Nobody] said [anything / something].",
+            "answer": "Nobody / anything"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-11",
+        "roman": "XI",
+        "type": "inline_choice",
+        "instruction": "Choose the correct form.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "We had to wait because someone had lost [its / their] ticket.",
+            "answer": "their"
+          },
+          {
+            "number": 2,
+            "prompt": "One of the policemen had injured [his / their] arm.",
+            "answer": "his"
+          },
+          {
+            "number": 3,
+            "prompt": "Most of these shoes [is / are] in fashion now.",
+            "answer": "are"
+          },
+          {
+            "number": 4,
+            "prompt": "No one [likes / like] going to the dentist, do [he / they]?",
+            "answer": "likes / they"
+          },
+          {
+            "number": 5,
+            "prompt": "If anybody [wants / want] to leave early, [she / they] can.",
+            "answer": "wants / they"
+          },
+          {
+            "number": 6,
+            "prompt": "One of the guests had brought something wrapped in brown paper. She put [it / them] on the table.",
+            "answer": "it"
+          },
+          {
+            "number": 7,
+            "prompt": "Some of my friends [has / have] arrived.",
+            "answer": "have"
+          },
+          {
+            "number": 8,
+            "prompt": "No tourists ever [come / comes] to our village.",
+            "answer": "come"
+          },
+          {
+            "number": 9,
+            "prompt": "Everybody [have / has] to leave [his / their] bags outside.",
+            "answer": "has / their"
+          },
+          {
+            "number": 10,
+            "prompt": "No car [is / are] allowed in the city center.",
+            "answer": "is"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-12",
+        "roman": "XII",
+        "type": "fill_in_blank",
+        "instruction": "Put in of or nothing (-).",
+        "passage": "Well, some (1) ___ our luggage has arrived, so things could be worse. I've got the books and papers, but I've lost most (2) ___ my clothes. I haven't got any (3) ___ socks at all, and I'll have to buy some more (4) ___ jeans, but at least I've got enough (5) ___ underwear for the week. I'm going to buy a few (6) ___ those woolen shirts that you like, and one (7) ___ the big coats that we looked at. Unfortunately, they've got no (8) ___ shoes in my size, and none (9) ___ the jackets suit me. Anyway, I'm not alone. Everyone (10) ___ us has lost something. In fact, three (11) ___ people have got no (12) ___ luggage at all. Well, as they say, into each (13) ___ life a little (14) ___ rain must fall.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "some (1) ___ our luggage",
+            "answer": "of"
+          },
+          {
+            "number": 2,
+            "prompt": "most (2) ___ my clothes",
+            "answer": "of"
+          },
+          {
+            "number": 3,
+            "prompt": "any (3) ___ socks",
+            "answer": "-"
+          },
+          {
+            "number": 4,
+            "prompt": "some more (4) ___ jeans",
+            "answer": "-"
+          },
+          {
+            "number": 5,
+            "prompt": "enough (5) ___ underwear",
+            "answer": "-"
+          },
+          {
+            "number": 6,
+            "prompt": "a few (6) ___ those woolen shirts",
+            "answer": "of"
+          },
+          {
+            "number": 7,
+            "prompt": "one (7) ___ the big coats",
+            "answer": "of"
+          },
+          {
+            "number": 8,
+            "prompt": "no (8) ___ shoes",
+            "answer": "-"
+          },
+          {
+            "number": 9,
+            "prompt": "none (9) ___ the jackets",
+            "answer": "of"
+          },
+          {
+            "number": 10,
+            "prompt": "Everyone (10) ___ us",
+            "answer": "of"
+          },
+          {
+            "number": 11,
+            "prompt": "three (11) ___ people",
+            "answer": "-"
+          },
+          {
+            "number": 12,
+            "prompt": "no (12) ___ luggage",
+            "answer": "-"
+          },
+          {
+            "number": 13,
+            "prompt": "into each (13) ___ life",
+            "answer": "-"
+          },
+          {
+            "number": 14,
+            "prompt": "a little (14) ___ rain",
+            "answer": "-"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-13",
+        "roman": "XIII",
+        "type": "fill_in_blank",
+        "instruction": "Complete the sentences using the words in brackets. Sometimes no other words are necessary. Sometimes you need the or of the.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I wasn't well yesterday. I spent most of the day in bed. (most / day)",
+            "isExample": true,
+            "answer": "most of the day"
+          },
+          {
+            "number": 2,
+            "prompt": "Some cars can go faster than others. (some / cars)",
+            "isExample": true,
+            "answer": "Some cars"
+          },
+          {
+            "number": 3,
+            "prompt": "_______ drive too fast. (many / people)",
+            "isExample": false,
+            "answer": "Many people"
+          },
+          {
+            "number": 4,
+            "prompt": "_______ you took on holiday were very good. (some / photographs)",
+            "isExample": false,
+            "answer": "Some of the photographs"
+          },
+          {
+            "number": 5,
+            "prompt": "_______ learn more quickly than others. (some / people)",
+            "isExample": false,
+            "answer": "Some people"
+          },
+          {
+            "number": 6,
+            "prompt": "We've eaten _______ we bought. There's very little left. (most / food)",
+            "isExample": false,
+            "answer": "most of the food"
+          },
+          {
+            "number": 7,
+            "prompt": "Have you spent _______ you borrowed? (all / money)",
+            "isExample": false,
+            "answer": "all the money / all of the money"
+          },
+          {
+            "number": 8,
+            "prompt": "Peter can't stop talking. He talks _______. (all / time)",
+            "isExample": false,
+            "answer": "all the time"
+          },
+          {
+            "number": 9,
+            "prompt": "We had a lazy holiday. We spent _______ on the beach. (most / time)",
+            "isExample": false,
+            "answer": "most of the time"
+          },
+          {
+            "number": 10,
+            "prompt": "George is easy to get on with. _______ like him. (most / people)",
+            "isExample": false,
+            "answer": "Most people"
+          },
+          {
+            "number": 11,
+            "prompt": "The exam was difficult. I could only answer _______. (half / questions)",
+            "isExample": false,
+            "answer": "half the questions / half of the questions"
+          },
+          {
+            "number": 12,
+            "prompt": "It was a public holiday. _______ were open. (none / shops)",
+            "isExample": false,
+            "answer": "None of the shops"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-14",
+        "roman": "XIV",
+        "type": "fill_in_blank",
+        "instruction": "Complete the sentences with all / both / neither / either / none / each.",
+        "wordBank": [
+          "all",
+          "both",
+          "neither",
+          "either",
+          "none",
+          "each"
+        ],
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I took two books with me on holiday but I didn't read either of them.",
+            "isExample": true,
+            "answer": "either"
+          },
+          {
+            "number": 2,
+            "prompt": "We tried a lot of hotels but _______ of them had any rooms. _______ of them were full.",
+            "isExample": false,
+            "answer": "none / All"
+          },
+          {
+            "number": 3,
+            "prompt": "I tried twice to phone George but _______ times he was out.",
+            "isExample": false,
+            "answer": "both"
+          },
+          {
+            "number": 4,
+            "prompt": "There are two good hotels in the town, but _______ of them had any rooms. _______ of them were full.",
+            "isExample": false,
+            "answer": "neither / Both"
+          },
+          {
+            "number": 5,
+            "prompt": "There are a few shops at the end of the street but _______ of them sell newspapers.",
+            "isExample": false,
+            "answer": "none"
+          },
+          {
+            "number": 6,
+            "prompt": "The book is divided into five parts and _______ of these has three sections.",
+            "isExample": false,
+            "answer": "each"
+          },
+          {
+            "number": 7,
+            "prompt": "I can meet you on the 6th or 7th. Would _______ of those days be convenient for you?",
+            "isExample": false,
+            "answer": "either"
+          },
+          {
+            "number": 8,
+            "prompt": "John and I couldn't get into the house because _______ of us had a key.",
+            "isExample": false,
+            "answer": "neither"
+          },
+          {
+            "number": 9,
+            "prompt": "There were a few letters this morning but _______ of them were for me. _______ were for my father.",
+            "isExample": false,
+            "answer": "none / All"
+          },
+          {
+            "number": 10,
+            "prompt": "I've got two bicycles. _______ of them are quite old. I don't ride _______ of them any more. _______ of them is in very good condition, I'm afraid.",
+            "isExample": false,
+            "answer": "Both / either / Neither"
+          }
+        ]
+      },
+      {
+        "id": "pron-ex-15",
+        "roman": "XV",
+        "type": "multiple_choice",
+        "instruction": "Choose the right answer.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I can't go to a party. I haven't got _______ to wear.",
+            "options": {
+              "a": "anything",
+              "b": "everything",
+              "c": "something",
+              "d": "nothing"
+            },
+            "answer": "a",
+            "answerText": "anything"
+          },
+          {
+            "number": 2,
+            "prompt": "Take care _______, Ann.",
+            "options": {
+              "a": "you",
+              "b": "your",
+              "c": "yours",
+              "d": "yourself"
+            },
+            "answer": "d",
+            "answerText": "yourself"
+          },
+          {
+            "number": 3,
+            "prompt": "_______ would be lovely to see you again.",
+            "options": {
+              "a": "It",
+              "b": "That",
+              "c": "There",
+              "d": "You"
+            },
+            "answer": "a",
+            "answerText": "It"
+          },
+          {
+            "number": 4,
+            "prompt": "If you want some apples, I'll get you _______ at the shop.",
+            "options": {
+              "a": "any",
+              "b": "it",
+              "c": "one",
+              "d": "some"
+            },
+            "answer": "d",
+            "answerText": "some"
+          },
+          {
+            "number": 5,
+            "prompt": "We've brought some food with _______.",
+            "options": {
+              "a": "me",
+              "b": "we",
+              "c": "us",
+              "d": "ourselves"
+            },
+            "answer": "c",
+            "answerText": "us"
+          },
+          {
+            "number": 6,
+            "prompt": "Who's there? ~ Only _______.",
+            "options": {
+              "a": "I",
+              "b": "me",
+              "c": "mine",
+              "d": "myself"
+            },
+            "answer": "b",
+            "answerText": "me"
+          },
+          {
+            "number": 7,
+            "prompt": "Is _______ a post office near here?",
+            "options": {
+              "a": "here",
+              "b": "it",
+              "c": "there",
+              "d": "this"
+            },
+            "answer": "c",
+            "answerText": "there"
+          },
+          {
+            "number": 8,
+            "prompt": "Everyone has to leave _______ bags outside.",
+            "options": {
+              "a": "his",
+              "b": "their",
+              "c": "its",
+              "d": "her"
+            },
+            "answer": "b",
+            "answerText": "their"
+          },
+          {
+            "number": 9,
+            "prompt": "The two girls often wear _______ clothes.",
+            "options": {
+              "a": "each other",
+              "b": "each other's",
+              "c": "themselves",
+              "d": "themselves'"
+            },
+            "answer": "b",
+            "answerText": "each other's"
+          },
+          {
+            "number": 10,
+            "prompt": "Have you had enough to eat, or would you like _______ else?",
+            "options": {
+              "a": "anything",
+              "b": "nothing",
+              "c": "something",
+              "d": "thing"
+            },
+            "answer": "c",
+            "answerText": "something"
+          },
+          {
+            "number": 11,
+            "prompt": "Have you seen my calculator? I can't find it _______.",
+            "options": {
+              "a": "anywhere",
+              "b": "nowhere",
+              "c": "somewhere",
+              "d": "where"
+            },
+            "answer": "a",
+            "answerText": "anywhere"
+          },
+          {
+            "number": 12,
+            "prompt": "Peter has two brothers, but he doesn't speak to _______ of them.",
+            "options": {
+              "a": "any",
+              "b": "most",
+              "c": "either",
+              "d": "neither"
+            },
+            "answer": "c",
+            "answerText": "either"
+          },
+          {
+            "number": 13,
+            "prompt": "Johnson spent _______ his life in the South.",
+            "options": {
+              "a": "some",
+              "b": "most",
+              "c": "none of",
+              "d": "most of"
+            },
+            "answer": "d",
+            "answerText": "most of"
+          },
+          {
+            "number": 14,
+            "prompt": "We could all do more to keep healthy. We don't look after _______ properly.",
+            "options": {
+              "a": "ourself",
+              "b": "ourselves",
+              "c": "ours",
+              "d": "each other"
+            },
+            "answer": "b",
+            "answerText": "ourselves"
+          },
+          {
+            "number": 15,
+            "prompt": "The two boxers did their best to knock _______ out.",
+            "options": {
+              "a": "them",
+              "b": "themselves",
+              "c": "each other",
+              "d": "each other's"
+            },
+            "answer": "c",
+            "answerText": "each other"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "g5",
