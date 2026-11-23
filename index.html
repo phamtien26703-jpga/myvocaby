@@ -149,7 +149,6 @@
 <script src="listening-data.js"></script>
 <script src="grammar-data.js"></script>
   <script src="vocab.js"></script>
-<script src="reading-data.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
@@ -1371,7 +1370,7 @@ void main(){
         try { return JSON.parse(Store.get('myvocab_v3_wrongs')) || []; } catch (e) { return []; }
       });
       const [studyDeckId, setStudyDeckId] = useNavState('study_deckId', null);
-      const VALID_TABS = ['study', 'grammar', 'listen', 'reading', 'summary', 'library', 'import'];
+      const VALID_TABS = ['study', 'grammar', 'listen', 'summary', 'library', 'import'];
       const [rawTab, setTab] = useNavState('tab', 'study');
       const tab = VALID_TABS.includes(rawTab) ? rawTab : 'study';
       const tabRef = useRef(tab); tabRef.current = tab;
@@ -1484,7 +1483,6 @@ void main(){
         { id: 'study', icon: 'practice', label: 'Học & Luyện tập' },
         { id: 'grammar', icon: 'book', label: 'Ngữ pháp TOEIC', short: 'Ngữ pháp' },
         { id: 'listen', icon: 'volume', label: 'Luyện nghe', short: 'Nghe' },
-        { id: 'reading', icon: 'book', label: 'Luyện đọc Reading', short: 'Reading' },
         { id: 'summary', icon: 'chart', label: 'Tổng kết', short: 'Tổng kết' },
         { id: 'library', icon: 'folder', label: 'Thư viện (Tra cứu)' },
         { id: 'import', icon: 'upload', label: 'Nạp từ vựng' }
@@ -1555,9 +1553,6 @@ void main(){
             </div>
             <div className={tab === 'listen' ? '' : 'hidden'}>
               <ListeningSection tColor={tColor} decks={decks} cards={cards} setDecks={setDecks} setCards={setCards} showToast={showToast} />
-            </div>
-            <div className={tab === 'reading' ? '' : 'hidden'}>
-              <ReadingSection tColor={tColor} />
             </div>
             <div className={tab === 'summary' ? '' : 'hidden'}>
               <SummarySection active={tab === 'summary'} decks={decks} cards={cards} wrongIds={wrongIds} tColor={tColor} userName={userName}
@@ -4817,14 +4812,12 @@ void main(){
     // quiz: [câu hỏi, [4 đáp án], vị trí đáp án đúng (0-3), giải thích]
     // ==========================================
 const S4_URL = (id) => 'https://study4.com/courses/28/complete-toeic/learn/activities/' + id + '/';
-    // BƯỚC A: Thêm biến gom dữ liệu câu hỏi cào được
-    const CRAWLED_QUIZZES = (window.GRAMMAR_DATA || []).reduce((acc, cur) => {
-      acc[cur.name] = cur.quiz;
-      acc[cur.id] = cur.quiz;
+    const CRAWLED_MAP = (window.GRAMMAR_DATA || []).reduce((acc, cur) => {
+      acc[cur.name] = cur;
+      acc[cur.id] = cur;
       return acc;
     }, {});
 
-    // BƯỚC B: Đổi "const GR = [" thành "const BASE_GR = ["
     const BASE_GR = [
       { id: 'g1', name: 'Từ loại và cụm từ', en: 'Parts of speech & phrases',
         sum: ['Có 7 từ loại chính: danh từ (N), động từ (V), tính từ (Adj), trạng từ (Adv), giới từ (Prep), liên từ (Conj), đại từ (Pron).',
@@ -5030,11 +5023,14 @@ const S4_URL = (id) => 'https://study4.com/courses/28/complete-toeic/learn/activ
                ['She is the ___ employee in our department.', ['more experienced', 'most experienced', 'experienced', 'as experienced'], 1, 'Có the + so sánh nhất: the most experienced.'],
                ['The product is better ___ I expected.', ['then', 'than', 'that', 'as'], 1, 'So sánh dùng than.']] }
     ];
-const GR = BASE_GR.map(g => {
-      const extra = CRAWLED_QUIZZES[g.id] || CRAWLED_QUIZZES[g.name];
+
+    const GR = BASE_GR.map(g => {
+      const extra = CRAWLED_MAP[g.id] || CRAWLED_MAP[g.name] || {};
       return {
         ...g,
-        quiz: (extra && extra.length) ? extra : g.quiz
+        quiz: (extra.quiz && extra.quiz.length) ? extra.quiz : g.quiz,
+        theory: extra.theory || g.theory || null,
+        exercises: (extra.exercises && extra.exercises.length) ? extra.exercises : (g.exercises || null)
       };
     });
 
@@ -5125,7 +5121,943 @@ const GR = BASE_GR.map(g => {
         </div>
       );
     }
-function GrammarSection({ tColor }) {
+
+    // ==========================================
+    // GIÁO TRÌNH LÝ THUYẾT CHI TIẾT (MỤC I - V)
+    // ==========================================
+    function GrammarTheoryView({ theory, tColor }) {
+      const [openSecs, setOpenSecs] = useState(() => {
+        const init = {};
+        (theory || []).forEach(s => { init[s.id] = true; });
+        return init;
+      });
+      const [query, setQuery] = useState('');
+
+      if (!theory || !theory.length) return null;
+
+      const toggleSec = (id) => setOpenSecs(prev => ({ ...prev, [id]: !prev[id] }));
+      const setAllSecs = (val) => {
+        const next = {};
+        theory.forEach(s => { next[s.id] = val; });
+        setOpenSecs(next);
+      };
+
+      const ql = query.trim().toLowerCase();
+      const filteredTheory = useMemo(() => {
+        if (!ql) return theory;
+        return theory.filter(s => JSON.stringify(s).toLowerCase().includes(ql));
+      }, [theory, ql]);
+
+      const cleanSpeak = (str) => String(str || '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').split('->')[0].split('=')[0].trim();
+
+      const renderExRow = (ex, idx) => {
+        if (typeof ex === 'string') {
+          return (
+            <div key={idx} className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 text-xs md:text-sm">
+              <span className="font-medium text-slate-800 dark:text-slate-100">• {ex}</span>
+              <SpeakBtn text={cleanSpeak(ex)} small />
+            </div>
+          );
+        }
+        if (ex.singular && ex.plural) {
+          return (
+            <div key={idx} className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 text-xs md:text-sm">
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">{ex.singular}</span>
+                <span className="mx-1.5 text-indigo-500 font-bold">→</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{ex.plural}</span>
+                {ex.vi && <span className="text-slate-500 dark:text-slate-400 ml-1.5">({ex.vi})</span>}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <SpeakBtn text={ex.singular} small title="Nghe số ít" />
+                <SpeakBtn text={ex.plural.split(',')[0]} small title="Nghe số nhiều" />
+              </div>
+            </div>
+          );
+        }
+        if (ex.singular && ex.pluralForms) {
+          return (
+            <div key={idx} className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 text-xs md:text-sm">
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">{ex.singular}</span>
+                {ex.vi && <span className="text-slate-400 ml-1">({ex.vi})</span>}
+                <span className="mx-1.5 text-indigo-500 font-bold">→</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{ex.pluralForms}</span>
+              </div>
+              <SpeakBtn text={ex.singular} small />
+            </div>
+          );
+        }
+        return (
+          <div key={idx} className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800 text-xs md:text-sm">
+            <div className="min-w-0">
+              <span className="font-semibold text-slate-900 dark:text-slate-100">• {ex.en}</span>
+              {ex.vi && <span className="text-slate-500 dark:text-slate-400 ml-1.5">— {ex.vi}</span>}
+            </div>
+            <SpeakBtn text={cleanSpeak(ex.en)} small />
+          </div>
+        );
+      };
+
+      const renderNotesBox = (notes) => (
+        <div className="p-3.5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-2.5">
+          <p className="text-xs font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">⚠️ Lưu ý quan trọng</p>
+          {notes.map((n, idx) => (
+            <div key={idx} className="space-y-1.5 text-xs md:text-sm">
+              <p className="font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">• {n.ruleVi}</p>
+              {n.examples && n.examples.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 pl-3">
+                  {n.examples.map((ex, j) => renderExRow(ex, j))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+
+      const renderRuleBlock = (r, rIdx) => (
+        <div key={rIdx} className="p-3.5 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+          {r.titleVi ? (
+            <h5 className="font-black text-sm md:text-base text-slate-900 dark:text-white">
+              {r.code}. {r.titleVi} {r.titleEn && <span className="text-xs font-semibold text-slate-400">({r.titleEn})</span>}
+            </h5>
+          ) : (
+            <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+              <span className={`font-black mr-1.5 ${tColor.text}`}>{r.code}.</span>{r.descriptionVi}
+            </p>
+          )}
+          {r.titleVi && r.descriptionVi && (
+            <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{r.descriptionVi}</p>
+          )}
+
+          {r.formula && (
+            <div className="px-3.5 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 font-mono text-xs md:text-sm font-bold text-indigo-700 dark:text-indigo-300">
+              📌 {r.formula}
+            </div>
+          )}
+
+          {r.categories && Array.isArray(r.categories) && (
+            <div className="space-y-2">
+              {r.categories.map((cat, ci) => (
+                typeof cat === 'string' ? (
+                  <p key={ci} className="text-xs md:text-sm text-slate-700 dark:text-slate-300 pl-2">• {cat}</p>
+                ) : (
+                  <div key={ci} className="pl-2 space-y-1">
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300">• {cat.categoryVi}:</p>
+                    <div className="flex flex-wrap gap-1.5 pl-3">
+                      {cat.words.map((w, wi) => (
+                        <button key={wi} type="button" onClick={() => speak(w.en, 'en-US')}
+                          className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs hover:border-indigo-400">
+                          🔊 <b>{w.en}</b> <span className="text-slate-400">({w.vi})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ))}
+            </div>
+          )}
+
+          {r.examples && r.examples.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+              {r.examples.map((ex, ei) => renderExRow(ex, ei))}
+            </div>
+          )}
+
+          {r.extraRuleVi && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300">• {r.extraRuleVi}</p>
+              {r.extraExamples && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                  {r.extraExamples.map((ee, eei) => renderExRow(ee, eei))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {r.subRules && r.subRules.map((sr, sri) => (
+            <div key={sri} className="pl-3 border-l-2 border-indigo-200 dark:border-indigo-800 space-y-1.5">
+              <p className="text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300">{sr.ruleVi}</p>
+              {sr.examples && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                  {sr.examples.map((se, sei) => renderExRow(se, sei))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {r.subPatterns && r.subPatterns.map((sp, spi) => (
+            <div key={spi} className="pl-3 border-l-2 border-indigo-300 dark:border-indigo-800 space-y-1.5">
+              <p className="text-xs md:text-sm font-bold text-indigo-700 dark:text-indigo-300">▸ {sp.pattern}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                {sp.examples.map((se, sei) => renderExRow(se, sei))}
+              </div>
+              {sp.noteVi && <p className="text-xs italic text-amber-700 dark:text-amber-400">{sp.noteVi}</p>}
+            </div>
+          ))}
+
+          {r.groups && r.groups.map((grp, gi) => (
+            <div key={gi} className="space-y-1.5 pl-2">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">• {grp.groupVi}</p>
+              {grp.pairs && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
+                  {grp.pairs.map((pr, pi) => renderExRow(pr, pi))}
+                </div>
+              )}
+              {grp.words && (
+                <div className="flex flex-wrap gap-1.5">
+                  {grp.words.map((w, wi) => (
+                    <button key={wi} type="button" onClick={() => speak(w.word, 'en-US')}
+                      className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs hover:border-indigo-400">
+                      🔊 <b>{w.word}</b> <span className="text-slate-400">({w.vi})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {grp.sentenceExample && renderExRow(grp.sentenceExample, 0)}
+            </div>
+          ))}
+
+          {r.additionalUses && (
+            <div className="space-y-2 pt-1">
+              <p className="text-xs font-bold text-slate-500">Ngoài ra cấu trúc này còn được dùng với:</p>
+              {r.additionalUses.map((au, aui) => (
+                <div key={aui} className="pl-3 border-l-2 border-slate-200 dark:border-slate-700 space-y-1">
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{au.categoryVi}:</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    {au.examples.map((ae, aei) => renderExRow(ae, aei))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {r.noteVi && (
+            <div className="p-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300">
+              ⚠️ {r.noteVi}
+            </div>
+          )}
+          {r.notes && renderNotesBox(r.notes)}
+        </div>
+      );
+
+      return (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="font-black text-base text-slate-900 dark:text-white">📚 Giáo trình Lý thuyết Đầy đủ (Mục I – V)</h3>
+                <p className="text-xs text-slate-400">Bấm vào từng ví dụ để nghe phát âm chuẩn. Có thể tìm nhanh từ khóa hoặc quy tắc bên dưới.</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => setAllSecs(true)} className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold">Mở tất cả</button>
+                <button onClick={() => setAllSecs(false)} className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500">Thu gọn</button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {theory.map(s => (
+                <a key={s.id} href={'#' + s.id} onClick={() => setOpenSecs(prev => ({ ...prev, [s.id]: true }))}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold ${tColor.light} ${tColor.text} hover:opacity-85 transition`}>
+                  {s.code}. {s.titleVi}
+                </a>
+              ))}
+            </div>
+
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="🔍 Tìm trong lý thuyết (vd: scissors, furniture, neither, /ɪz/, sở hữu cách kép...)"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/50 text-sm outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          {filteredTheory.length === 0 && (
+            <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm text-slate-400">
+              Không tìm thấy nội dung khớp với "{query}".
+            </div>
+          )}
+
+          {filteredTheory.map(sec => {
+            const isOpen = !!openSecs[sec.id];
+            return (
+              <div key={sec.id} id={sec.id} className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => toggleSec(sec.id)}
+                  className="w-full px-5 py-4 flex items-center justify-between gap-3 text-left bg-slate-50/80 dark:bg-slate-800/60 hover:bg-slate-100/80 dark:hover:bg-slate-800 transition"
+                >
+                  <div>
+                    <span className={`text-xs font-black uppercase tracking-wider ${tColor.text}`}>Phần {sec.code}</span>
+                    <h4 className="font-black text-lg text-slate-900 dark:text-white">
+                      {sec.code}. {sec.titleVi} <span className="text-sm font-semibold text-slate-400">({sec.titleEn})</span>
+                    </h4>
+                  </div>
+                  <span className="text-xs font-bold text-slate-400 shrink-0">{isOpen ? '▴ Thu gọn' : '▾ Mở rộng'}</span>
+                </button>
+
+                {isOpen && (
+                  <div className="p-5 space-y-5">
+                    {sec.descriptionVi && <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{sec.descriptionVi}</p>}
+
+                    {sec.categories && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {sec.categories.map((cat, ci) => (
+                          <div key={ci} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800 space-y-1.5">
+                            <p className={`text-xs font-black uppercase ${tColor.text}`}>{cat.labelVi}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.examples.map((w, wi) => (
+                                <button key={wi} type="button" onClick={() => speak(w, 'en-US')}
+                                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold hover:border-indigo-400">
+                                  🔊 {w}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {sec.functions && (
+                      <div className="space-y-3">
+                        {sec.functions.map(fn => (
+                          <div key={fn.code} className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-2">
+                            <h5 className="font-black text-base text-slate-900 dark:text-white">
+                              {fn.code}. {fn.titleVi} <span className="text-xs font-semibold text-slate-400">({fn.titleEn})</span>
+                            </h5>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{fn.descriptionVi}</p>
+                            <div className="space-y-1.5">
+                              {fn.examples.map((ex, ei) => renderExRow(ex, ei))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {sec.subsections && sec.subsections.map(sub => (
+                      <div key={sub.id} className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <h4 className={`font-black text-base md:text-lg ${tColor.text}`}>
+                          {sub.code}. {sub.titleVi} {sub.titleEn && <span className="text-xs font-semibold text-slate-400">({sub.titleEn})</span>}
+                        </h4>
+                        {sub.descriptionVi && <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{sub.descriptionVi}</p>}
+                        {sub.examples && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                            {sub.examples.map((ex, ei) => renderExRow(ex, ei))}
+                          </div>
+                        )}
+
+                        {sub.items && sub.items.map(it => (
+                          <div key={it.code} className="pl-3 border-l-2 border-slate-200 dark:border-slate-700 space-y-2.5">
+                            <h5 className="font-black text-sm md:text-base text-slate-900 dark:text-white">
+                              {it.code}. {it.titleVi} {it.titleEn && <span className="text-xs font-semibold text-slate-400">({it.titleEn})</span>}
+                            </h5>
+                            {it.descriptionVi && <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{it.descriptionVi}</p>}
+                            {it.examples && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                {it.examples.map((ex, ei) => renderExRow(ex, ei))}
+                              </div>
+                            )}
+                            {it.subItems && it.subItems.map(si => (
+                              <div key={si.code} className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-2">
+                                <p className="font-bold text-sm text-slate-900 dark:text-white">
+                                  {si.code}. {si.titleVi} <span className="text-xs font-normal text-slate-400">({si.titleEn})</span>: <span className="font-normal text-slate-700 dark:text-slate-300">{si.descriptionVi}</span>
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                  {si.examples.map((ex, ei) => renderExRow(ex, ei))}
+                                </div>
+                                {si.extraNoteVi && (
+                                  <div className="space-y-1.5 pt-1">
+                                    <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300">• {si.extraNoteVi}</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                      {si.extraExamples.map((ex, ei) => renderExRow(ex, ei))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+
+                            {it.formationRules && (
+                              <div className="space-y-2">
+                                <p className="text-xs font-black uppercase tracking-wider text-slate-400">Cách thành lập danh từ ghép:</p>
+                                {it.formationRules.map(fr => (
+                                  <div key={fr.code} className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-1.5">
+                                    <p className="font-bold text-sm text-slate-900 dark:text-white">
+                                      {fr.code}. {fr.patternVi} <span className="text-xs font-mono text-indigo-500">({fr.patternEn})</span>
+                                    </p>
+                                    {fr.descriptionVi && <p className="text-xs text-slate-500">{fr.descriptionVi}</p>}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                      {fr.examples.map((ex, ei) => renderExRow(ex, ei))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {it.pronunciationRules && (
+                              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                                <table className="w-full text-left text-xs md:text-sm">
+                                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                                    <tr>
+                                      <th className="p-3 w-24 text-center">Phát âm</th>
+                                      <th className="p-3">Điều kiện áp dụng</th>
+                                      <th className="p-3">Ví dụ minh họa</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {it.pronunciationRules.map((pr, pri) => (
+                                      <tr key={pri}>
+                                        <td className="p-3 text-center font-mono font-black text-base text-indigo-600 dark:text-indigo-400">{pr.sound}</td>
+                                        <td className="p-3 text-slate-700 dark:text-slate-300">{pr.conditionVi}</td>
+                                        <td className="p-3">
+                                          <div className="flex flex-wrap gap-1.5">
+                                            {pr.examples.map((w, wi) => (
+                                              <button key={wi} type="button" onClick={() => speak(w, 'en-US')}
+                                                className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:border-indigo-400">
+                                                🔊 {w}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {it.rules && it.rules.map((r, ri) => renderRuleBlock(r, ri))}
+                            {it.notes && renderNotesBox(it.notes)}
+                          </div>
+                        ))}
+
+                        {sub.rules && sub.rules.map((r, ri) => renderRuleBlock(r, ri))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ==========================================
+    // HỆ THỐNG BÀI TẬP THỰC HÀNH (I - XIV)
+    // ==========================================
+    function GrammarExercises({ topic, tColor }) {
+      const exercises = topic.exercises || [];
+      const storeKey = 'myvocab_v4_gr_ex_' + topic.id;
+      const [ansMap, setAnsMap] = useState(() => {
+        try { return JSON.parse(Store.get(storeKey)) || {}; } catch (e) { return {}; }
+      });
+      const [checkedMap, setCheckedMap] = useState(() => {
+        try { return JSON.parse(Store.get(storeKey + '_chk')) || {}; } catch (e) { return {}; }
+      });
+      const [showKeys, setShowKeys] = useState({});
+      const [activeEx, setActiveEx] = useNavState('gr_ex_filter_' + topic.id, 'all');
+
+      useEffect(() => {
+        try { Store.set(storeKey, JSON.stringify(ansMap)); } catch (e) {}
+      }, [ansMap, storeKey]);
+      useEffect(() => {
+        try { Store.set(storeKey + '_chk', JSON.stringify(checkedMap)); } catch (e) {}
+      }, [checkedMap, storeKey]);
+
+      const normAns = (s) => String(s || '')
+        .toLowerCase()
+        .replace(/[’‘]/g, "'")
+        .replace(/\(.*?\)/g, ' ')
+        .replace(/[.!?]+$/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const checkCorrect = (userVal, expected) => {
+        const u = normAns(userVal);
+        if (!u) return false;
+        const rawParts = String(expected || '').split(/\s*\/\s*|\s+or\s+/i);
+        const candidates = new Set();
+        rawParts.forEach(p => {
+          candidates.add(normAns(p));
+          const mOr = String(p).match(/\(or\s+([^)]+)\)/i);
+          if (mOr) {
+            const altPart = mOr[1].trim();
+            const baseWithoutParen = String(p).replace(/\(or\s+[^)]+\)/i, '').trim();
+            candidates.add(normAns(altPart));
+            const wordsAlt = altPart.split(/\s+/);
+            const wordsBase = baseWithoutParen.split(/\s+/);
+            if (wordsBase.length > wordsAlt.length) {
+              for (let i = 0; i <= wordsBase.length - wordsAlt.length; i++) {
+                const replaced = [...wordsBase.slice(0, i), ...wordsAlt, ...wordsBase.slice(i + wordsAlt.length)].join(' ');
+                candidates.add(normAns(replaced));
+              }
+            }
+          }
+        });
+        candidates.delete('');
+        return candidates.has(u);
+      };
+
+      const qKey = (exId, num) => `${exId}_${num}`;
+
+      const setUserAns = (exId, num, val, autoCheck = false) => {
+        const k = qKey(exId, num);
+        setAnsMap(prev => ({ ...prev, [k]: val }));
+        if (autoCheck) {
+          setCheckedMap(prev => ({ ...prev, [k]: true }));
+        } else {
+          setCheckedMap(prev => {
+            if (!prev[k]) return prev;
+            const n = { ...prev };
+            delete n[k];
+            return n;
+          });
+        }
+      };
+
+      const checkSingleItem = (ex, q) => {
+        const k = qKey(ex.id, q.number);
+        const val = ansMap[k];
+        if (!val || !String(val).trim()) return;
+        setCheckedMap(prev => ({ ...prev, [k]: true }));
+        if (checkCorrect(val, q.answer)) SoundFx.correct();
+        else SoundFx.wrong();
+      };
+
+      const checkWholeExercise = (ex) => {
+        const next = { ...checkedMap };
+        let okCount = 0;
+        ex.questions.forEach(q => {
+          if (q.isExample) return;
+          const k = qKey(ex.id, q.number);
+          next[k] = true;
+          if (checkCorrect(ansMap[k], q.answer)) okCount++;
+        });
+        setCheckedMap(next);
+        if (okCount > 0) SoundFx.correct();
+        else SoundFx.wrong();
+      };
+
+      const resetExercise = (ex) => {
+        const nextA = { ...ansMap };
+        const nextC = { ...checkedMap };
+        ex.questions.forEach(q => {
+          const k = qKey(ex.id, q.number);
+          delete nextA[k];
+          delete nextC[k];
+        });
+        setAnsMap(nextA);
+        setCheckedMap(nextC);
+        setShowKeys(prev => ({ ...prev, [ex.id]: false }));
+      };
+
+      let totalPractice = 0, totalDone = 0, totalRight = 0;
+      exercises.forEach(ex => {
+        ex.questions.forEach(q => {
+          if (q.isExample) return;
+          totalPractice++;
+          const k = qKey(ex.id, q.number);
+          if (checkedMap[k]) {
+            totalDone++;
+            if (checkCorrect(ansMap[k], q.answer)) totalRight++;
+          }
+        });
+      });
+
+      const shownExercises = activeEx === 'all' ? exercises : exercises.filter(e => e.id === activeEx);
+
+      const renderPassageExercise = (ex) => {
+        const parts = ex.passage.split(/(\(\d+\)\s*\[[^\]]+\])/g);
+        return (
+          <div className="p-4 md:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-400">Bấm chọn dạng từ đúng trực tiếp trên bưu thiếp:</span>
+              <SpeakBtn text={ex.passage.replace(/\(\d+\)\s*\[([^/]+)\/[^\]]+\]/g, '$1')} title="Nghe đoạn bưu thiếp" />
+            </div>
+            <p className="text-base md:text-lg leading-loose text-slate-800 dark:text-slate-100">
+              {parts.map((part, idx) => {
+                const m = part.match(/^\((\d+)\)\s*\[([^\]]+)\]$/);
+                if (!m) return <span key={idx}>{part}</span>;
+                const num = Number(m[1]);
+                const q = ex.questions.find(x => x.number === num);
+                if (!q) return <span key={idx}>{part}</span>;
+                const k = qKey(ex.id, num);
+                const val = q.isExample ? q.answer : ansMap[k];
+                const isChk = q.isExample || !!checkedMap[k] || !!showKeys[ex.id];
+                return (
+                  <span key={idx} className="inline-flex items-center gap-1 mx-1 px-2 py-0.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xs align-middle">
+                    <span className="text-[11px] font-mono font-bold text-slate-400">({num})</span>
+                    {q.options.map((opt, oi) => {
+                      const isSel = val === opt;
+                      const isAns = checkCorrect(opt, q.answer);
+                      let cls = 'px-2 py-0.5 rounded-lg text-xs md:text-sm font-bold transition ';
+                      if (isChk) {
+                        if (isAns) cls += 'bg-emerald-500 text-white';
+                        else if (isSel) cls += 'bg-rose-500 text-white line-through';
+                        else cls += 'text-slate-400';
+                      } else {
+                        cls += isSel ? `${tColor.bg} text-white` : 'text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-800';
+                      }
+                      return (
+                        <button
+                          key={oi}
+                          type="button"
+                          disabled={q.isExample}
+                          onClick={() => {
+                            setUserAns(ex.id, num, opt, true);
+                            if (checkCorrect(opt, q.answer)) SoundFx.correct();
+                            else SoundFx.wrong();
+                          }}
+                          className={cls}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </span>
+                );
+              })}
+            </p>
+          </div>
+        );
+      };
+
+      const renderInlineSentence = (ex, q) => {
+        const k = qKey(ex.id, q.number);
+        const val = ansMap[k];
+        const isChk = !!checkedMap[k] || !!showKeys[ex.id];
+        const m = q.prompt.match(/^(.*?)\[([^\]]+)\](.*)$/);
+        return (
+          <div key={q.number} className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex-1 min-w-[240px] text-sm md:text-base leading-relaxed text-slate-800 dark:text-slate-100">
+              <span className="font-mono text-xs font-bold text-slate-400 mr-2">{q.number}.</span>
+              {m ? (
+                <>
+                  <span>{m[1]}</span>
+                  <span className="inline-flex flex-wrap items-center gap-1 mx-1 px-1.5 py-0.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                    {q.options.map((opt, oi) => {
+                      const isSel = val === opt;
+                      const isAns = checkCorrect(opt, q.answer);
+                      let cls = 'px-2.5 py-0.5 rounded-lg text-xs md:text-sm font-bold transition ';
+                      if (isChk) {
+                        if (isAns) cls += 'bg-emerald-500 text-white';
+                        else if (isSel) cls += 'bg-rose-500 text-white line-through';
+                        else cls += 'text-slate-400';
+                      } else {
+                        cls += isSel ? `${tColor.bg} text-white` : 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800';
+                      }
+                      return (
+                        <button
+                          key={oi}
+                          type="button"
+                          onClick={() => {
+                            setUserAns(ex.id, q.number, opt, true);
+                            if (checkCorrect(opt, q.answer)) SoundFx.correct();
+                            else SoundFx.wrong();
+                          }}
+                          className={cls}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </span>
+                  <span>{m[3]}</span>
+                </>
+              ) : (
+                <span>{q.prompt}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {isChk && (
+                <span className={`text-xs font-bold ${checkCorrect(val, q.answer) ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  {checkCorrect(val, q.answer) ? '✓ Đúng' : `Đáp án: ${q.answer}`}
+                </span>
+              )}
+              <SpeakBtn text={q.prompt.replace(/\[([^/]+)\/[^\]]+\]/g, '$1')} small />
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="font-black text-base text-slate-900 dark:text-white">✍️ Hệ thống Bài tập Thực hành (Exercise I – XIV)</h3>
+                <p className="text-xs text-slate-400">
+                  Đã kiểm tra: <b>{totalDone} / {totalPractice}</b> câu · Đúng: <b className="text-emerald-600">{totalRight}</b> câu
+                </p>
+              </div>
+              <select
+                value={activeEx}
+                onChange={e => setActiveEx(e.target.value)}
+                className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold outline-none focus:border-indigo-500"
+              >
+                <option value="all">Hiển thị tất cả {exercises.length} bài tập ({totalPractice} câu)</option>
+                {exercises.map(ex => (
+                  <option key={ex.id} value={ex.id}>
+                    Bài {ex.roman} ({ex.questions.length} câu) — {ex.instruction.slice(0, 48)}...
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {shownExercises.map(ex => {
+            const exPractice = ex.questions.filter(q => !q.isExample);
+            const exRight = exPractice.filter(q => checkedMap[qKey(ex.id, q.number)] && checkCorrect(ansMap[qKey(ex.id, q.number)], q.answer)).length;
+            const isKeyShown = !!showKeys[ex.id];
+
+            return (
+              <div key={ex.id} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <div className="space-y-1 flex-1 min-w-[220px]">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-lg text-xs font-black ${tColor.light} ${tColor.text}`}>Bài {ex.roman}</span>
+                      <span className="text-xs font-bold text-slate-400">{exRight}/{exPractice.length} câu đúng</span>
+                    </div>
+                    <h4 className="font-black text-sm md:text-base text-slate-900 dark:text-white leading-snug">{ex.instruction}</h4>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => checkWholeExercise(ex)}
+                      className={`px-3 py-1.5 rounded-xl ${tColor.bg} text-white text-xs font-bold shadow-xs hover:opacity-95`}
+                    >
+                      ✓ Kiểm tra bài
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowKeys(prev => ({ ...prev, [ex.id]: !prev[ex.id] }))}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-400"
+                    >
+                      {isKeyShown ? '🙈 Ẩn đáp án' : '👁 Đáp án'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => resetExercise(ex)}
+                      className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-400 hover:text-rose-500"
+                    >
+                      ↻ Làm lại
+                    </button>
+                  </div>
+                </div>
+
+                {ex.wordBank && (
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 flex flex-wrap gap-2">
+                    {ex.wordBank.map((wb, wi) => (
+                      <button
+                        key={wi}
+                        type="button"
+                        onClick={() => speak(wb.replace(/\(s\)/g, 's'), 'en-US')}
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400"
+                      >
+                        {wb}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {ex.type === 'classification' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {ex.questions.map(q => {
+                      const k = qKey(ex.id, q.number);
+                      const val = q.isExample ? q.answer : ansMap[k];
+                      const isChk = q.isExample || !!checkedMap[k] || isKeyShown;
+                      return (
+                        <div key={q.number} className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-mono text-xs text-slate-400">{q.number}.</span>
+                            <span className="font-bold text-sm truncate">{q.prompt}</span>
+                            <SpeakBtn text={q.prompt} small />
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {['C', 'U'].map(opt => {
+                              const isSel = val === opt;
+                              const isAns = q.answer === opt;
+                              let cls = 'w-8 h-8 rounded-lg text-xs font-black border transition ';
+                              if (isChk) {
+                                if (isAns) cls += 'bg-emerald-500 text-white border-transparent';
+                                else if (isSel) cls += 'bg-rose-500 text-white border-transparent';
+                                else cls += 'border-slate-200 dark:border-slate-700 text-slate-400';
+                              } else {
+                                cls += isSel ? `${tColor.bg} text-white border-transparent` : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-indigo-400';
+                              }
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  disabled={q.isExample}
+                                  onClick={() => {
+                                    setUserAns(ex.id, q.number, opt, true);
+                                    if (opt === q.answer) SoundFx.correct();
+                                    else SoundFx.wrong();
+                                  }}
+                                  className={cls}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {ex.type === 'inline_choice' && ex.passage && renderPassageExercise(ex)}
+
+                {ex.type === 'inline_choice' && !ex.passage && (
+                  <div className="space-y-2">
+                    {ex.questions.map(q => renderInlineSentence(ex, q))}
+                  </div>
+                )}
+
+                {ex.type === 'multiple_choice' && (
+                  <div className="space-y-3">
+                    {ex.questions.map(q => {
+                      const k = qKey(ex.id, q.number);
+                      const val = ansMap[k];
+                      const isChk = !!checkedMap[k] || isKeyShown;
+                      return (
+                        <div key={q.number} className="p-4 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm md:text-base font-bold text-slate-900 dark:text-white">
+                              <span className="font-mono text-xs text-slate-400 mr-2">{q.number}.</span>{q.prompt}
+                            </p>
+                            <SpeakBtn text={q.prompt.replace('_______', q.answerText || '')} small />
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {Object.entries(q.options).map(([optKey, optText]) => {
+                              const isSel = val === optKey;
+                              const isAns = q.answer === optKey;
+                              let cls = 'px-3 py-2 rounded-xl border text-left text-xs md:text-sm font-bold transition ';
+                              if (isChk) {
+                                if (isAns) cls += 'bg-emerald-500 text-white border-transparent';
+                                else if (isSel) cls += 'bg-rose-500 text-white border-transparent';
+                                else cls += 'border-slate-200 dark:border-slate-700 text-slate-400';
+                              } else {
+                                cls += isSel ? `${tColor.bg} text-white border-transparent` : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-indigo-400';
+                              }
+                              return (
+                                <button
+                                  key={optKey}
+                                  type="button"
+                                  onClick={() => {
+                                    setUserAns(ex.id, q.number, optKey, true);
+                                    if (optKey === q.answer) SoundFx.correct();
+                                    else SoundFx.wrong();
+                                  }}
+                                  className={cls}
+                                >
+                                  <span className="font-mono opacity-75 mr-1.5">{optKey}.</span>{optText}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {(ex.type === 'fill_in_blank' || ex.type === 'verb_conjugation' || ex.type === 'transformation' || ex.type === 'error_correction') && (
+                  <div className="space-y-2.5">
+                    {ex.questions.map((q, qi) => {
+                      const k = qKey(ex.id, q.number);
+                      const val = q.isExample ? q.answer : (ansMap[k] || '');
+                      const isChk = q.isExample || !!checkedMap[k] || isKeyShown;
+                      const ok = checkCorrect(val, q.answer);
+                      const nextId = qi < ex.questions.length - 1 ? `grex-${ex.id}-${ex.questions[qi + 1].number}` : null;
+
+                      return (
+                        <div key={q.number} className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm md:text-base font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
+                              <span className="font-mono text-xs font-bold text-slate-400 mr-2">{q.number}.</span>{q.prompt}
+                            </p>
+                            <SpeakBtn text={q.prompt.replace(/_______/g, '').replace(/[\[\]]/g, '')} small />
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 pl-5">
+                            {ex.type === 'error_correction' && !q.isExample && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUserAns(ex.id, q.number, '✓', true);
+                                  if (q.isCorrect) SoundFx.correct();
+                                  else SoundFx.wrong();
+                                }}
+                                className={`px-3 py-2 rounded-xl border text-xs font-bold transition ${
+                                  val === '✓'
+                                    ? (isChk ? (q.isCorrect ? 'bg-emerald-500 text-white border-transparent' : 'bg-rose-500 text-white border-transparent') : `${tColor.bg} text-white border-transparent`)
+                                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-emerald-400'
+                                }`}
+                              >
+                                ✓ Câu đúng
+                              </button>
+                            )}
+
+                            <input
+                              id={`grex-${ex.id}-${q.number}`}
+                              type="text"
+                              disabled={!!q.isExample}
+                              value={val}
+                              placeholder={q.isExample ? '' : (ex.type === 'error_correction' ? 'Hoặc gõ phần sửa lỗi...' : 'Nhập câu trả lời... (Enter)')}
+                              onChange={e => setUserAns(ex.id, q.number, e.target.value, false)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                                  checkSingleItem(ex, q);
+                                  if (nextId) {
+                                    const el = document.getElementById(nextId);
+                                    if (el && !el.disabled) el.focus();
+                                  }
+                                }
+                              }}
+                              className={`flex-1 min-w-[200px] px-3.5 py-2 rounded-xl border text-sm font-bold outline-none ${
+                                q.isExample
+                                  ? 'border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300'
+                                  : isChk
+                                    ? (ok ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300' : 'border-rose-400 bg-rose-50/70 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300')
+                                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-indigo-500'
+                              }`}
+                            />
+
+                            {!q.isExample && (
+                              <button
+                                type="button"
+                                onClick={() => checkSingleItem(ex, q)}
+                                className="px-3 py-2 rounded-xl bg-slate-200/80 dark:bg-slate-800 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-950"
+                              >
+                                Check
+                              </button>
+                            )}
+
+                            {q.isExample && <span className="text-xs font-bold text-indigo-500">(Ví dụ mẫu)</span>}
+                            {!q.isExample && isChk && (
+                              <span className={`text-xs font-bold ${ok ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                {ok ? '✓ Chính xác!' : `Đáp án: ${q.answer}`}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    function GrammarSection({ tColor }) {
       const [st, setSt] = useState(() => { try { return JSON.parse(Store.get('myvocab_v4_grammar')) || {}; } catch (e) { return {}; } });
       const [tid, setTid] = useNavState('grammar_tid', null);
       const [view, setView] = useNavState('grammar_view', 'summary');
@@ -5172,7 +6104,7 @@ function GrammarSection({ tColor }) {
           <Shell>
             <div>
               <h2 className="text-2xl font-black">Ngữ pháp TOEIC</h2>
-              <p className="text-sm text-slate-400 mt-1">Theo mục lục khoá Complete TOEIC (Study4): tóm tắt kiến thức, theo dõi tiến độ, làm trắc nghiệm nhanh và ghi chú riêng</p>
+              <p className="text-sm text-slate-400 mt-1">Theo mục lục khoá Complete TOEIC (Study4): giáo trình lý thuyết chi tiết, bài tập thực hành, trắc nghiệm TOEIC và ghi chú riêng</p>
             </div>
             <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
               <div className="flex justify-between text-xs font-bold text-slate-500">
@@ -5185,6 +6117,7 @@ function GrammarSection({ tColor }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {GR.map((g, gi) => {
                 const p = prog(g);
+                const exCount = g.exercises ? g.exercises.reduce((s, e) => s + e.questions.length, 0) : 0;
                 return (
                   <button key={g.id} onClick={() => open(g.id)} className="text-left p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:shadow-md transition space-y-3">
                     <div className="flex items-start gap-3">
@@ -5197,9 +6130,11 @@ function GrammarSection({ tColor }) {
                     <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                       <div className={`h-full ${tColor.bg}`} style={{ width: pct(p) + '%' }} />
                     </div>
-                    <div className="flex flex-wrap gap-2 text-[11px] font-bold">
+                    <div className="flex flex-wrap gap-1.5 text-[11px] font-bold">
                       <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">{p.d}/{p.total} bài</span>
-                      <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">Quiz: {scores[g.id] !== undefined ? scores[g.id] + '/' + g.quiz.length : 'chưa làm'}</span>
+                      <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">Quiz: {scores[g.id] !== undefined ? scores[g.id] + '/' + g.quiz.length : g.quiz.length + ' câu'}</span>
+                      {g.theory && <span className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">📖 Lý thuyết đầy đủ</span>}
+                      {g.exercises && <span className="px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">✍️ {g.exercises.length} bài tập ({exCount} câu)</span>}
                       {notes[g.id] && <span className="px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600">Có ghi chú</span>}
                     </div>
                   </button>
@@ -5211,7 +6146,15 @@ function GrammarSection({ tColor }) {
       }
 
       const p = prog(t);
-      const TABS = [['summary', 'Tóm tắt'], ['lessons', `Bài học (${p.d}/${p.total})`], ['quiz', 'Trắc nghiệm'], ['notes', 'Ghi chú']];
+      const TABS = [
+        ['summary', t.theory ? '📖 Lý thuyết & Tóm tắt' : 'Tóm tắt'],
+        ...(t.exercises ? [['exercises', `✍️ Bài tập (${t.exercises.length} phần)`]] : []),
+        ['quiz', `🎯 Trắc nghiệm TOEIC (${t.quiz.length})`],
+        ['lessons', `🎬 Bài học (${p.d}/${p.total})`],
+        ['notes', '📝 Ghi chú']
+      ];
+      const activeView = TABS.some(x => x[0] === view) ? view : 'summary';
+
       return (
         <Shell>
           <div className="flex items-center gap-2 min-w-0">
@@ -5226,34 +6169,43 @@ function GrammarSection({ tColor }) {
 
           <div className="inline-flex flex-wrap bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
             {TABS.map(x => (
-              <button key={x[0]} onClick={() => setView(x[0])} className={`px-4 py-2 rounded-lg transition ${view === x[0] ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>{x[1]}</button>
+              <button key={x[0]} onClick={() => setView(x[0])} className={`px-4 py-2 rounded-lg transition ${activeView === x[0] ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>{x[1]}</button>
             ))}
           </div>
 
-          {view === 'summary' && (
-            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
-              <ul className="space-y-3">
-                {t.sum.map((s, i) => (
-                  <li key={i} className="flex gap-3 text-base leading-relaxed">
-                    <span className={`mt-2 w-2 h-2 shrink-0 rounded-full ${tColor.bg}`} /><span>{s}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ví dụ</span>
-                {t.ex.map((e, i) => (
-                  <div key={i} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800">
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">• {e}</p>
-                    <button onClick={() => speak(e.replace(/\(.*?\)/g, ''), 'en-US')} className="shrink-0 px-2 py-1 rounded-lg bg-indigo-100/80 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold flex items-center gap-1">
-                      <Icon name="volume" className="w-3.5 h-3.5" /><span>Nghe</span>
-                    </button>
-                  </div>
-                ))}
+          {activeView === 'summary' && (
+            <div className="space-y-5">
+              <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">⚡ Tóm tắt trọng tâm TOEIC</span>
+                <ul className="space-y-3">
+                  {t.sum.map((s, i) => (
+                    <li key={i} className="flex gap-3 text-base leading-relaxed">
+                      <span className={`mt-2 w-2 h-2 shrink-0 rounded-full ${tColor.bg}`} /><span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ví dụ</span>
+                  {t.ex.map((e, i) => (
+                    <div key={i} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">• {e}</p>
+                      <button onClick={() => speak(e.replace(/\(.*?\)/g, ''), 'en-US')} className="shrink-0 px-2 py-1 rounded-lg bg-indigo-100/80 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold flex items-center gap-1">
+                        <Icon name="volume" className="w-3.5 h-3.5" /><span>Nghe</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {t.theory && <GrammarTheoryView theory={t.theory} tColor={tColor} />}
             </div>
           )}
 
-          {view === 'lessons' && (
+          {activeView === 'exercises' && t.exercises && (
+            <GrammarExercises topic={t} tColor={tColor} />
+          )}
+
+          {activeView === 'lessons' && (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm overflow-hidden">
               {activeVid && (
                 <div className="p-4 bg-slate-900 text-white space-y-3">
@@ -5332,14 +6284,14 @@ function GrammarSection({ tColor }) {
             </div>
           )}
 
-          {view === 'quiz' && (
+          {activeView === 'quiz' && (
             <div key={t.id} className="space-y-3">
               <p className="text-xs text-slate-400">Trắc nghiệm nhanh theo format TOEIC Part 5. Điểm cao nhất: {scores[t.id] !== undefined ? scores[t.id] + '/' + t.quiz.length : 'chưa làm'}</p>
               <GrammarQuiz topic={t} onScore={(v) => setScore(t.id, v)} />
             </div>
           )}
 
-          {view === 'notes' && (
+          {activeView === 'notes' && (
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm">
               <label className="text-xs font-bold text-slate-400">Ghi chú riêng cho "{t.name}" (tự động lưu)</label>
               <textarea value={notes[t.id] || ''} onChange={e => setNote(t.id, e.target.value)} rows={10} placeholder="Ghi lại công thức, lỗi hay sai, mẹo làm bài..."
@@ -6430,114 +7382,7 @@ function GrammarSection({ tColor }) {
         onLogin={() => { Auth.setGuest(false); Store.setUser(null); setAuth({ user: null, guest: false }); }} />;
     }
 
-    function ReadingSection({ tColor }) {
-  const data = window.READING_DATA || [];
-  const [activeId, setActiveId] = useState(null);
-  const currentTest = data.find(item => item.id === activeId);
-
-  // Màn hình 1: Hiển thị danh sách các bài test Reading
-  if (!currentTest) {
-    return (
-      <Shell>
-        <div className="space-y-1">
-          <h2 className="text-2xl font-black">Kho IELTS Reading</h2>
-          <p className="text-sm text-slate-400">Chọn bài đọc để bắt đầu luyện tập:</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-          {data.length === 0 ? (
-            <p className="p-6 text-sm text-slate-400 col-span-3 text-center">
-              Chưa có dữ liệu bài đọc. Hãy kiểm tra lại file reading-data.js.
-            </p>
-          ) : (
-            data.map(item => (
-              <div 
-                key={item.id} 
-                onClick={() => setActiveId(item.id)} 
-                className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 cursor-pointer shadow-sm transition hover:shadow-md"
-              >
-                <h3 className="font-bold text-base text-slate-900 dark:text-white leading-snug">{item.title}</h3>
-                <div className="mt-3 flex items-center justify-between text-xs text-slate-400 font-semibold">
-                  <span>{item.total_questions || (item.questions ? item.questions.length : 0)} câu hỏi</span>
-                  <span className="text-indigo-600 dark:text-indigo-400">Làm bài →</span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </Shell>
-    );
-  }
-
-  // Màn hình 2: Giao diện làm bài (chia đôi: Bài đọc bên trái, Câu hỏi bên phải)
-  return (
-    <Shell className="max-w-6xl">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <button 
-          onClick={() => setActiveId(null)} 
-          className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
-        >
-          ← Quay lại danh sách bài đọc
-        </button>
-        <a 
-          href={currentTest.source_url} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
-        >
-          Mở trang gốc DOL ↗
-        </a>
-      </div>
-
-      <h2 className="text-2xl font-black mb-4 text-slate-900 dark:text-white">{currentTest.title}</h2>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Cột trái: Đoạn văn (Passage) */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[72vh] overflow-y-auto leading-relaxed whitespace-pre-line text-sm text-slate-700 dark:text-slate-200 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Reading Passage</h3>
-          {currentTest.passage}
-        </div>
-
-        {/* Cột phải: Câu hỏi & Đáp án */}
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-[72vh] overflow-y-auto space-y-4 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Questions</h3>
-          
-          {(!currentTest.questions || currentTest.questions.length === 0) ? (
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 text-xs text-slate-500">
-              Bài này chưa có câu hỏi được đồng bộ nội bộ. Bạn có thể xem đề & đáp án tại:{" "}
-              <a href={currentTest.source_url} target="_blank" rel="noreferrer" className="text-indigo-500 underline font-bold">
-                Link nguồn bài thi
-              </a>
-            </div>
-          ) : (
-            currentTest.questions.map((q, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-xs space-y-2">
-                <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">
-                  Câu {idx + 1}: {q.question}
-                </p>
-                {q.options && q.options.length > 0 && (
-                  <div className="space-y-1 pl-2">
-                    {q.options.map((opt, i) => (
-                      <p key={i} className="text-slate-600 dark:text-slate-300">• {opt}</p>
-                    ))}
-                  </div>
-                )}
-                {q.answer && (
-                  <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-700">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Đáp án: {q.answer}</span>
-                    {q.explanation && (
-                      <p className="text-slate-400 mt-1 italic leading-normal">Giải thích: {q.explanation}</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </Shell>
-  );
-}
-const root = ReactDOM.createRoot(document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
    root.render(<Root />);
     // Bật lại hiệu ứng chuyển màu sau khi khung hình đầu tiên đã vẽ xong
     requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.add('app-ready')));
