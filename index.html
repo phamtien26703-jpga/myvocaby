@@ -147,6 +147,7 @@
 
   <script src="vocab-data.js"></script>
 <script src="listening-data.js"></script>
+<script src="grammar-data.js"></script>
   <script src="vocab.js"></script>
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
@@ -4810,8 +4811,16 @@ void main(){
     // items: [id bài, 'v' = video | 'p' = luyện tập, tên bài]
     // quiz: [câu hỏi, [4 đáp án], vị trí đáp án đúng (0-3), giải thích]
     // ==========================================
-    const S4_URL = (id) => 'https://study4.com/courses/28/complete-toeic/learn/activities/' + id + '/';
-    const GR = [
+const S4_URL = (id) => 'https://study4.com/courses/28/complete-toeic/learn/activities/' + id + '/';
+    // BƯỚC A: Thêm biến gom dữ liệu câu hỏi cào được
+    const CRAWLED_QUIZZES = (window.GRAMMAR_DATA || []).reduce((acc, cur) => {
+      acc[cur.name] = cur.quiz;
+      acc[cur.id] = cur.quiz;
+      return acc;
+    }, {});
+
+    // BƯỚC B: Đổi "const GR = [" thành "const BASE_GR = ["
+    const BASE_GR = [
       { id: 'g1', name: 'Từ loại và cụm từ', en: 'Parts of speech & phrases',
         sum: ['Có 7 từ loại chính: danh từ (N), động từ (V), tính từ (Adj), trạng từ (Adv), giới từ (Prep), liên từ (Conj), đại từ (Pron).',
               'Đuôi nhận biết danh từ: -tion, -ment, -ness, -ity, -er/-or. Động từ: -ize, -ify, -en. Tính từ: -ful, -ous, -ive, -al, -able. Trạng từ: -ly.',
@@ -5016,6 +5025,13 @@ void main(){
                ['She is the ___ employee in our department.', ['more experienced', 'most experienced', 'experienced', 'as experienced'], 1, 'Có the + so sánh nhất: the most experienced.'],
                ['The product is better ___ I expected.', ['then', 'than', 'that', 'as'], 1, 'So sánh dùng than.']] }
     ];
+const GR = BASE_GR.map(g => {
+      const extra = CRAWLED_QUIZZES[g.id] || CRAWLED_QUIZZES[g.name];
+      return {
+        ...g,
+        quiz: (extra && extra.length) ? extra : g.quiz
+      };
+    });
 
     function GrammarQuiz({ topic, onScore }) {
       const [shuf, setShuf] = useNavState('grammar_quiz_shuffle', false);
