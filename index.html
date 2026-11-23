@@ -4846,7 +4846,7 @@ const S4_URL = (id) => 'https://study4.com/courses/28/complete-toeic/learn/activ
               'a/an dùng với danh từ đếm được số ít, chưa xác định (an hour, an MBA, a university). the dùng khi đã xác định.',
               'many/few/a few + danh từ đếm được số nhiều; much/little/a little + danh từ không đếm được; less + không đếm được, fewer + đếm được.'],
         ex: ['We need more information. (không đếm được)', 'There are few seats left. / There is little time left.'],
-        items: [[6475, 'v', 'Lý thuyết (phần 1)'], [9618, 'v', 'Lý thuyết (phần 2)'], [7385, 'p', 'Trắc nghiệm format TOEIC'],
+        items: [[6475, 'v', 'Lý thuyết (phần 1)'], [9618, 'v', 'Lý thuyết (phần 2), '5h5q1cByCdI'], [7385, 'p', 'Trắc nghiệm format TOEIC'],
                 [7557, 'p', 'Nouns: countable, uncountable'], [7558, 'p', 'Plural nouns'], [7559, 'p', 'Plurals: mix'],
                 [7710, 'p', 'Indefinite article'], [7560, 'p', 'Definite article'], [7563, 'p', 'Few, less, little, much, many'],
                 [7561, 'p', 'Zero article'], [20295, 'p', 'Quantity - mix'], [7562, 'p', 'Articles: mix']],
@@ -5120,12 +5120,17 @@ const GR = BASE_GR.map(g => {
         </div>
       );
     }
-
-    function GrammarSection({ tColor }) {
+function GrammarSection({ tColor }) {
       const [st, setSt] = useState(() => { try { return JSON.parse(Store.get('myvocab_v4_grammar')) || {}; } catch (e) { return {}; } });
       const [tid, setTid] = useNavState('grammar_tid', null);
       const [view, setView] = useNavState('grammar_view', 'summary');
+      const [activeVid, setActiveVid] = useState(null);
+      const [customVids, setCustomVids] = useState(() => {
+        try { return JSON.parse(Store.get('myvocab_v4_gr_vids')) || {}; } catch (e) { return {}; }
+      });
+
       useEffect(() => { try { Store.set('myvocab_v4_grammar', JSON.stringify(st)); } catch (e) {} }, [st]);
+      useEffect(() => { try { Store.set('myvocab_v4_gr_vids', JSON.stringify(customVids)); } catch (e) {} }, [customVids]);
 
       const done = st.done || {};
       const notes = st.notes || {};
@@ -5138,7 +5143,207 @@ const GR = BASE_GR.map(g => {
       const pct = (p) => (p.total ? Math.round(p.d * 100 / p.total) : 0);
       const all = GR.reduce((a, t) => { const p = prog(t); return { total: a.total + p.total, d: a.d + p.d }; }, { total: 0, d: 0 });
       const t = GR.find(x => x.id === tid);
-      const open = (id) => { setTid(id); setView('summary'); };
+      const open = (id) => { setTid(id); setView('summary'); setActiveVid(null); };
+
+      const getYtId = (it) => customVids[it[0]] || (window.GRAMMAR_VIDEOS && window.GRAMMAR_VIDEOS[it[0]]) || it[3] || '';
+      const attachVideo = (it) => {
+        const cur = getYtId(it);
+        const input = prompt(`Dán link YouTube hoặc mã video (11 ký tự) cho "${it[2]}":\n(Để trống để xoá video đã gắn)`, cur);
+        if (input === null) return;
+        const trimmed = input.trim();
+        if (!trimmed) {
+          setCustomVids(prev => { const n = { ...prev }; delete n[it[0]]; return n; });
+          if (activeVid && activeVid.id === it[0]) setActiveVid(null);
+          return;
+        }
+        const m = trimmed.match(/(?:embed\/|v=|youtu\.be\/|\/vi\/)([A-Za-z0-9_-]{11})/) || trimmed.match(/^([A-Za-z0-9_-]{11})$/);
+        if (!m) { alert('Không nhận diện được mã video YouTube hợp lệ.'); return; }
+        setCustomVids(prev => ({ ...prev, [it[0]]: m[1] }));
+        setActiveVid({ id: it[0], title: it[2], yt: m[1] });
+      };
+
+      if (!t) {
+        return (
+          <Shell>
+            <div>
+              <h2 className="text-2xl font-black">Ngữ pháp TOEIC</h2>
+              <p className="text-sm text-slate-400 mt-1">Theo mục lục khoá Complete TOEIC (Study4): tóm tắt kiến thức, theo dõi tiến độ, làm trắc nghiệm nhanh và ghi chú riêng</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div className="flex justify-between text-xs font-bold text-slate-500">
+                <span>Tiến độ tổng</span><span>{all.d} / {all.total} bài ({pct(all)}%)</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div className={`h-full ${tColor.bg} transition-all`} style={{ width: pct(all) + '%' }} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {GR.map((g, gi) => {
+                const p = prog(g);
+                return (
+                  <button key={g.id} onClick={() => open(g.id)} className="text-left p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:shadow-md transition space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 shrink-0 rounded-xl ${tColor.light} ${tColor.text} flex items-center justify-center font-black text-sm`}>{gi + 1}</div>
+                      <div className="min-w-0">
+                        <h3 className="font-black text-base leading-snug">{g.name}</h3>
+                        <p className="text-xs text-slate-400 mt-0.5">{g.en}</p>
+                      </div>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <div className={`h-full ${tColor.bg}`} style={{ width: pct(p) + '%' }} />
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[11px] font-bold">
+                      <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">{p.d}/{p.total} bài</span>
+                      <span className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">Quiz: {scores[g.id] !== undefined ? scores[g.id] + '/' + g.quiz.length : 'chưa làm'}</span>
+                      {notes[g.id] && <span className="px-2 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600">Có ghi chú</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Shell>
+        );
+      }
+
+      const p = prog(t);
+      const TABS = [['summary', 'Tóm tắt'], ['lessons', `Bài học (${p.d}/${p.total})`], ['quiz', 'Trắc nghiệm'], ['notes', 'Ghi chú']];
+      return (
+        <Shell>
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={() => { setTid(null); setActiveVid(null); }} className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold flex items-center gap-1.5 shadow-sm shrink-0">
+              <Icon name="arrowLeft" className="w-4 h-4" /><span>Các chủ đề</span>
+            </button>
+            <div className="min-w-0">
+              <h2 className="text-xl font-black truncate">{t.name}</h2>
+              <p className="text-xs text-slate-400">{t.en}</p>
+            </div>
+          </div>
+
+          <div className="inline-flex flex-wrap bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
+            {TABS.map(x => (
+              <button key={x[0]} onClick={() => setView(x[0])} className={`px-4 py-2 rounded-lg transition ${view === x[0] ? 'bg-white dark:bg-slate-900 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>{x[1]}</button>
+            ))}
+          </div>
+
+          {view === 'summary' && (
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-5 shadow-sm">
+              <ul className="space-y-3">
+                {t.sum.map((s, i) => (
+                  <li key={i} className="flex gap-3 text-base leading-relaxed">
+                    <span className={`mt-2 w-2 h-2 shrink-0 rounded-full ${tColor.bg}`} /><span>{s}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Ví dụ</span>
+                {t.ex.map((e, i) => (
+                  <div key={i} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-800">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">• {e}</p>
+                    <button onClick={() => speak(e.replace(/\(.*?\)/g, ''), 'en-US')} className="shrink-0 px-2 py-1 rounded-lg bg-indigo-100/80 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[11px] font-bold flex items-center gap-1">
+                      <Icon name="volume" className="w-3.5 h-3.5" /><span>Nghe</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {view === 'lessons' && (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm overflow-hidden">
+              {activeVid && (
+                <div className="p-4 bg-slate-900 text-white space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Đang phát video bài giảng</span>
+                      <h4 className="font-black text-sm md:text-base truncate">{activeVid.title}</h4>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => toggle(activeVid.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold ${done[activeVid.id] ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
+                        {done[activeVid.id] ? '✓ Đã học xong' : 'Đánh dấu đã học'}
+                      </button>
+                      <a href={`https://www.youtube.com/watch?v=${activeVid.yt}`} target="_blank" rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">
+                        YouTube ↗
+                      </a>
+                      <button onClick={() => setActiveVid(null)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold">
+                        ✕ Đóng
+                      </button>
+                    </div>
+                  </div>
+                  <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ paddingTop: '56.25%' }}>
+                    <iframe
+                      className="absolute inset-0 w-full h-full"
+                      src={`https://www.youtube-nocookie.com/embed/${activeVid.yt}?autoplay=1&rel=0&modestbranding=1`}
+                      title={activeVid.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-slate-400">Tick vào ô tròn khi học xong. Bấm <b>"▶ Xem video"</b> để phát ngay trên web, hoặc <b>"+ Video"</b> để gắn link YouTube cho bài khác.</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setAll(t, true)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold">Đánh dấu tất cả</button>
+                  <button onClick={() => setAll(t, false)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500">Bỏ chọn</button>
+                </div>
+              </div>
+              {t.items.map(it => {
+                const ok = !!done[it[0]];
+                const isVideo = it[1] === 'v';
+                const yt = isVideo ? getYtId(it) : '';
+                const isPlaying = activeVid && activeVid.id === it[0];
+                return (
+                  <div key={it[0]} className="p-3.5 flex flex-wrap items-center gap-2.5 hover:bg-indigo-50/40 dark:hover:bg-slate-800/60 transition">
+                    <button onClick={() => toggle(it[0])} title="Đánh dấu đã học" className={`w-7 h-7 shrink-0 rounded-full border-2 flex items-center justify-center transition ${ok ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600 text-transparent hover:border-emerald-400'}`}>
+                      <Icon name="check" className="w-4 h-4" />
+                    </button>
+                    <div className="flex-1 min-w-[180px]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mr-2">{isVideo ? 'Video' : 'Luyện tập'}</span>
+                      <span className={`text-sm font-semibold ${ok ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>{it[2]}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {yt && (
+                        <button onClick={() => setActiveVid({ id: it[0], title: it[2], yt })}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${isPlaying ? 'bg-rose-600 text-white' : `${tColor.bg} text-white hover:opacity-90`}`}>
+                          {isPlaying ? '■ Đang phát' : '▶ Xem video'}
+                        </button>
+                      )}
+                      {isVideo && (
+                        <button onClick={() => attachVideo(it)} title="Gắn / đổi link YouTube cho bài này"
+                          className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-500 hover:border-indigo-400">
+                          {yt ? '✎' : '+ Video'}
+                        </button>
+                      )}
+                      <a href={S4_URL(it[0])} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-100">Mở ↗</a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {view === 'quiz' && (
+            <div key={t.id} className="space-y-3">
+              <p className="text-xs text-slate-400">Trắc nghiệm nhanh theo format TOEIC Part 5. Điểm cao nhất: {scores[t.id] !== undefined ? scores[t.id] + '/' + t.quiz.length : 'chưa làm'}</p>
+              <GrammarQuiz topic={t} onScore={(v) => setScore(t.id, v)} />
+            </div>
+          )}
+
+          {view === 'notes' && (
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm">
+              <label className="text-xs font-bold text-slate-400">Ghi chú riêng cho "{t.name}" (tự động lưu)</label>
+              <textarea value={notes[t.id] || ''} onChange={e => setNote(t.id, e.target.value)} rows={10} placeholder="Ghi lại công thức, lỗi hay sai, mẹo làm bài..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-sm outline-none focus:border-indigo-500" />
+            </div>
+          )}
+        </Shell>
+      );
+    }
 
       if (!t) {
         return (
