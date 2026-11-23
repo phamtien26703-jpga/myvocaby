@@ -5743,6 +5743,28 @@ function GrammarSection({ tColor }) {
       const [showAllVocab, setShowAllVocab] = useState(false);
       const [showList, setShowList] = useNavState('dict_list_' + lesson.id, false);
       const [showText, setShowText] = useState(false);
+      const [showFull, setShowFull] = useNavState('dict_full_' + lesson.id, false);
+      const [fullPlaying, setFullPlaying] = useState(false);
+      const fullRef = useRef(false);
+      const stopFull = () => { fullRef.current = false; setFullPlaying(false); if (window.speechSynthesis) window.speechSynthesis.cancel(); };
+      const playFull = () => {
+        if (fullPlaying) { stopFull(); return; }
+        if (!('speechSynthesis' in window)) return;
+        if (audioRef.current) audioRef.current.pause();
+        window.speechSynthesis.cancel();
+        fullRef.current = true; setFullPlaying(true);
+        const voice = VoiceKit.pick(acc);
+        const next = (i) => {
+          if (!fullRef.current || i >= sentences.length) { fullRef.current = false; setFullPlaying(false); return; }
+          const u = new SpeechSynthesisUtterance(String(sentences[i]).replace(/[\[\]]/g, '').trim());
+          u.rate = rate; u.lang = acc; u.pitch = VoiceKit.prefs().pitch;
+          if (voice) { u.voice = voice; u.lang = voice.lang; }
+          u.onend = () => next(i + 1); u.onerror = () => next(i + 1);
+          window.speechSynthesis.speak(u);
+        };
+        next(0);
+      };
+      useEffect(() => () => { fullRef.current = false; if (window.speechSynthesis) window.speechSynthesis.cancel(); }, [lesson.id]);
       const jump = (i) => { setVal(''); setRes(null); setHint(false); setPw(''); setPm(''); setIdx(i); };
       const vocab = useSentenceVocab(sent, !!res, showAllVocab);
       // Chọn từ + lưu vào deck (có sẵn hoặc tạo mới)
@@ -5969,6 +5991,30 @@ function GrammarSection({ tColor }) {
               <button disabled={idx === 0} onClick={() => go(-1)} className="px-5 py-2.5 rounded-xl border text-xs font-bold disabled:opacity-30">← Câu trước</button>
               <button disabled={idx >= total - 1} onClick={() => go(1)} className={`px-5 py-2.5 rounded-xl ${tColor.bg} text-white text-xs font-bold disabled:opacity-30`}>Câu sau →</button>
             </div>
+          </div>
+
+          {/* TOÀN BỘ ĐOẠN NGHE (Full transcript) */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <button onClick={() => setShowFull(v => !v)} className="w-full flex items-center justify-between gap-2 px-5 py-3.5 text-left bg-indigo-50 dark:bg-slate-800/60">
+              <span className="text-sm font-black">📄 Toàn bộ đoạn nghe (Full Transcript) · {total} câu</span>
+              <span className="text-slate-400 text-xs font-bold">{showFull ? '▴ Thu gọn' : '▾ Mở ra'}</span>
+            </button>
+            {showFull && (
+              <div className="p-5 space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button onClick={playFull} className={`${pill} ${tColor.bg} text-white shadow`}>{fullPlaying ? '⏹ Dừng' : '▶ Nghe cả bài'}</button>
+                  <button onClick={() => { const t = sentences.join('\n'); if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {}); }} className={`${pill} border border-slate-200 dark:border-slate-700 text-slate-500`}>📋 Copy</button>
+                  <span className="text-[11px] text-slate-400">Cả bài đọc bằng giọng máy ({acc === 'en-GB' ? 'UK' : 'US'}, tốc độ {rate}x). Bấm một câu để nhảy tới câu đó.</span>
+                </div>
+                <div className="space-y-1.5 text-base leading-relaxed">
+                  {sentences.map((st, i) => (
+                    <p key={i}>
+                      <button type="button" onClick={() => { stopFull(); jump(i); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`text-left hover:text-indigo-600 hover:underline ${i === idx ? 'font-black text-indigo-600' : done[i] ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-100'}`}>{st}</button>
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Shell>
       );
