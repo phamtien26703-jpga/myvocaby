@@ -39644,3 +39644,1984 @@ window.GRAMMAR_DATA = [
  theory: window.WORD_STUDY_DATA.theory, exercises: window.WORD_STUDY_DATA.exercises
 }
 ];
+
+
+// MyVocab: original reference-based supplemental lessons.
+window.MV_EXTRA_GRAMMAR = [
+  {
+    "id": "g28",
+    "name": "Hòa hợp chủ ngữ – động từ",
+    "en": "Subject–verb agreement",
+    "group": "Nền tảng",
+    "level": "A2–B2",
+    "sum": [
+      "Xác định danh từ trung tâm của chủ ngữ trước khi chia động từ.",
+      "Each/every/everyone + động từ số ít; a number of + số nhiều; the number of + số ít.",
+      "Cụm giới từ, together with và as well as không tự làm chủ ngữ thành số nhiều."
+    ],
+    "ex": [
+      "The list of applicants is on my desk.",
+      "Each of the interns has an ID card.",
+      "Neither the assistants nor the manager is available."
+    ],
+    "items": [
+      [
+        "g28-sec-1",
+        "local",
+        "Chủ ngữ và danh từ trung tâm"
+      ],
+      [
+        "g28-sec-2",
+        "local",
+        "Lượng từ và chủ ngữ đặc biệt"
+      ],
+      [
+        "g28-sec-3",
+        "local",
+        "Chủ ngữ kết hợp và there"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Chủ ngữ và danh từ trung tâm",
+        "titleEn": "Subject head",
+        "descriptionVi": "Động từ hữu hạn hòa hợp với chủ ngữ; cụm giới từ nằm giữa không quyết định số của động từ. Danh từ không đếm được như equipment, information thường dùng động từ số ít.",
+        "formula": "S số ít + V-s/es | S số nhiều + V nguyên mẫu (hiện tại đơn)",
+        "examples": [
+          {
+            "en": "The list of applicants is on my desk.",
+            "vi": "Danh sách ứng viên nằm trên bàn tôi."
+          },
+          {
+            "en": "The printers in this room need repairs.",
+            "vi": "Các máy in trong phòng này cần sửa."
+          }
+        ],
+        "noteVi": "Đừng chia theo danh từ đứng gần động từ nếu nó thuộc cụm giới từ.",
+        "id": "g28-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Lượng từ và chủ ngữ đặc biệt",
+        "titleEn": "Quantified subjects",
+        "descriptionVi": "Each, every và everyone thường dùng số ít. A number of đi với danh từ số nhiều và động từ số nhiều; the number of nói về một con số nên dùng số ít. Khoảng thời gian, tiền bạc có thể dùng số ít khi được xem là một tổng thể.",
+        "formula": "Each of + N số nhiều + V số ít; a number of + N số nhiều + V số nhiều",
+        "examples": [
+          {
+            "en": "Each of the interns has an ID card.",
+            "vi": "Mỗi thực tập sinh có một thẻ."
+          },
+          {
+            "en": "The number of orders has increased.",
+            "vi": "Số lượng đơn hàng đã tăng."
+          }
+        ],
+        "noteVi": "None of + danh từ số nhiều có thể đi với động từ số ít hoặc số nhiều tùy cách hiểu và văn phong.",
+        "id": "g28-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Chủ ngữ kết hợp và there",
+        "titleEn": "Coordinated subjects",
+        "descriptionVi": "And thường tạo chủ ngữ số nhiều. Với either…or hoặc neither…nor, trong bài thi dạng chuẩn thường chia theo thành phần gần động từ nhất. There is/are hòa hợp với cụm danh từ sau động từ.",
+        "formula": "Neither A nor B + V hòa hợp với B; There + be + N",
+        "examples": [
+          {
+            "en": "Neither the assistants nor the manager is available.",
+            "vi": "Cả các trợ lý lẫn quản lý đều không rảnh."
+          },
+          {
+            "en": "There are three vacancies.",
+            "vi": "Có ba vị trí tuyển dụng."
+          }
+        ],
+        "noteVi": "Danh từ tập hợp có thể dùng số ít hoặc số nhiều trong Anh-Anh; khi cần tránh mơ hồ hãy dùng members/staff members.",
+        "id": "g28-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "The quality of these products ___ improved.",
+        [
+          "have",
+          "has",
+          "are",
+          "were"
+        ],
+        1,
+        "Chủ ngữ trung tâm quality số ít: has."
+      ],
+      [
+        "Each of the forms ___ a signature.",
+        [
+          "require",
+          "requiring",
+          "requires",
+          "have required"
+        ],
+        2,
+        "Each là chủ ngữ số ít."
+      ],
+      [
+        "A number of clients ___ asked for refunds.",
+        [
+          "has",
+          "is",
+          "was",
+          "have"
+        ],
+        3,
+        "A number of + danh từ số nhiều + have."
+      ],
+      [
+        "The number of complaints ___ fallen.",
+        [
+          "has",
+          "have",
+          "are",
+          "were"
+        ],
+        0,
+        "The number là số ít."
+      ],
+      [
+        "There ___ two seats available.",
+        [
+          "is",
+          "are",
+          "was",
+          "be"
+        ],
+        1,
+        "Two seats là số nhiều."
+      ],
+      [
+        "The director, together with her assistants, ___ the meeting every Monday.",
+        [
+          "attend",
+          "attending",
+          "attends",
+          "have attended"
+        ],
+        2,
+        "Together with không đổi chủ ngữ director."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g28-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "The equipment ___ (be) ready.",
+            "answer": "is"
+          },
+          {
+            "number": 2,
+            "prompt": "Every employee ___ (receive) a badge.",
+            "answer": "receives"
+          },
+          {
+            "number": 3,
+            "prompt": "The boxes of paper ___ (be) heavy.",
+            "answer": "are"
+          },
+          {
+            "number": 4,
+            "prompt": "A number of employees ___ (have) complained.",
+            "answer": "have"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://dictionary.cambridge.org/grammar/british-grammar/subject-verb-agreement",
+      "https://owl.purdue.edu/owl_exercises/sentence_structure/subject_verb_agreement/subject_verb_agreement_exercise.html"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g29",
+    "name": "Động từ khuyết thiếu",
+    "en": "Modal verbs",
+    "group": "Động từ & thì",
+    "level": "A2–C1",
+    "sum": [
+      "Modal + V nguyên mẫu, không thêm -s; sau modal không dùng do/does/did.",
+      "Mustn’t = cấm; don’t have to = không bắt buộc.",
+      "Modal + have + V3 diễn đạt suy đoán, khả năng hoặc tiếc nuối về quá khứ."
+    ],
+    "ex": [
+      "Could you check the invoice?",
+      "You must not enter this area.",
+      "The lights are off. They might have left."
+    ],
+    "items": [
+      [
+        "g29-sec-1",
+        "local",
+        "Khả năng, xin phép và yêu cầu"
+      ],
+      [
+        "g29-sec-2",
+        "local",
+        "Nghĩa vụ, lời khuyên và sự cấm"
+      ],
+      [
+        "g29-sec-3",
+        "local",
+        "Suy đoán hiện tại và quá khứ"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Khả năng, xin phép và yêu cầu",
+        "titleEn": "Ability and permission",
+        "descriptionVi": "Can/could biểu đạt khả năng hoặc lời yêu cầu; may dùng để xin/cho phép trang trọng. Could diễn đạt khả năng chung trong quá khứ; một lần thành công cụ thể thường dùng managed to/was able to.",
+        "formula": "Modal + V1 | Modal + not + V1 | Modal + S + V1?",
+        "examples": [
+          {
+            "en": "Could you check the invoice?",
+            "vi": "Bạn có thể kiểm tra hóa đơn được không?"
+          },
+          {
+            "en": "She was able to resolve the issue yesterday.",
+            "vi": "Cô ấy đã giải quyết được vấn đề hôm qua."
+          }
+        ],
+        "noteVi": "Không dùng can to do; dùng be able to khi cần hình thức tương lai hoặc hoàn thành.",
+        "id": "g29-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Nghĩa vụ, lời khuyên và sự cấm",
+        "titleEn": "Obligation and advice",
+        "descriptionVi": "Must/have to diễn đạt yêu cầu; should/ought to là lời khuyên. Must not chỉ điều bị cấm, khác với need not hoặc do not have to. Với nghĩa vụ quá khứ dùng had to.",
+        "formula": "must/should + V1; have/has/had to + V1",
+        "examples": [
+          {
+            "en": "You must not enter this area.",
+            "vi": "Bạn không được vào khu vực này."
+          },
+          {
+            "en": "You do not have to print the receipt.",
+            "vi": "Bạn không bắt buộc in biên lai."
+          }
+        ],
+        "noteVi": "Phân biệt must not (không được) và do not have to (không cần).",
+        "id": "g29-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Suy đoán hiện tại và quá khứ",
+        "titleEn": "Deduction and modal perfect",
+        "descriptionVi": "Must diễn đạt kết luận có căn cứ; may/might/could chỉ khả năng; can’t/couldn’t diễn đạt điều không thể. Should have + V3 nói về điều đáng lẽ nên làm; needn’t have + V3 là việc đã làm nhưng không cần thiết.",
+        "formula": "must/might/can’t + have + V3; should have + V3",
+        "examples": [
+          {
+            "en": "The lights are off. They might have left.",
+            "vi": "Đèn đã tắt. Có lẽ họ đã đi."
+          },
+          {
+            "en": "We should have checked the address.",
+            "vi": "Đáng lẽ chúng ta nên kiểm tra địa chỉ."
+          }
+        ],
+        "noteVi": "Must have + V3 là suy đoán quá khứ, không phải nghĩa vụ trong quá khứ.",
+        "id": "g29-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "Visitors ___ enter the laboratory without permission; it is prohibited.",
+        [
+          "need not",
+          "must not",
+          "might",
+          "do not have to"
+        ],
+        1,
+        "Must not diễn tả sự cấm."
+      ],
+      [
+        "You ___ bring a laptop; we provide one, but you may bring your own.",
+        [
+          "must not",
+          "cannot",
+          "do not have to",
+          "must"
+        ],
+        2,
+        "Không bắt buộc: do not have to."
+      ],
+      [
+        "The manager ___ approve the request yesterday before we proceeded.",
+        [
+          "had to",
+          "must to",
+          "has to",
+          "should to"
+        ],
+        0,
+        "Nghĩa vụ quá khứ dùng had to."
+      ],
+      [
+        "The package is missing. It might ___ delivered to the wrong office.",
+        [
+          "be been",
+          "have been",
+          "has been",
+          "been"
+        ],
+        1,
+        "Might have been delivered: suy đoán quá khứ ở bị động."
+      ],
+      [
+        "We ___ have informed you earlier. We apologize.",
+        [
+          "should",
+          "are",
+          "do",
+          "need to"
+        ],
+        0,
+        "Should have + V3: đáng lẽ nên."
+      ],
+      [
+        "All employees can ___ the portal.",
+        [
+          "accesses",
+          "to access",
+          "accessing",
+          "access"
+        ],
+        3,
+        "Can + V nguyên mẫu."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g29-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "She can ___ (speak) English.",
+            "answer": "speak"
+          },
+          {
+            "number": 2,
+            "prompt": "We had ___ (leave) early yesterday.",
+            "answer": "to leave"
+          },
+          {
+            "number": 3,
+            "prompt": "You should have ___ (read) the instructions.",
+            "answer": "read"
+          },
+          {
+            "number": 4,
+            "prompt": "He might have ___ (forget) the appointment.",
+            "answer": "forgotten"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://learnenglish.britishcouncil.org/free-resources/grammar/english-grammar-reference/modal-verbs",
+      "https://learnenglish.britishcouncil.org/free-resources/grammar/b1-b2/modals-permission-obligation",
+      "https://learnenglish.britishcouncil.org/free-resources/grammar/b1-b2/modals-deductions-about-past"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g30",
+    "name": "Cấu trúc sai khiến",
+    "en": "Causative structures",
+    "group": "Động từ & thì",
+    "level": "B1–B2",
+    "sum": [
+      "Have + người + V; get + người + to V.",
+      "Have/get + vật + V3 khi nhờ người khác thực hiện.",
+      "Make/let/help khác nhau về dạng động từ theo sau."
+    ],
+    "ex": [
+      "I had the assistant book a room.",
+      "She is having her laptop repaired.",
+      "The delay made us change our plan."
+    ],
+    "items": [
+      [
+        "g30-sec-1",
+        "local",
+        "Nhờ người thực hiện"
+      ],
+      [
+        "g30-sec-2",
+        "local",
+        "Nhờ xử lý một vật"
+      ],
+      [
+        "g30-sec-3",
+        "local",
+        "Make, let và help"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Nhờ người thực hiện",
+        "titleEn": "Active causatives",
+        "descriptionVi": "Have somebody do something thường chỉ giao việc; get somebody to do something nhấn vào thuyết phục hoặc khiến việc xảy ra.",
+        "formula": "have + O người + V1 | get + O người + to V",
+        "examples": [
+          {
+            "en": "I had the assistant book a room.",
+            "vi": "Tôi nhờ trợ lý đặt phòng."
+          },
+          {
+            "en": "We got the supplier to replace the item.",
+            "vi": "Chúng tôi thuyết phục nhà cung cấp đổi hàng."
+          }
+        ],
+        "noteVi": "Chia have/get theo thì, không chia động từ nguyên mẫu sau tân ngữ.",
+        "id": "g30-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Nhờ xử lý một vật",
+        "titleEn": "Passive causatives",
+        "descriptionVi": "Khi chủ ngữ sắp xếp cho việc được thực hiện bởi người khác, dùng have/get + tân ngữ + quá khứ phân từ. Mẫu này cũng có thể diễn đạt điều không mong muốn xảy đến.",
+        "formula": "have/get + O + V3",
+        "examples": [
+          {
+            "en": "She is having her laptop repaired.",
+            "vi": "Cô ấy đang cho sửa máy tính."
+          },
+          {
+            "en": "They had their luggage stolen.",
+            "vi": "Hành lý của họ bị đánh cắp."
+          }
+        ],
+        "noteVi": "I have repaired the laptop là hiện tại hoàn thành; I had the laptop repaired là cấu trúc sai khiến.",
+        "id": "g30-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Make, let và help",
+        "titleEn": "Other causative verbs",
+        "descriptionVi": "Make + O + V1 mang nghĩa buộc/khiến; let + O + V1 cho phép; help + O + (to) V1 giúp. Trong bị động, make thường theo sau bởi to V; let thường được thay bằng be allowed to.",
+        "formula": "make/let + O + V1; be made + to V; help + O + (to) V",
+        "examples": [
+          {
+            "en": "The delay made us change our plan.",
+            "vi": "Sự chậm trễ khiến chúng tôi đổi kế hoạch."
+          },
+          {
+            "en": "The team was made to repeat the test.",
+            "vi": "Nhóm bị buộc làm lại bài kiểm tra."
+          }
+        ],
+        "noteVi": "Không dùng let somebody to do trong cấu trúc cho phép.",
+        "id": "g30-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "We had the technician ___ the server.",
+        [
+          "checking",
+          "checked",
+          "check",
+          "to check"
+        ],
+        2,
+        "Have + người + V1."
+      ],
+      [
+        "She got the courier ___ the package again.",
+        [
+          "deliver",
+          "to deliver",
+          "delivered",
+          "delivery"
+        ],
+        1,
+        "Get + người + to V."
+      ],
+      [
+        "We will have the office ___ next month.",
+        [
+          "renovate",
+          "to renovate",
+          "renovating",
+          "renovated"
+        ],
+        3,
+        "Vật nhận hành động: V3."
+      ],
+      [
+        "The supervisor made him ___ the report.",
+        [
+          "rewrite",
+          "to rewrite",
+          "rewrote",
+          "rewritten"
+        ],
+        0,
+        "Make + O + V1."
+      ],
+      [
+        "He was made ___ the safety course.",
+        [
+          "attend",
+          "attending",
+          "to attend",
+          "attended"
+        ],
+        2,
+        "Be made + to V."
+      ],
+      [
+        "The manager let us ___ early.",
+        [
+          "leaving",
+          "leave",
+          "to leave",
+          "left"
+        ],
+        1,
+        "Let + O + V1."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g30-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I had the documents ___ (print).",
+            "answer": "printed"
+          },
+          {
+            "number": 2,
+            "prompt": "They got me ___ (join) the meeting.",
+            "answer": "to join"
+          },
+          {
+            "number": 3,
+            "prompt": "The coach made us ___ (run).",
+            "answer": "run"
+          },
+          {
+            "number": 4,
+            "prompt": "He was made ___ (wait).",
+            "answer": "to wait"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://dictionary.cambridge.org/grammar/british-grammar/have-something-done",
+      "https://dictionary.cambridge.org/grammar/british-grammar/get",
+      "https://dictionary.cambridge.org/grammar/british-grammar/verb-patterns"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g31",
+    "name": "Đảo ngữ",
+    "en": "Inversion",
+    "group": "Cấu trúc nâng cao",
+    "level": "B2–C1",
+    "sum": [
+      "Sau trạng ngữ phủ định đưa trợ động từ lên trước chủ ngữ.",
+      "Only after/when/if + mệnh đề → đảo ở mệnh đề chính.",
+      "Bỏ if với Should, Were, Had trong câu điều kiện trang trọng."
+    ],
+    "ex": [
+      "Rarely do we receive such detailed feedback.",
+      "Only after the audit did we notice the error.",
+      "Should you need help, contact support."
+    ],
+    "items": [
+      [
+        "g31-sec-1",
+        "local",
+        "Trạng ngữ phủ định đứng đầu"
+      ],
+      [
+        "g31-sec-2",
+        "local",
+        "Only, not until và sự kế tiếp"
+      ],
+      [
+        "g31-sec-3",
+        "local",
+        "Đảo ngữ điều kiện"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Trạng ngữ phủ định đứng đầu",
+        "titleEn": "Negative adverbials",
+        "descriptionVi": "Never, rarely, seldom, little, under no circumstances và not only đặt đầu câu có thể đòi hỏi đảo trợ động từ và chủ ngữ. Nếu không có trợ động từ, dùng do/does/did.",
+        "formula": "Negative adverbial + auxiliary + S + V",
+        "examples": [
+          {
+            "en": "Rarely do we receive such detailed feedback.",
+            "vi": "Hiếm khi chúng tôi nhận phản hồi chi tiết như vậy."
+          },
+          {
+            "en": "Under no circumstances should you share your password.",
+            "vi": "Trong bất kỳ trường hợp nào bạn cũng không nên chia sẻ mật khẩu."
+          }
+        ],
+        "noteVi": "Sau did dùng V nguyên mẫu, không dùng V2.",
+        "id": "g31-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Only, not until và sự kế tiếp",
+        "titleEn": "Restrictive time expressions",
+        "descriptionVi": "Khi only + cụm/mệnh đề thời gian hoặc not until đứng đầu, đảo ở mệnh đề chính. No sooner thường đi với than; hardly/scarcely thường đi với when.",
+        "formula": "Only after + clause, auxiliary + S + V; No sooner had S V3 than S V2",
+        "examples": [
+          {
+            "en": "Only after the audit did we notice the error.",
+            "vi": "Chỉ sau kiểm toán chúng tôi mới nhận ra lỗi."
+          },
+          {
+            "en": "No sooner had the meeting ended than the phone rang.",
+            "vi": "Cuộc họp vừa kết thúc thì điện thoại reo."
+          }
+        ],
+        "noteVi": "Only the manager knew không đảo, vì only bổ nghĩa chủ ngữ.",
+        "id": "g31-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Đảo ngữ điều kiện",
+        "titleEn": "Conditional inversion",
+        "descriptionVi": "Có thể thay if bằng should (khả năng tương lai), were (giả định hiện tại/tương lai), had (giả định quá khứ). Trong phủ định đặt not sau chủ ngữ.",
+        "formula": "Should S V1; Were S (to V); Had S V3",
+        "examples": [
+          {
+            "en": "Should you need help, contact support.",
+            "vi": "Nếu bạn cần hỗ trợ, hãy liên hệ bộ phận hỗ trợ."
+          },
+          {
+            "en": "Had we left earlier, we would have caught the train.",
+            "vi": "Nếu đi sớm hơn, chúng tôi đã bắt kịp tàu."
+          }
+        ],
+        "noteVi": "Không thêm if vào cấu trúc đã đảo.",
+        "id": "g31-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "Never ___ such an efficient system.",
+        [
+          "we have seen",
+          "have we seen",
+          "we seen",
+          "have seen we"
+        ],
+        1,
+        "Never đầu câu → have + S + V3."
+      ],
+      [
+        "Only after the interview ___ the offer.",
+        [
+          "did she receive",
+          "she received",
+          "she did received",
+          "received she"
+        ],
+        0,
+        "Đảo mệnh đề chính với did."
+      ],
+      [
+        "No sooner had we arrived ___ the meeting began.",
+        [
+          "when",
+          "as",
+          "than",
+          "then"
+        ],
+        2,
+        "No sooner…than."
+      ],
+      [
+        "Under no circumstances ___ the files be deleted.",
+        [
+          "would be",
+          "should",
+          "do",
+          "are"
+        ],
+        1,
+        "Sau Under no circumstances đảo trợ động từ; should + S + be deleted."
+      ],
+      [
+        "___ you need further information, please call us.",
+        [
+          "Had",
+          "Were",
+          "Should",
+          "Did"
+        ],
+        2,
+        "Should you need = If you need."
+      ],
+      [
+        "Had I known, I ___ you earlier.",
+        [
+          "would call",
+          "will call",
+          "would have called",
+          "called"
+        ],
+        2,
+        "Đảo điều kiện loại 3."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g31-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "Rarely ___ (do) he miss a deadline.",
+            "answer": "does"
+          },
+          {
+            "number": 2,
+            "prompt": "No sooner had she arrived ___ the phone rang.",
+            "answer": "than"
+          },
+          {
+            "number": 3,
+            "prompt": "___ we known the address, we would have visited.",
+            "answer": "Had"
+          },
+          {
+            "number": 4,
+            "prompt": "Only then ___ (do) I understand the problem. (past)",
+            "answer": "did"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://learnenglish.britishcouncil.org/free-resources/grammar/c1/inversion-after-negative-adverbials",
+      "https://learnenglish.britishcouncil.org/free-resources/grammar/c1/inversion-conditionals"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g32",
+    "name": "Thức giả định và đề nghị",
+    "en": "Subjunctive & recommendations",
+    "group": "Cấu trúc nâng cao",
+    "level": "B2–C1",
+    "sum": [
+      "Đề xuất/yêu cầu trang trọng: that + S + V nguyên mẫu.",
+      "Dạng bị động giả định dùng be + V3, phủ định not + V.",
+      "Suggest/recommend + V-ing hoặc that-clause; không dùng suggest O to V."
+    ],
+    "ex": [
+      "The board recommends that he attend the training.",
+      "It is vital that every form be signed.",
+      "I suggest booking the room now."
+    ],
+    "items": [
+      [
+        "g32-sec-1",
+        "local",
+        "Đề nghị và yêu cầu"
+      ],
+      [
+        "g32-sec-2",
+        "local",
+        "Tính từ chỉ sự cần thiết"
+      ],
+      [
+        "g32-sec-3",
+        "local",
+        "Phân biệt mẫu động từ"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Đề nghị và yêu cầu",
+        "titleEn": "Mandative that-clauses",
+        "descriptionVi": "Sau suggest, recommend, demand, insist hoặc request với nghĩa yêu cầu, dạng giả định dùng động từ nguyên mẫu, kể cả chủ ngữ ngôi ba số ít. Trong Anh-Anh, should + V cũng thông dụng.",
+        "formula": "S + suggest/recommend/request + that + S + (should) V1",
+        "examples": [
+          {
+            "en": "The board recommends that he attend the training.",
+            "vi": "Hội đồng đề nghị anh ấy tham dự đào tạo."
+          },
+          {
+            "en": "They requested that the fee be reduced.",
+            "vi": "Họ yêu cầu giảm phí."
+          }
+        ],
+        "noteVi": "Insist với nghĩa khẳng định một sự thật có thể dùng thì thông thường, không phải mọi trường hợp đều giả định.",
+        "id": "g32-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Tính từ chỉ sự cần thiết",
+        "titleEn": "Essential that-clauses",
+        "descriptionVi": "Sau it is essential/important/vital/necessary với nghĩa cần thực hiện việc gì, có thể dùng that + S + V1 hoặc should + V1. Dạng phủ định đặt not trước động từ.",
+        "formula": "It is essential that S + (should) V1; S + not + V1",
+        "examples": [
+          {
+            "en": "It is vital that every form be signed.",
+            "vi": "Điều thiết yếu là mọi biểu mẫu phải được ký."
+          },
+          {
+            "en": "It is important that she not disclose the details.",
+            "vi": "Điều quan trọng là cô ấy không tiết lộ chi tiết."
+          }
+        ],
+        "noteVi": "Không thêm -s vào bare subjunctive; trong tiếng Anh thực tế cũng có cấu trúc chỉ định tùy ngữ cảnh.",
+        "id": "g32-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Phân biệt mẫu động từ",
+        "titleEn": "Suggest, recommend, advise",
+        "descriptionVi": "Suggest/recommend + V-ing khi người thực hiện rõ từ ngữ cảnh; dùng mệnh đề that để nêu người thực hiện. Advise có thể dùng advise + O + to V.",
+        "formula": "suggest/recommend + V-ing; advise + O + to V",
+        "examples": [
+          {
+            "en": "I suggest booking the room now.",
+            "vi": "Tôi đề nghị đặt phòng ngay."
+          },
+          {
+            "en": "We advised the client to update the file.",
+            "vi": "Chúng tôi khuyên khách hàng cập nhật hồ sơ."
+          }
+        ],
+        "noteVi": "Không dùng suggest to book hoặc suggest me to book.",
+        "id": "g32-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "The company requires that every employee ___ an ID badge. (formal subjunctive)",
+        [
+          "wear",
+          "wears",
+          "wore",
+          "wearing"
+        ],
+        0,
+        "Dạng giả định dùng V1."
+      ],
+      [
+        "It is essential that the documents ___ before Friday. (formal subjunctive)",
+        [
+          "are signed",
+          "be signed",
+          "signed",
+          "sign"
+        ],
+        1,
+        "Giả định bị động be + V3."
+      ],
+      [
+        "I suggest ___ the appointment online.",
+        [
+          "book",
+          "to book",
+          "booking",
+          "booked"
+        ],
+        2,
+        "Suggest + V-ing."
+      ],
+      [
+        "We advised her ___ the contract carefully.",
+        [
+          "read",
+          "reading",
+          "to read",
+          "reads"
+        ],
+        2,
+        "Advise + O + to V."
+      ],
+      [
+        "The committee requested that he ___ disclose the figures. (bare subjunctive)",
+        [
+          "does not",
+          "not",
+          "did not",
+          "is not"
+        ],
+        1,
+        "Phủ định giả định: not + V1."
+      ],
+      [
+        "The director recommends ___ that supplier again.",
+        [
+          "to contact",
+          "contacting",
+          "contacted",
+          "contacts"
+        ],
+        1,
+        "Recommend + V-ing."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g32-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "The board demands that he ___ (be) present. (bare subjunctive)",
+            "answer": "be"
+          },
+          {
+            "number": 2,
+            "prompt": "I suggest ___ (review) the plan.",
+            "answer": "reviewing"
+          },
+          {
+            "number": 3,
+            "prompt": "She advised me ___ (apply).",
+            "answer": "to apply"
+          },
+          {
+            "number": 4,
+            "prompt": "It is vital that the door be ___ (lock).",
+            "answer": "locked"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://dictionary.cambridge.org/us/grammar/british-grammar/suggest",
+      "https://dictionary.cambridge.org/grammar/british-grammar/recommend",
+      "https://dictionary.cambridge.org/grammar/british-grammar/verb-patterns"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g33",
+    "name": "Cấu trúc song song",
+    "en": "Parallel structures",
+    "group": "Câu & mệnh đề",
+    "level": "B1–C1",
+    "sum": [
+      "Các thành phần cùng chức năng nên có hình thức tương đương.",
+      "Giữ song song với both…and, either…or, neither…nor, not only…but also.",
+      "So sánh các đối tượng cùng loại để câu rõ nghĩa."
+    ],
+    "ex": [
+      "The role involves planning, training and reporting.",
+      "The service is both fast and reliable.",
+      "Our delivery costs are lower than those of our competitors."
+    ],
+    "items": [
+      [
+        "g33-sec-1",
+        "local",
+        "Liệt kê song song"
+      ],
+      [
+        "g33-sec-2",
+        "local",
+        "Liên từ tương quan"
+      ],
+      [
+        "g33-sec-3",
+        "local",
+        "So sánh hợp lý"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Liệt kê song song",
+        "titleEn": "Parallel lists",
+        "descriptionVi": "Trong danh sách nối bằng and/or, duy trì dạng danh từ, V-ing, to V hoặc mệnh đề nhất quán. To có thể được lặp hoặc dùng chung khi cấu trúc rõ.",
+        "formula": "V-ing, V-ing and V-ing | to V1, (to) V1 and (to) V1",
+        "examples": [
+          {
+            "en": "The role involves planning, training and reporting.",
+            "vi": "Vị trí gồm lập kế hoạch, đào tạo và báo cáo."
+          },
+          {
+            "en": "We aim to reduce costs and improve service.",
+            "vi": "Chúng tôi hướng tới giảm chi phí và cải thiện dịch vụ."
+          }
+        ],
+        "noteVi": "Không trộn danh từ và động từ không tương đương trong cùng danh sách.",
+        "id": "g33-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Liên từ tương quan",
+        "titleEn": "Correlative conjunctions",
+        "descriptionVi": "Đặt both…and, either…or, neither…nor, not only…but also ngay trước các thành phần có cùng vai trò trong câu.",
+        "formula": "both X and Y; either X or Y; not only X but also Y",
+        "examples": [
+          {
+            "en": "The service is both fast and reliable.",
+            "vi": "Dịch vụ vừa nhanh vừa đáng tin cậy."
+          },
+          {
+            "en": "You can either call us or send an email.",
+            "vi": "Bạn có thể gọi hoặc gửi email."
+          }
+        ],
+        "noteVi": "Nếu not only đứng đầu mệnh đề, có thể cần đảo ngữ; khác với not only nối hai tính từ.",
+        "id": "g33-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "So sánh hợp lý",
+        "titleEn": "Logical comparisons",
+        "descriptionVi": "Khi so sánh thuộc tính hoặc số lượng, cần so sánh cùng loại đối tượng; dùng that/those thay danh từ đã nêu khi cần tránh lặp.",
+        "formula": "N + comparative + than + that/those of ...",
+        "examples": [
+          {
+            "en": "Our delivery costs are lower than those of our competitors.",
+            "vi": "Chi phí giao hàng của chúng tôi thấp hơn của đối thủ."
+          },
+          {
+            "en": "The price of this model is higher than that of the older one.",
+            "vi": "Giá mẫu này cao hơn giá mẫu cũ."
+          }
+        ],
+        "noteVi": "Không so sánh costs với competitors trực tiếp.",
+        "id": "g33-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "The job requires writing, editing and ___.",
+        [
+          "proofreading",
+          "proofread",
+          "to proofread",
+          "proofreaded"
+        ],
+        0,
+        "Ba danh động từ song song."
+      ],
+      [
+        "The company plans to hire more staff and ___ its services.",
+        [
+          "expanding",
+          "expanded",
+          "expand",
+          "expansion"
+        ],
+        2,
+        "To hire and (to) expand."
+      ],
+      [
+        "The device is both affordable ___ durable.",
+        [
+          "or",
+          "and",
+          "nor",
+          "but"
+        ],
+        1,
+        "Both…and."
+      ],
+      [
+        "You may either submit the form online ___ mail it.",
+        [
+          "and",
+          "nor",
+          "but",
+          "or"
+        ],
+        3,
+        "Either…or."
+      ],
+      [
+        "Our sales figures are higher than ___ of last year.",
+        [
+          "that",
+          "those",
+          "it",
+          "them"
+        ],
+        1,
+        "Figures số nhiều → those."
+      ],
+      [
+        "The team is responsible for collecting data and ___ results.",
+        [
+          "analyze",
+          "analysis",
+          "analyzing",
+          "to analyze"
+        ],
+        2,
+        "Sau for, hai V-ing song song."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g33-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "She enjoys reading and ___ (write).",
+            "answer": "writing"
+          },
+          {
+            "number": 2,
+            "prompt": "We hope to save money and ___ (increase) revenue.",
+            "answer": "increase"
+          },
+          {
+            "number": 3,
+            "prompt": "Neither the printer ___ the scanner works.",
+            "answer": "nor"
+          },
+          {
+            "number": 4,
+            "prompt": "The costs are lower than ___ of the old system. (plural demonstrative)",
+            "answer": "those"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://owl.purdue.edu/owl/general_writing/the_writing_process/proofreading/proofreading_for_errors.html",
+      "https://owl.purdue.edu/owl/general_writing/mechanics/sentence_clarity.html"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g34",
+    "name": "Từ hạn định và nhóm danh từ",
+    "en": "Determiners & noun phrases",
+    "group": "Nền tảng",
+    "level": "A1–B2",
+    "sum": [
+      "Từ hạn định xác định danh từ: mạo từ, sở hữu, chỉ định, lượng từ, số đếm.",
+      "Không ghép tùy ý hai từ hạn định trung tâm: the my book là sai.",
+      "Phân biệt another, other, the other, others và the others."
+    ],
+    "ex": [
+      "Both of these new machines work well.",
+      "Could we arrange another meeting?",
+      "Most customers prefer online payment."
+    ],
+    "items": [
+      [
+        "g34-sec-1",
+        "local",
+        "Trật tự từ hạn định"
+      ],
+      [
+        "g34-sec-2",
+        "local",
+        "Other, another, others"
+      ],
+      [
+        "g34-sec-3",
+        "local",
+        "Of và lượng từ"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Trật tự từ hạn định",
+        "titleEn": "Determiner order",
+        "descriptionVi": "All/both/half có thể đứng trước the/these/my; số đếm thường đứng sau từ chỉ định hoặc sở hữu. A/an, the, my, this thông thường không cùng đứng ở vị trí hạn định trung tâm.",
+        "formula": "all/both + my/the/these + number + adjective + noun",
+        "examples": [
+          {
+            "en": "Both of these new machines work well.",
+            "vi": "Cả hai máy mới này hoạt động tốt."
+          },
+          {
+            "en": "My three colleagues are on leave.",
+            "vi": "Ba đồng nghiệp của tôi đang nghỉ."
+          }
+        ],
+        "noteVi": "Không dùng the my three colleagues.",
+        "id": "g34-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Other, another, others",
+        "titleEn": "Alternatives and remaining items",
+        "descriptionVi": "Another + danh từ đếm được số ít diễn tả thêm một/cái khác. Other + danh từ số nhiều/không đếm được; the other chỉ phần còn lại đã xác định. Others/the others đứng độc lập như đại từ.",
+        "formula": "another + N số ít; other + N số nhiều; the other + N; others",
+        "examples": [
+          {
+            "en": "Could we arrange another meeting?",
+            "vi": "Chúng ta có thể sắp xếp một cuộc họp khác không?"
+          },
+          {
+            "en": "One file is ready; the other is missing.",
+            "vi": "Một hồ sơ đã sẵn sàng; hồ sơ còn lại bị thiếu."
+          }
+        ],
+        "noteVi": "Another cũng có thể đứng trước số lượng: another three days.",
+        "id": "g34-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Of và lượng từ",
+        "titleEn": "Partitives",
+        "descriptionVi": "Some/many/most/few + danh từ nói chung; thêm of trước the/these/my hoặc đại từ để nói về một tập hợp đã biết. All/both/half có thể bỏ of trước nhiều từ hạn định nhưng không bỏ trước đại từ.",
+        "formula": "most + N | most of + the/my/these + N | most of + them",
+        "examples": [
+          {
+            "en": "Most customers prefer online payment.",
+            "vi": "Đa số khách hàng thích thanh toán trực tuyến."
+          },
+          {
+            "en": "Most of our customers prefer online payment.",
+            "vi": "Đa số khách hàng của chúng tôi thích thanh toán trực tuyến."
+          }
+        ],
+        "noteVi": "Không dùng most of customers khi customers không có hạn định.",
+        "id": "g34-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "We need ___ chair for the guest.",
+        [
+          "other",
+          "another",
+          "others",
+          "the others"
+        ],
+        1,
+        "Another + N số ít."
+      ],
+      [
+        "___ of our employees completed the course.",
+        [
+          "Every",
+          "Much",
+          "Most",
+          "Another"
+        ],
+        2,
+        "Most of + our + danh từ số nhiều."
+      ],
+      [
+        "Please review ___ three proposals.",
+        [
+          "this",
+          "these",
+          "a",
+          "each"
+        ],
+        1,
+        "These + three + N số nhiều."
+      ],
+      [
+        "One room is occupied; ___ room is available. (two rooms in total)",
+        [
+          "other",
+          "another",
+          "the other",
+          "others"
+        ],
+        2,
+        "The other room là phòng còn lại."
+      ],
+      [
+        "Some clients paid today; ___ will pay tomorrow. (other clients, plural)",
+        [
+          "another",
+          "other",
+          "others",
+          "the other customer"
+        ],
+        2,
+        "Others đứng độc lập, chỉ những khách khác."
+      ],
+      [
+        "All of ___ have signed the form.",
+        [
+          "they",
+          "their",
+          "them",
+          "theirs"
+        ],
+        2,
+        "All of + đại từ tân ngữ."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g34-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "I need ___ (another/other) copy.",
+            "answer": "another"
+          },
+          {
+            "number": 2,
+            "prompt": "Both of ___ (they) are ready.",
+            "answer": "them"
+          },
+          {
+            "number": 3,
+            "prompt": "Most ___ our colleagues are here.",
+            "answer": "of"
+          },
+          {
+            "number": 4,
+            "prompt": "Some were accepted; the ___ were rejected. (remaining ones)",
+            "answer": "others"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://dictionary.cambridge.org/grammar/british-grammar/determiners-the-my-some-this.",
+      "https://dictionary.cambridge.org/grammar/british-grammar/determiners-position-and-order"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g35",
+    "name": "Tỉnh lược và thay thế",
+    "en": "Ellipsis & substitution",
+    "group": "Cấu trúc nâng cao",
+    "level": "B1–C1",
+    "sum": [
+      "Lược thành phần đã rõ để tránh lặp, nhưng không làm mất nghĩa.",
+      "Dùng one/ones cho danh từ đếm được; do/so cho phần động từ hoặc mệnh đề phù hợp.",
+      "So/neither + trợ động từ + S thể hiện đồng tình."
+    ],
+    "ex": [
+      "Linh checked the file and sent it.",
+      "The blue folder is full; use the green one.",
+      "I have finished, and so has Lan."
+    ],
+    "items": [
+      [
+        "g35-sec-1",
+        "local",
+        "Lược từ đã rõ"
+      ],
+      [
+        "g35-sec-2",
+        "local",
+        "One, ones và so"
+      ],
+      [
+        "g35-sec-3",
+        "local",
+        "So và neither để đồng tình"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Lược từ đã rõ",
+        "titleEn": "Ellipsis in context",
+        "descriptionVi": "Có thể lược chủ ngữ lặp trong cấu trúc phối hợp hoặc lược phần vị ngữ sau trợ động từ khi người nghe suy ra được. Thường bỏ that sau một số động từ dẫn mệnh đề.",
+        "formula": "S + V1 and (S) V2; S + auxiliary + (repeated verb phrase)",
+        "examples": [
+          {
+            "en": "Linh checked the file and sent it.",
+            "vi": "Linh kiểm tra hồ sơ rồi gửi đi."
+          },
+          {
+            "en": "I can attend, but Minh cannot.",
+            "vi": "Tôi có thể tham dự, nhưng Minh thì không."
+          }
+        ],
+        "noteVi": "Trong văn viết trang trọng không lược chủ ngữ/động từ tùy ý nếu gây câu thiếu.",
+        "id": "g35-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "One, ones và so",
+        "titleEn": "Substitution",
+        "descriptionVi": "One/ones thay cho danh từ đếm được khi nói đến vật cùng loại. So có thể thay mệnh đề sau think/hope/believe; not có thể thay mệnh đề phủ định sau hope.",
+        "formula": "a/the + adjective + one; the + adjective + ones; think/hope so",
+        "examples": [
+          {
+            "en": "The blue folder is full; use the green one.",
+            "vi": "Bìa xanh dương đã đầy; hãy dùng bìa xanh lá."
+          },
+          {
+            "en": "Will the order arrive today? I hope so.",
+            "vi": "Đơn hàng có đến hôm nay không? Tôi hy vọng vậy."
+          }
+        ],
+        "noteVi": "Không dùng one thay danh từ không đếm được trong cách dùng thông thường.",
+        "id": "g35-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "So và neither để đồng tình",
+        "titleEn": "Agreement responses",
+        "descriptionVi": "Sau câu khẳng định dùng so + trợ động từ phù hợp + chủ ngữ. Sau câu phủ định dùng neither/nor + trợ động từ + chủ ngữ. Chọn trợ động từ theo thì và cấu trúc trước đó.",
+        "formula": "So + auxiliary + S | Neither + auxiliary + S",
+        "examples": [
+          {
+            "en": "I have finished, and so has Lan.",
+            "vi": "Tôi đã làm xong, và Lan cũng vậy."
+          },
+          {
+            "en": "He cannot attend, and neither can I.",
+            "vi": "Anh ấy không thể tham dự, tôi cũng không."
+          }
+        ],
+        "noteVi": "So do I khác với So I do (xác nhận/nhấn mạnh rằng điều đó đúng).",
+        "id": "g35-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "I need a pen. Do you have a spare ___?",
+        [
+          "ones",
+          "one",
+          "it",
+          "so"
+        ],
+        1,
+        "One thay pen số ít."
+      ],
+      [
+        "The small boxes are empty; use the large ___.",
+        [
+          "one",
+          "ones",
+          "so",
+          "it"
+        ],
+        1,
+        "Boxes số nhiều → ones."
+      ],
+      [
+        "Will the meeting be postponed? I hope ___.",
+        [
+          "one",
+          "do",
+          "so",
+          "it is"
+        ],
+        2,
+        "Hope so thay mệnh đề khẳng định."
+      ],
+      [
+        "She works remotely, and so ___ I.",
+        [
+          "am",
+          "have",
+          "can",
+          "do"
+        ],
+        3,
+        "Works là hiện tại đơn → do."
+      ],
+      [
+        "He hasn’t arrived, and neither ___ they.",
+        [
+          "do",
+          "are",
+          "have",
+          "did"
+        ],
+        2,
+        "Hiện tại hoàn thành → have."
+      ],
+      [
+        "I can help, but my colleague ___.",
+        [
+          "cannot",
+          "not can",
+          "does not can",
+          "is not"
+        ],
+        0,
+        "Lược help sau cannot."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g35-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "Do you think they will agree? I think ___.",
+            "answer": "so"
+          },
+          {
+            "number": 2,
+            "prompt": "I prefer the red ___ (singular substitute).",
+            "answer": "one"
+          },
+          {
+            "number": 3,
+            "prompt": "She can swim, and so ___ I.",
+            "answer": "can"
+          },
+          {
+            "number": 4,
+            "prompt": "I did not go, and neither ___ he.",
+            "answer": "did"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://dictionary.cambridge.org/grammar/british-grammar/ellipsis",
+      "https://dictionary.cambridge.org/grammar/british-grammar/substitution",
+      "https://dictionary.cambridge.org/grammar/british-grammar/so"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g36",
+    "name": "Lỗi câu và dấu câu",
+    "en": "Sentence errors & punctuation",
+    "group": "Câu & mệnh đề",
+    "level": "B1–C1",
+    "sum": [
+      "Kiểm tra mệnh đề độc lập có chủ ngữ và động từ hữu hạn.",
+      "Không nối hai mệnh đề độc lập chỉ bằng dấu phẩy.",
+      "Cụm phân từ đầu câu cần chủ ngữ logic phù hợp."
+    ],
+    "ex": [
+      "Because the bus was late, we missed the start.",
+      "The office was closed; therefore, we returned later.",
+      "After checking the invoice, Mai approved it."
+    ],
+    "items": [
+      [
+        "g36-sec-1",
+        "local",
+        "Câu thiếu thành phần"
+      ],
+      [
+        "g36-sec-2",
+        "local",
+        "Nối hai mệnh đề độc lập"
+      ],
+      [
+        "g36-sec-3",
+        "local",
+        "Bổ nghĩa sai chủ thể"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Câu thiếu thành phần",
+        "titleEn": "Sentence fragments",
+        "descriptionVi": "Một cụm phụ thuộc mở đầu bằng because/although hoặc một cụm phân từ có thể không phải câu hoàn chỉnh. Trong văn viết chuẩn, hãy ghép nó với mệnh đề chính hoặc bổ sung động từ/chủ ngữ thiếu.",
+        "formula": "Dependent clause + main clause | S + finite V",
+        "examples": [
+          {
+            "en": "Because the bus was late, we missed the start.",
+            "vi": "Vì xe buýt muộn, chúng tôi lỡ phần mở đầu."
+          },
+          {
+            "en": "The employees are reviewing the policy.",
+            "vi": "Nhân viên đang xem xét chính sách."
+          }
+        ],
+        "noteVi": "The employees reviewing the policy không tự tạo một câu trần thuật hoàn chỉnh.",
+        "id": "g36-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Nối hai mệnh đề độc lập",
+        "titleEn": "Comma splices and run-ons",
+        "descriptionVi": "Giữa hai mệnh đề độc lập, dùng dấu chấm, chấm phẩy hoặc dấu phẩy kèm liên từ đẳng lập. However/therefore không phải liên từ đẳng lập; dùng dấu chấm hoặc chấm phẩy trước và thường có dấu phẩy sau.",
+        "formula": "Clause; however, clause | Clause, but clause",
+        "examples": [
+          {
+            "en": "The office was closed; therefore, we returned later.",
+            "vi": "Văn phòng đóng cửa; vì thế chúng tôi quay lại sau."
+          },
+          {
+            "en": "The form is short, but it is important.",
+            "vi": "Biểu mẫu ngắn nhưng quan trọng."
+          }
+        ],
+        "noteVi": "Không dùng comma splice như The office was closed, we returned later.",
+        "id": "g36-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Bổ nghĩa sai chủ thể",
+        "titleEn": "Dangling modifiers",
+        "descriptionVi": "Cụm phân từ đầu câu thường bổ nghĩa cho chủ ngữ mệnh đề chính. Nếu chủ thể thực hiện hành động khác, viết lại thành mệnh đề đầy đủ hoặc đổi chủ ngữ.",
+        "formula": "V-ing ..., S (người/vật thực hiện V-ing) + V",
+        "examples": [
+          {
+            "en": "After checking the invoice, Mai approved it.",
+            "vi": "Sau khi kiểm tra hóa đơn, Mai phê duyệt."
+          },
+          {
+            "en": "After Mai checked the invoice, it was approved.",
+            "vi": "Sau khi Mai kiểm tra hóa đơn, nó được phê duyệt."
+          }
+        ],
+        "noteVi": "After checking the invoice, it was approved dễ gây lỗi chủ thể: it không thể kiểm tra hóa đơn.",
+        "id": "g36-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "Which is a complete sentence?",
+        [
+          "Although we arrived early.",
+          "The new assistants working.",
+          "The office opens at nine.",
+          "Because the train was late."
+        ],
+        2,
+        "Có chủ ngữ, động từ hữu hạn và ý độc lập."
+      ],
+      [
+        "The delivery was late ___ we requested a refund.",
+        [
+          "; therefore,",
+          ", therefore",
+          ", however",
+          ","
+        ],
+        0,
+        "Hai mệnh đề độc lập, dùng chấm phẩy + therefore."
+      ],
+      [
+        "Which sentence has a logical subject?",
+        [
+          "Walking to work, the rain began.",
+          "Walking to work, Lan saw an old friend.",
+          "Walking to work, the road was wet.",
+          "Walking to work, a taxi passed by."
+        ],
+        1,
+        "Lan là người đang đi bộ."
+      ],
+      [
+        "The report is long, ___ it is easy to read.",
+        [
+          "however",
+          "therefore",
+          "but",
+          "despite"
+        ],
+        2,
+        "But là liên từ đẳng lập."
+      ],
+      [
+        "Choose the correct punctuation.",
+        [
+          "We arrived, we waited.",
+          "We arrived; we waited.",
+          "We arrived we waited.",
+          "We arrived, waited we."
+        ],
+        1,
+        "Dấu chấm phẩy nối hai mệnh đề độc lập."
+      ],
+      [
+        "The engineers ___ inspecting the machine right now.",
+        [
+          "are",
+          "being",
+          "to be",
+          "been"
+        ],
+        0,
+        "Cần động từ hữu hạn are."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g36-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "The technician ___ (be) reviewing the policy now.",
+            "answer": "is"
+          },
+          {
+            "number": 2,
+            "prompt": "The bus was delayed; ___, we missed the meeting. (therefore/however)",
+            "answer": "therefore"
+          },
+          {
+            "number": 3,
+            "prompt": "The course is difficult, ___ useful. (contrast)",
+            "answer": "but"
+          },
+          {
+            "number": 4,
+            "prompt": "After ___ (check) the files, I sent them.",
+            "answer": "checking"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://owl.purdue.edu/owl/general_writing/mechanics/sentence_fragments.html",
+      "https://owl.purdue.edu/owl/general_writing/the_writing_process/proofreading/proofreading_for_errors.html",
+      "https://learnenglish.britishcouncil.org/grammar/c1-grammar/participle-clauses"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  },
+  {
+    "id": "g37",
+    "name": "Từ nối và mạch văn",
+    "en": "Linking words & discourse markers",
+    "group": "Câu & mệnh đề",
+    "level": "B1–C1",
+    "sum": [
+      "Phân biệt liên từ, giới từ và trạng từ nối theo phần theo sau.",
+      "Chọn từ nối đúng quan hệ: bổ sung, tương phản, kết quả, trình tự.",
+      "Đọc toàn câu trước khi chọn từ nối trong TOEIC Part 6/7."
+    ],
+    "ex": [
+      "The flight was cancelled because of the storm.",
+      "Despite the delay, the event was successful.",
+      "First, complete the form. Next, upload your ID."
+    ],
+    "items": [
+      [
+        "g37-sec-1",
+        "local",
+        "Nguyên nhân và kết quả"
+      ],
+      [
+        "g37-sec-2",
+        "local",
+        "Tương phản và bổ sung"
+      ],
+      [
+        "g37-sec-3",
+        "local",
+        "Trình tự, minh họa và kết luận"
+      ]
+    ],
+    "theory": [
+      {
+        "titleVi": "Nguyên nhân và kết quả",
+        "titleEn": "Cause and result",
+        "descriptionVi": "Because/since/as + mệnh đề; because of/due to + danh từ hoặc V-ing; so nối kết quả, therefore/as a result diễn đạt kết quả ở mức liên kết câu.",
+        "formula": "because + S + V | because of + N/V-ing | Clause; therefore, clause",
+        "examples": [
+          {
+            "en": "The flight was cancelled because of the storm.",
+            "vi": "Chuyến bay bị hủy vì cơn bão."
+          },
+          {
+            "en": "The road was flooded; as a result, the delivery was delayed.",
+            "vi": "Đường bị ngập; vì vậy giao hàng bị chậm."
+          }
+        ],
+        "noteVi": "Due to/the result of có chức năng khác với because + mệnh đề.",
+        "id": "g37-sec-1",
+        "code": "1"
+      },
+      {
+        "titleVi": "Tương phản và bổ sung",
+        "titleEn": "Contrast and addition",
+        "descriptionVi": "Although/even though + mệnh đề; despite/in spite of + danh từ/V-ing; however/nevertheless diễn đạt tương phản giữa các câu. Moreover/in addition bổ sung ý cùng hướng.",
+        "formula": "although + clause | despite + N | Clause; however, clause",
+        "examples": [
+          {
+            "en": "Despite the delay, the event was successful.",
+            "vi": "Dù bị chậm, sự kiện vẫn thành công."
+          },
+          {
+            "en": "The offer is affordable. Moreover, it includes support.",
+            "vi": "Ưu đãi có giá hợp lý. Hơn nữa, nó bao gồm hỗ trợ."
+          }
+        ],
+        "noteVi": "Không dùng although ... but ... như hai liên từ cho cùng một cặp mệnh đề trong cấu trúc chuẩn.",
+        "id": "g37-sec-2",
+        "code": "2"
+      },
+      {
+        "titleVi": "Trình tự, minh họa và kết luận",
+        "titleEn": "Sequence and illustration",
+        "descriptionVi": "First, next, finally giúp sắp xếp trình tự; for example/for instance mở ví dụ; in other words diễn đạt lại; in summary tóm tắt. Chọn theo chức năng và dấu câu.",
+        "formula": "First, ... Next, ... Finally, ...; For example, ...",
+        "examples": [
+          {
+            "en": "First, complete the form. Next, upload your ID.",
+            "vi": "Trước tiên điền biểu mẫu. Tiếp theo tải giấy tờ."
+          },
+          {
+            "en": "Several tools are free. For example, the basic planner costs nothing.",
+            "vi": "Một số công cụ miễn phí. Ví dụ, trình lập kế hoạch cơ bản không tốn phí."
+          }
+        ],
+        "noteVi": "Đừng chỉ nhìn nghĩa tiếng Việt; xem phần sau là mệnh đề hay cụm danh từ.",
+        "id": "g37-sec-3",
+        "code": "3"
+      }
+    ],
+    "quiz": [
+      [
+        "___ the heavy traffic, we arrived on time.",
+        [
+          "Although",
+          "Despite",
+          "Because",
+          "However"
+        ],
+        1,
+        "Despite + N; ý nhượng bộ."
+      ],
+      [
+        "The store was closed ___ the owner was ill.",
+        [
+          "because of",
+          "despite",
+          "because",
+          "due to"
+        ],
+        2,
+        "Because + mệnh đề."
+      ],
+      [
+        "The price is low. ___, delivery is included.",
+        [
+          "Moreover",
+          "Despite",
+          "Although",
+          "Because of"
+        ],
+        0,
+        "Moreover bổ sung ý."
+      ],
+      [
+        "The road was blocked; ___, we took another route.",
+        [
+          "however",
+          "therefore",
+          "despite",
+          "although"
+        ],
+        1,
+        "Therefore diễn đạt kết quả."
+      ],
+      [
+        "___ he was tired, he finished the report.",
+        [
+          "Despite",
+          "Because of",
+          "Although",
+          "Moreover"
+        ],
+        2,
+        "Although + mệnh đề; tương phản."
+      ],
+      [
+        "There are many ways to save energy. ___, you can switch off unused lights.",
+        [
+          "For example",
+          "In contrast",
+          "Despite",
+          "Because of"
+        ],
+        0,
+        "For example đưa ví dụ."
+      ]
+    ],
+    "exercises": [
+      {
+        "id": "g37-practice",
+        "roman": "I",
+        "type": "fill_in_blank",
+        "instruction": "Điền từ hoặc cụm từ phù hợp vào chỗ trống.",
+        "questions": [
+          {
+            "number": 1,
+            "prompt": "___ (although/despite) the rain, we went out.",
+            "answer": "despite"
+          },
+          {
+            "number": 2,
+            "prompt": "We left early because ___ the storm.",
+            "answer": "of"
+          },
+          {
+            "number": 3,
+            "prompt": "The plan failed; ___, we revised it. (therefore/however)",
+            "answer": "therefore"
+          },
+          {
+            "number": 4,
+            "prompt": "In other ___, the service is free.",
+            "answer": "words"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      "https://dictionary.cambridge.org/grammar/british-grammar/discourse-markers",
+      "https://owl.purdue.edu/owl/general_writing/the_writing_process/proofreading/proofreading_for_errors.html"
+    ],
+    "contentNote": "Lý thuyết diễn giải bằng tiếng Việt; ví dụ, bài tập và câu hỏi do MyVocab biên soạn mới dựa trên quy tắc được tham khảo. Không phải đề TOEIC chính thức.",
+    "quizVersion": 1
+  }
+];
+window.GRAMMAR_DATA.push(...window.MV_EXTRA_GRAMMAR);
